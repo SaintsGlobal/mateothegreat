@@ -265,7 +265,7 @@
       "title": "Profile Header Dropdown",
       "description": "As a user, I want to see my profile summary in navigation.",
       "priority": 17,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create user dropdown component for header",
         "Shows: avatar, name, tier badge",
