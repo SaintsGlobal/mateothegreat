@@ -283,7 +283,7 @@
       "title": "Health Check Endpoint",
       "description": "As a developer, I need a health check endpoint for Railway.",
       "priority": 17,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/app/api/health/route.ts",
         "GET handler returns { status: 'ok', timestamp: Date.now() }",

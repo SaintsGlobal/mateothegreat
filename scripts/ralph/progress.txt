@@ -240,3 +240,14 @@ Started: Initial setup
   - Use `npx tsx prisma/seed.ts` as seed command for TypeScript seeds
   - Seed script checks for existing slugs to avoid duplicates on re-run
 ---
+
+## 2026-03-06 - US-017
+- **What was implemented:** Health check API endpoint for Railway deployment monitoring
+- **Files changed:**
+  - src/app/api/health/route.ts (created - GET handler with database connection test)
+- **Learnings for future iterations:**
+  - API routes go in `src/app/api/[route]/route.ts` following Next.js App Router convention
+  - Use dynamic import for db in API routes to avoid build-time Prisma initialization issues
+  - Health check pattern: `db.$queryRaw\`SELECT 1\`` to test database connectivity
+  - Return 500 status code when database connection fails
+---
