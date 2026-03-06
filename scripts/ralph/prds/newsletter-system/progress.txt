@@ -433,3 +433,17 @@
   - AskUserQuestion tool is used for interactive prompts in skills
   - Skills should include full schema reference for content generation tasks
 ---
+
+## 2026-03-06 - NL-023
+- **What was implemented**: /newsletter Skill - Approve Command validation
+- **Files changed**: None (functionality already existed in SKILL.md from NL-022)
+- **Implementation details**:
+  - The approve subcommand was already documented in ~/.claude/skills/newsletter/SKILL.md
+  - Skill instructions cover: read draft file, check if exists, update status to "approved", save file, confirm message
+  - Error handling documented for missing drafts
+  - Verification: npm run build passes
+- **Learnings for future iterations:**
+  - Skills are markdown instruction files, not code - Claude follows the instructions using its tools
+  - NL-022 implemented more than its scope; approve/list/preview subcommands were all documented together
+  - No code changes needed when skill instructions are already complete
+---

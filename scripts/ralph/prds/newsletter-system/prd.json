@@ -324,7 +324,7 @@
       "title": "/newsletter Skill - Approve Command",
       "description": "As a content creator, I want to approve newsletters via CLI.",
       "priority": 23,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Skill supports /newsletter approve <slug> syntax",
         "Sets status: approved in draft JSON",
