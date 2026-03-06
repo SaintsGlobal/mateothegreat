@@ -5,6 +5,7 @@ import { HeaderBlockComponent } from "./blocks/header-block";
 import { ParagraphBlockComponent } from "./blocks/paragraph-block";
 import { ListBlockComponent } from "./blocks/list-block";
 import { ImageBlockComponent } from "./blocks/image-block";
+import { CodeBlockComponent } from "./blocks/code-block";
 
 interface NewsletterRendererProps {
   newsletter: Newsletter;
@@ -28,12 +29,7 @@ function BlockRenderer({ block }: { block: Block }) {
         </div>
       );
     case "code":
-      // TODO: NL-008 - Code block with syntax highlighting
-      return (
-        <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg mb-4 overflow-x-auto">
-          <code>{block.content.code}</code>
-        </pre>
-      );
+      return <CodeBlockComponent block={block} />;
     case "blockquote":
       // TODO: NL-012 - Blockquote block implementation
       return (
