@@ -200,3 +200,15 @@ Started: Initial setup
   - Pattern: `const { getSession } = await import("@/lib/auth")` inside async function body
   - `export const dynamic = "force-dynamic"` marks route as server-rendered on demand
 ---
+
+## 2026-03-06 - US-014
+- **What was implemented:** Exclusive content list page with auth-gated content grid
+- **Files changed:**
+  - src/app/exclusive/page.tsx (created - server component with dynamic import for auth)
+- **Learnings for future iterations:**
+  - Same dynamic import pattern for getSession and db in server components
+  - Type badges use color-coded backgrounds: ARTICLE (cyan), VIDEO (coral), ANNOUNCEMENT (gold)
+  - Filter content by `publishedAt: { not: null }` to only show published items
+  - Use Card component with `glow` prop for interactive hover effects
+  - Grid layout: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` for responsive cards
+---

@@ -237,7 +237,7 @@
       "title": "Exclusive Content List",
       "description": "As a member, I want to browse exclusive content.",
       "priority": 14,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/app/exclusive/page.tsx",
         "If authenticated: fetch and display ExclusiveContent from database as card grid",
