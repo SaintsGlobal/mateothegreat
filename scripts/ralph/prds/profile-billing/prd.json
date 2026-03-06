@@ -198,7 +198,7 @@
       "title": "Billing Section - Payment Methods",
       "description": "As a user, I want to manage my payment methods.",
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "List saved payment methods with last4, brand icon, expiry",
         "Default badge on primary payment method",

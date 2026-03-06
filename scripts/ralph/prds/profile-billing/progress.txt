@@ -198,3 +198,27 @@
   - Conditional badge styling: brand-green for Active, brand-coral for Canceled
 ---
 
+## 2026-03-06 - PB-013
+- Implemented Payment Methods management UI in BillingSection
+- Added Server Actions: getPaymentMethods, addUserPaymentMethod, removeUserPaymentMethod, setUserDefaultPaymentMethod
+- Added CardBrandIcon component with SVG icons for Visa, Mastercard, Amex, Discover
+- Added PaymentMethodsCard component displaying:
+  - List of saved payment methods with brand icon, last4, expiry
+  - Default badge on primary payment method
+  - Actions dropdown for each card (Set as default, Remove)
+  - Add payment method button with dashed border style
+  - Empty state with "No payment methods yet" and Add CTA
+  - Info banner: "Payment processing will be available soon"
+- Add Card Modal with form fields: card number (formatted), expiry month/year dropdowns
+- Remove Card confirmation modal with error handling
+- Card number input auto-formats with spaces every 4 digits
+- detectCardBrand() function identifies Visa/Mastercard/Amex/Discover from card number
+- Files changed: src/app/actions/auth.ts, src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - Use formatCardNumber() helper for credit card input formatting
+  - Card brand detection based on number prefix: 4=Visa, 5[1-5]=Mastercard, 3[47]=Amex, 6011|65=Discover
+  - Payment method service auto-sets isDefault: true for first card
+  - Dropdown with actions uses activeDropdown state to track which card's dropdown is open
+  - Select dropdowns need bg-dark and border-brand-gray/30 classes for consistent dark theme styling
+---
+
