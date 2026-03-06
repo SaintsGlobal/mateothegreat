@@ -1,0 +1,55 @@
+{
+  "projectName": "Mateo The Great - Contact Page",
+  "branchName": "ralph/contact-page",
+  "description": "Add a Contact page to the Mateo The Great website with a contact form for visitors to reach out.",
+  "userStories": [
+    {
+      "id": "CP-001",
+      "title": "Create Contact Page Layout",
+      "description": "As a visitor, I want to see a contact page with a welcoming header and introduction.",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/app/contact/page.tsx",
+        "Page has heading 'Get in Touch' with brand gradient styling (matching homepage)",
+        "Include a brief intro paragraph below the heading",
+        "Use the same layout patterns as other pages (centered content, gradient accent)",
+        "Page is accessible at /contact route"
+      ]
+    },
+    {
+      "id": "CP-002",
+      "title": "Contact Form Component",
+      "description": "As a visitor, I want a contact form so I can send a message to Mateo.",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/components/contact-form.tsx",
+        "Form has fields: Name (required), Email (required), Message (textarea, required)",
+        "Use existing Button and Input components from src/components/ui/",
+        "Form validates required fields before submission",
+        "On submit, show a success message (no backend needed - just client-side feedback)",
+        "Style form to match site aesthetic (dark theme, brand colors)"
+      ]
+    },
+    {
+      "id": "CP-003",
+      "title": "Add Contact to Navigation",
+      "description": "As a visitor, I want to easily navigate to the contact page from anywhere on the site.",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Add 'Contact' link to header navigation in src/components/layout/header.tsx",
+        "Link should appear after 'Exclusive' and before 'Sign In'",
+        "Link styling matches existing nav links (text-brand-gray, hover:text-white)",
+        "Verify navigation works from homepage"
+      ]
+    }
+  ],
+  "nonGoals": [
+    "No backend email sending - form is just UI",
+    "No database storage of messages",
+    "No CAPTCHA or spam protection"
+  ],
+  "envVariables": []
+}

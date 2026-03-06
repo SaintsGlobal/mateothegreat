@@ -1,0 +1,58 @@
+{
+  "projectName": "Dark/Light Theme Toggle",
+  "description": "Add theme switching functionality with light mode support",
+  "branchName": "ralph/theme-toggle",
+  "userStories": [
+    {
+      "id": "TH-001",
+      "title": "Theme Toggle Button in Header",
+      "description": "Add a sun/moon icon button to the header that toggles between dark and light themes",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Toggle button visible in header",
+        "Shows moon icon in dark mode, sun icon in light mode",
+        "Button has appropriate hover state",
+        "Positioned on the right side of header"
+      ]
+    },
+    {
+      "id": "TH-002",
+      "title": "Light Theme CSS Variables",
+      "description": "Define light theme color variables in globals.css and apply them when light mode is active via a class on html/body",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Light theme variables defined in CSS",
+        "Theme applied via class toggle (e.g., 'light' class)",
+        "Background, text, and accent colors adjust appropriately",
+        "Brand colors (coral/cyan) work in both themes"
+      ]
+    },
+    {
+      "id": "TH-003",
+      "title": "Persist Theme Preference",
+      "description": "Save theme preference to localStorage and restore it on page load",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Theme choice saved to localStorage",
+        "Theme restored on page refresh",
+        "No flash of wrong theme on load"
+      ]
+    },
+    {
+      "id": "TH-004",
+      "title": "System Preference Detection",
+      "description": "Detect system color scheme preference (prefers-color-scheme) and use it as default when no localStorage preference exists",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Detects prefers-color-scheme media query",
+        "Uses system preference as default",
+        "Manual toggle overrides system preference",
+        "Responds to system preference changes"
+      ]
+    }
+  ]
+}

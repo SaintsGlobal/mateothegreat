@@ -7,7 +7,7 @@ datasource db {
 }
 
 model ExclusiveContent {
-  id          String      @id
+  id          String      @id @default(cuid())
   title       String
   slug        String      @unique
   content     String
@@ -17,23 +17,23 @@ model ExclusiveContent {
 }
 
 model NewsletterSubscriber {
-  id           String           @id
+  id           String           @id @default(cuid())
   email        String           @unique
   status       SubscriberStatus @default(ACTIVE)
   subscribedAt DateTime         @default(now())
 }
 
 model Session {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id                String    @id
+  id                String    @id @default(cuid())
   email             String    @unique
   name              String?
   passwordHash      String
@@ -41,9 +41,9 @@ model User {
   resetToken        String?
   resetTokenExp     DateTime?
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime  @updatedAt
   verificationToken String?
-  Session           Session[]
+  sessions          Session[]
 }
 
 enum ContentType {

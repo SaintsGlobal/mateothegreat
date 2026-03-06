@@ -1,0 +1,51 @@
+# Ralph Progress Log
+Started: Fri Mar  6 10:43:52 EST 2026
+---
+
+## Codebase Patterns
+- UI components go in src/components/ui/ and are exported from index.ts
+- Use Tailwind CSS with brand colors: brand-coral, brand-cyan, muted, foreground, border
+- "use client" directive required for interactive components
+- Smooth transitions use duration-300 ease-in-out
+- Use &apos; for apostrophes in JSX text (react/no-unescaped-entities rule)
+- Pages follow pattern: gradient accent bg, z-10 content, max-w-3xl containers
+- For collapsible animations, use CSS Grid with grid-rows-[0fr]/grid-rows-[1fr] instead of JS height measurement (avoids setState in useEffect lint errors)
+
+---
+
+## 2026-03-06 10:46 - FAQ-001
+- Implemented reusable Accordion and AccordionItem components
+- Files changed:
+  - src/components/ui/accordion.tsx (created)
+  - src/components/ui/index.ts (added export)
+- **Learnings for future iterations:**
+  - Height animation uses scrollHeight measurement with useRef and useEffect
+  - The codebase uses CSS variables (--border, --muted, --foreground) defined in globals.css
+  - Branch ralph/faq-page was created from ralph/footer-social (main has no source files)
+---
+
+## 2026-03-06 10:48 - FAQ-002
+- Created FAQ page at src/app/faq/page.tsx with 6 FAQ items about Mateo/AI content
+- Uses Accordion and AccordionItem components from @/components/ui
+- Follows established page styling patterns (gradient accent, brand colors, responsive layout)
+- Files changed:
+  - src/app/faq/page.tsx (created)
+- **Learnings for future iterations:**
+  - Pages use consistent structure: gradient accent div, relative z-10 content, max-w-3xl containers
+  - Use &apos; instead of ' in JSX text to satisfy react/no-unescaped-entities rule
+  - Card styling: rounded-xl border border-white/10 bg-white/5 px-6
+  - text-brand-gray for body text, text-white for headings
+---
+
+## 2026-03-06 10:52 - FAQ-003
+- Added FAQ link to header navigation between Exclusive and Sign In
+- Fixed accordion component lint error by switching from useEffect height measurement to CSS Grid animation
+- Files changed:
+  - src/components/layout/header.tsx (added FAQ link)
+  - src/components/ui/accordion.tsx (refactored to CSS Grid animation)
+- **Learnings for future iterations:**
+  - Header navigation is at src/components/layout/header.tsx
+  - Navigation links use pattern: Link href="/{path}" className="text-sm text-brand-gray hover:text-white transition-colors"
+  - Content links should come before auth links in nav order
+  - CSS Grid `grid-rows-[0fr]`/`grid-rows-[1fr]` with `transition-[grid-template-rows]` provides smooth collapse animation without JS
+---

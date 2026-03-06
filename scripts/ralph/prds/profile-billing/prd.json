@@ -1,0 +1,310 @@
+{
+  "projectName": "User Profile & Billing System",
+  "branchName": "ralph/profile-billing",
+  "description": "Comprehensive user profile page with account management, personalization, and Stripe-ready billing portal. Includes subscription tiers (Free/Premium), payment method management, and invoice history with stubbed endpoints for future Stripe integration.",
+  "techStack": {
+    "frontend": "React components with Tailwind",
+    "backend": "Next.js API routes + Server Actions",
+    "database": "PostgreSQL via Prisma",
+    "billing": "Stubbed services (Stripe-ready)",
+    "auth": "Session-based authentication"
+  },
+  "userStories": [
+    {
+      "id": "PB-001",
+      "title": "Billing Database Models",
+      "description": "As a developer, I need database models for subscriptions and billing so user tier data persists.",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Add SubscriptionTier enum to schema: FREE, PREMIUM",
+        "Add SubscriptionStatus enum: ACTIVE, CANCELED, PAST_DUE",
+        "Add Subscription model: id, userId, tier, status, stripeSubscriptionId (nullable), stripeCustomerId (nullable), currentPeriodStart, currentPeriodEnd, createdAt, updatedAt",
+        "Add PaymentMethod model: id, userId, type, last4, brand, expiryMonth, expiryYear, isDefault, stripePaymentMethodId (nullable), createdAt",
+        "Add Invoice model: id, userId, subscriptionId, amount, currency, status (PAID|PENDING|FAILED), stripeInvoiceId (nullable), pdfUrl (nullable), periodStart, periodEnd, createdAt",
+        "Add tier field to User model with default FREE",
+        "Run npx prisma db push successfully",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-002",
+      "title": "User Profile Fields",
+      "description": "As a developer, I need additional user fields for profile features.",
+      "priority": 2,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Add avatarUrl field to User model (nullable String)",
+        "Add bio field to User model (nullable String, max 500 chars)",
+        "Add preferences field to User model (Json, default {})",
+        "Run npx prisma db push successfully",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-003",
+      "title": "Profile Page Layout",
+      "description": "As a user, I want a profile page with clear sections so I can manage my account.",
+      "priority": 3,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create profile page at src/app/profile/page.tsx (protected route)",
+        "Sidebar navigation with sections: Profile, Preferences, Billing, Invoices",
+        "Active section highlighted in sidebar",
+        "URL updates with section query param (e.g., /profile?section=billing)",
+        "Mobile: horizontal tab navigation",
+        "Redirect to /signin if not authenticated",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-004",
+      "title": "Profile Section - Basic Info",
+      "description": "As a user, I want to view and edit my basic profile information.",
+      "priority": 4,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Display current name and email",
+        "Avatar display with initials fallback if no image",
+        "Edit name with inline save using Server Action",
+        "Email shown as read-only with note: Contact support to change",
+        "Show account creation date formatted nicely",
+        "Show current subscription tier badge (Free gray / Premium gold)",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-005",
+      "title": "Profile Section - Avatar Upload",
+      "description": "As a user, I want to upload a profile picture so my account feels personalized.",
+      "priority": 5,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Avatar upload button with file input",
+        "Accept jpg, png, webp up to 2MB",
+        "Preview image before save",
+        "Store in public/avatars/{userId}.{ext}",
+        "Update user.avatarUrl on successful upload",
+        "Fallback to initials avatar component if no upload",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-006",
+      "title": "Profile Section - Change Password",
+      "description": "As a user, I want to change my password from my profile.",
+      "priority": 6,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Change password form: current password, new password, confirm password",
+        "Validate current password before allowing change",
+        "Password requirements: minimum 8 characters",
+        "Success toast message on completion",
+        "Error handling for incorrect current password",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-007",
+      "title": "Preferences Section - Bio & Display",
+      "description": "As a user, I want to set a bio and display preferences.",
+      "priority": 7,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Bio textarea with character count (max 500)",
+        "Toggle for Show email publicly (stored in preferences JSON)",
+        "Save button with loading state",
+        "Success toast on save",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-008",
+      "title": "Preferences Section - Notifications",
+      "description": "As a user, I want to control what notifications I receive.",
+      "priority": 8,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Email notification toggles: Newsletter updates, New content alerts, Account activity",
+        "Store settings in user preferences JSON field",
+        "Changes save immediately with toast confirmation",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-009",
+      "title": "Billing Service Layer",
+      "description": "As a developer, I need a service layer that abstracts billing operations for easy Stripe integration later.",
+      "priority": 9,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/lib/billing/subscription-service.ts",
+        "Functions: createSubscription(), cancelSubscription(), getSubscription(), reactivateSubscription()",
+        "Create src/lib/billing/payment-service.ts",
+        "Functions: addPaymentMethod(), removePaymentMethod(), setDefaultPaymentMethod(), listPaymentMethods()",
+        "Create src/lib/billing/invoice-service.ts",
+        "Functions: listInvoices(), getInvoice()",
+        "Each function has // STRIPE_INTEGRATION_POINT comment marker",
+        "All functions work with database models (stubbed, no real Stripe)",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-010",
+      "title": "Billing Section - Current Plan Display",
+      "description": "As a user, I want to see my current subscription plan clearly.",
+      "priority": 10,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Display current tier (Free or Premium) with visual card",
+        "Plan features comparison: Free (newsletters only) vs Premium (exclusive content + early access)",
+        "For Premium: show billing cycle dates and next billing amount ($9.99)",
+        "For Free: prominent Upgrade to Premium CTA button",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-011",
+      "title": "Billing Section - Upgrade Flow",
+      "description": "As a Free user, I want to upgrade to Premium.",
+      "priority": 11,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Upgrade to Premium button opens pricing modal",
+        "Modal shows: Premium $9.99/month with feature list",
+        "Subscribe button calls stubbed createSubscription()",
+        "On success: update UI to show Premium tier, show success toast",
+        "Note in modal: Payment processing coming soon",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-012",
+      "title": "Billing Section - Cancel Flow",
+      "description": "As a Premium user, I want to cancel my subscription.",
+      "priority": 12,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Manage Plan dropdown for Premium users with Cancel subscription option",
+        "Cancel shows confirmation modal with end date message",
+        "Confirm calls stubbed cancelSubscription()",
+        "Subscription status changes to CANCELED",
+        "Show Your access continues until {periodEnd} message",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-013",
+      "title": "Billing Section - Payment Methods",
+      "description": "As a user, I want to manage my payment methods.",
+      "priority": 13,
+      "passes": false,
+      "acceptanceCriteria": [
+        "List saved payment methods with last4, brand icon, expiry",
+        "Default badge on primary payment method",
+        "Add payment method button opens modal with card form fields",
+        "Add Card calls stubbed addPaymentMethod(), creates mock card",
+        "Remove button on non-default cards with confirmation",
+        "Set as default option on each card",
+        "Empty state: No payment methods yet with add CTA",
+        "Info banner: Payment processing will be available soon",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-014",
+      "title": "Invoices Section - History",
+      "description": "As a user, I want to view my billing history.",
+      "priority": 14,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Table of invoices: date, description, amount, status, actions",
+        "Status badges: Paid (green), Pending (yellow), Failed (red)",
+        "Download PDF button shows toast: PDF generation coming soon",
+        "Pagination if more than 10 invoices",
+        "For Free users: No invoices message with upgrade CTA",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-015",
+      "title": "Billing API Endpoints",
+      "description": "As a developer, I need API endpoints for billing operations.",
+      "priority": 15,
+      "passes": false,
+      "acceptanceCriteria": [
+        "POST /api/billing/subscribe - creates subscription via service",
+        "POST /api/billing/cancel - cancels subscription via service",
+        "GET /api/billing/payment-methods - lists payment methods",
+        "POST /api/billing/payment-methods - adds payment method",
+        "DELETE /api/billing/payment-methods/[id] - removes payment method",
+        "PATCH /api/billing/payment-methods/[id]/default - sets default",
+        "GET /api/billing/invoices - lists invoices with pagination",
+        "All endpoints require authentication",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-016",
+      "title": "Tier Access Control",
+      "description": "As a developer, I need tier-based access control for content.",
+      "priority": 16,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/lib/auth/tier-guard.ts utility",
+        "Function: requirePremium() returns boolean for access check",
+        "Function: getUserTier(userId) returns current tier",
+        "Update /exclusive pages to check tier before showing content",
+        "Free users see content preview with Upgrade to access overlay",
+        "Premium users see full content",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-017",
+      "title": "Profile Header Dropdown",
+      "description": "As a user, I want to see my profile summary in navigation.",
+      "priority": 17,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create user dropdown component for header",
+        "Shows: avatar, name, tier badge",
+        "Dropdown menu items: Profile, Billing, Sign out",
+        "Links navigate correctly",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "PB-018",
+      "title": "Seed Mock Billing Data",
+      "description": "As a developer, I need seed data for testing billing UI.",
+      "priority": 18,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create or update prisma/seed.ts",
+        "Create test user with Premium subscription",
+        "Add 2 mock payment methods (Visa ending 4242, Mastercard ending 5555)",
+        "Add 3 mock invoices with PAID status for past 3 months",
+        "Seed runs without errors: npx prisma db seed",
+        "npm run typecheck passes"
+      ]
+    }
+  ],
+  "nonGoals": [
+    "No actual Stripe integration (stubs only)",
+    "No real payment processing",
+    "No webhook handling",
+    "No proration calculations for plan changes",
+    "No multiple subscription products",
+    "No team or organization billing",
+    "No usage-based metering",
+    "No coupon or discount codes"
+  ],
+  "envVariables": [
+    "DATABASE_URL",
+    "SESSION_SECRET",
+    "STRIPE_SECRET_KEY (placeholder for future)",
+    "STRIPE_PUBLISHABLE_KEY (placeholder for future)",
+    "STRIPE_WEBHOOK_SECRET (placeholder for future)"
+  ]
+}

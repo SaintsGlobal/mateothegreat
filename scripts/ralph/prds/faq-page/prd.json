@@ -1,0 +1,45 @@
+{
+  "projectName": "FAQ Page",
+  "description": "Frequently Asked Questions page with expandable accordion sections",
+  "branchName": "ralph/faq-page",
+  "userStories": [
+    {
+      "id": "FAQ-001",
+      "title": "FAQ Accordion Component",
+      "description": "Create a reusable Accordion component at src/components/ui/accordion.tsx that expands/collapses to show answers",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Accordion component exists at src/components/ui/accordion.tsx",
+        "Click to expand/collapse functionality",
+        "Smooth height transition animation",
+        "Shows +/- or chevron indicator"
+      ]
+    },
+    {
+      "id": "FAQ-002",
+      "title": "FAQ Page with Questions",
+      "description": "Create FAQ page at src/app/faq/page.tsx using the Accordion component with 5-6 sample questions and answers",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "File exists at src/app/faq/page.tsx",
+        "Page title with brand styling",
+        "At least 5 FAQ items displayed",
+        "Questions relate to the site/Mateo content"
+      ]
+    },
+    {
+      "id": "FAQ-003",
+      "title": "Add FAQ to Navigation",
+      "description": "Add FAQ link to the site header navigation",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "FAQ link appears in header navigation",
+        "Link navigates to /faq",
+        "Properly positioned in nav"
+      ]
+    }
+  ]
+}

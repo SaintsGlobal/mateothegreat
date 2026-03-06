@@ -1,0 +1,59 @@
+# Ralph Progress Log
+Started: Fri Mar  6 10:10:39 EST 2026
+
+## Codebase Patterns
+- Theme is controlled via "light" class on document.documentElement (html element)
+- Use `useSyncExternalStore` for syncing React state with DOM mutations (avoids setState-in-useEffect lint errors)
+- Header component is at `src/components/layout/header.tsx`
+- UI components go in `src/components/ui/`
+- Use blocking script in `<head>` with `dangerouslySetInnerHTML` to prevent flash of wrong theme
+- System preference detected via `window.matchMedia('(prefers-color-scheme: light)')`
+- Manual theme preference (localStorage) always overrides system preference
+
+---
+
+## 2026-03-06 - TH-001
+- Implemented theme toggle button in header
+- Files changed:
+  - `src/components/ui/theme-toggle.tsx` (new) - Client component with sun/moon icons
+  - `src/components/layout/header.tsx` - Added ThemeToggle import and component
+- **Learnings for future iterations:**
+  - This project uses strict React hooks linting - avoid setState in useEffect
+  - Use useSyncExternalStore with MutationObserver for DOM class syncing
+  - Branch was created from ralph/about-page (not main) since that's where the app code lives
+  - Main branch only has scripts/tasks, actual Next.js app is on feature branches
+---
+
+## 2026-03-06 - TH-002
+- Implemented light theme CSS variables in globals.css
+- Files changed:
+  - `src/app/globals.css` - Added light theme variables with `:root.light` selector
+- **Learnings for future iterations:**
+  - Light theme vars use `:root.light` selector to override dark defaults
+  - Added semantic variables: --muted, --surface, --border for UI flexibility
+  - Brand colors remain unchanged between themes (coral/cyan work in both)
+  - New Tailwind utilities available: bg-surface, text-muted, border-border
+---
+
+## 2026-03-06 - TH-003
+- Implemented theme persistence with localStorage
+- Files changed:
+  - `src/components/ui/theme-toggle.tsx` - Added localStorage.setItem on toggle
+  - `src/app/layout.tsx` - Added blocking script in head to restore theme before hydration
+- **Learnings for future iterations:**
+  - Use `suppressHydrationWarning` on `<html>` when modifying classes before hydration
+  - Blocking script in `<head>` prevents flash of wrong theme on page load
+  - Wrap localStorage access in try/catch for SSR safety
+---
+
+## 2026-03-06 - TH-004
+- Implemented system preference detection for theme
+- Files changed:
+  - `src/app/layout.tsx` - Updated blocking script to check `prefers-color-scheme` when no localStorage value
+  - `src/components/ui/theme-toggle.tsx` - Added useEffect listener for system preference changes
+- **Learnings for future iterations:**
+  - Use `window.matchMedia('(prefers-color-scheme: light)')` to detect system preference
+  - Listen with `addEventListener('change', handler)` on the MediaQueryList to respond to system changes
+  - Only apply system preference when no localStorage value exists (manual toggle overrides)
+  - Both blocking script (initial load) and React component (runtime changes) need system preference logic
+---

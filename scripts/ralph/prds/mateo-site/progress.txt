@@ -1,0 +1,253 @@
+# Ralph Progress Log
+Started: Initial setup
+---
+
+## Codebase Patterns
+- Next.js app uses port 7000 for dev server (`npm run dev`)
+- Project root is `/Users/gloucore/dev/claude-ralph-loop/`
+- Tailwind CSS v4 with @tailwindcss/postcss setup
+- Tailwind v4: Custom colors via `@theme inline` in globals.css (e.g., `--color-brand-coral: #FF7593`)
+- Use Tailwind classes like `bg-brand-coral`, `text-brand-green`, `bg-dark-alt`
+- Prisma 7 uses `prisma.config.ts` for DATABASE_URL (not in schema.prisma)
+- PrismaClient singleton exported from `src/lib/db.ts` as `db`
+- Resend client in `src/lib/email.ts`, templates in `src/lib/email-templates.ts`
+- Auth utilities in `src/lib/auth.ts`: hashPassword, verifyPassword, createSession, getSession, destroySession
+- Use `getSession()` in server components/actions to get current user (returns session.user or null)
+- After schema changes, always run `npx prisma generate` before building
+- `useSearchParams()` must be wrapped in `<Suspense>` for Next.js 16+ static builds
+- **Server component pages with Prisma:** Use dynamic import inside async function to avoid build-time init issues: `const { getSession } = await import("@/lib/auth")`
+- **Prisma 7 seed scripts:** Must use `@prisma/adapter-pg` with `pg.Pool` for database connection (not bare PrismaClient)
+---
+
+## 2026-03-06 - US-001
+- **What was implemented:** Next.js 14+ project scaffold with TypeScript, Tailwind CSS v4, ESLint, App Router, and src directory
+- **Files changed:**
+  - package.json (created - dev script uses port 7000)
+  - package-lock.json (created)
+  - tsconfig.json (created)
+  - next.config.ts (created)
+  - postcss.config.mjs (created)
+  - eslint.config.mjs (created)
+  - src/app/layout.tsx (created)
+  - src/app/page.tsx (created)
+  - src/app/globals.css (created)
+  - public/ (created with default SVG assets)
+- **Learnings for future iterations:**
+  - create-next-app doesn't work in non-empty directories; need to create in temp dir and copy
+  - Tailwind v4 uses @tailwindcss/postcss instead of tailwindcss plugin
+  - Branch is `ralph/mateo-the-great`
+---
+
+## 2026-03-06 - US-002
+- **What was implemented:** Prisma 7 setup with PostgreSQL database connection
+- **Files changed:**
+  - package.json (added prisma, @prisma/client, dotenv dependencies)
+  - package-lock.json (updated)
+  - prisma.config.ts (created - Prisma 7 config with DATABASE_URL)
+  - prisma/schema.prisma (created - User, Session, NewsletterSubscriber, ExclusiveContent models)
+  - src/lib/db.ts (created - PrismaClient singleton)
+  - .gitignore (updated by Prisma init)
+- **Learnings for future iterations:**
+  - Prisma 7 requires `prisma.config.ts` for datasource URL (removed from schema.prisma)
+  - Use `new PrismaClient()` without datasourceUrl option - it reads from env automatically
+  - User model includes resetToken/resetTokenExp fields for password reset flow
+  - Run `npx prisma db push` to sync schema with database
+---
+
+## 2026-03-06 - US-003
+- **What was implemented:** Tailwind design tokens and brand colors configured via CSS variables (Tailwind v4 style)
+- **Files changed:**
+  - src/app/globals.css (added brand colors in @theme block, set dark background/white text)
+  - src/app/layout.tsx (changed from Geist to Inter font, updated metadata)
+- **Learnings for future iterations:**
+  - Tailwind v4 uses `@theme inline` block in CSS for custom colors, not tailwind.config.ts
+  - Colors are defined as CSS variables: `--color-brand-green`, `--color-brand-coral`, etc.
+  - Use `bg-brand-green`, `text-brand-coral` etc. in Tailwind classes
+  - Inter font loaded via next/font/google with variable `--font-inter`
+---
+
+## 2026-03-06 - US-004
+- **What was implemented:** Reusable UI components (Button, Input, Card) with Tailwind v4 styling
+- **Files changed:**
+  - src/components/ui/button.tsx (created - primary/secondary variants, sm/md/lg sizes, loading spinner)
+  - src/components/ui/input.tsx (created - label, error message support, dark theme)
+  - src/components/ui/card.tsx (created - dark-alt bg, subtle border, optional glow on hover)
+  - src/components/ui/index.ts (created - barrel export)
+- **Learnings for future iterations:**
+  - UI components exported from `src/components/ui/index.ts`
+  - Button variants: `primary` (brand-coral), `secondary` (brand-cyan)
+  - Card `glow` prop enables hover effect with cyan shadow
+  - Use `forwardRef` pattern for all form components
+---
+
+## 2026-03-06 - US-005
+- **What was implemented:** Layout shell with fixed header and footer
+- **Files changed:**
+  - src/components/layout/header.tsx (created - fixed header with brand name and nav links)
+  - src/components/layout/footer.tsx (created - copyright and YouTube link)
+  - src/app/layout.tsx (updated - added Header/Footer, main wrapper with min-h-screen and pt-16)
+- **Learnings for future iterations:**
+  - Layout components in `src/components/layout/`
+  - Header is fixed with `pt-16` padding on main to offset
+  - Footer uses YouTube SVG icon inline
+  - Nav links: Home (/), Exclusive (/exclusive), Sign In (/signin)
+---
+
+## 2026-03-06 - US-006
+- **What was implemented:** Landing page hero section with full viewport height, centered content, gradient text heading, tagline, and YouTube embed
+- **Files changed:**
+  - src/app/page.tsx (replaced default Next.js content with hero section)
+- **Learnings for future iterations:**
+  - Use `min-h-[calc(100vh-4rem)]` to account for fixed header padding (pt-16 = 4rem)
+  - YouTube embed uses `youtube-nocookie.com` domain for privacy
+  - Gradient text: `bg-gradient-to-r from-brand-coral to-brand-cyan bg-clip-text text-transparent`
+  - Gradient glow effect: absolute positioned div with `blur-3xl opacity-20`
+  - Use `aspect-video` for responsive YouTube iframe container
+---
+
+## 2026-03-06 - US-007
+- **What was implemented:** Newsletter signup with server action and client form component
+- **Files changed:**
+  - src/app/actions/newsletter.ts (created - subscribe server action with email validation, duplicate check)
+  - src/components/newsletter-form.tsx (created - client form with useActionState, success/error states)
+  - src/app/page.tsx (updated - added NewsletterForm below hero section)
+- **Learnings for future iterations:**
+  - Server actions go in `src/app/actions/` directory
+  - Use `useActionState` hook for form state management with server actions
+  - Newsletter server action pattern: validate email format, check duplicates, handle reactivation
+  - NewsletterSubscriber table uses email as unique key with ACTIVE/UNSUBSCRIBED status enum
+---
+
+## 2026-03-06 - US-008
+- **What was implemented:** Resend email integration with client setup and email templates
+- **Files changed:**
+  - package.json (added resend dependency)
+  - package-lock.json (updated)
+  - src/lib/email.ts (created - Resend client instance with EMAIL_FROM constant)
+  - src/lib/email-templates.ts (created - welcomeEmail, verificationEmail, passwordResetEmail templates)
+  - src/app/actions/newsletter.ts (updated - sends welcome email after subscription)
+- **Learnings for future iterations:**
+  - Email utilities in `src/lib/email.ts` (client) and `src/lib/email-templates.ts` (templates)
+  - Email templates return `{ subject, html }` objects with inline CSS styles
+  - Use `EMAIL_FROM` constant for consistent sender address
+  - Wrap email sending in try/catch to avoid failing the main operation if email fails
+  - Templates use brand colors and consistent styling defined at top of file
+---
+
+## 2026-03-06 - US-009
+- **What was implemented:** Auth utilities with password hashing (bcrypt) and session management
+- **Files changed:**
+  - package.json (added bcryptjs, @types/bcryptjs)
+  - package-lock.json (updated)
+  - src/lib/auth.ts (created - hashPassword, verifyPassword, generateSessionToken, createSession, getSession, destroySession)
+  - src/middleware.ts (created - protects /account and /exclusive/* routes)
+- **Learnings for future iterations:**
+  - Auth utilities in `src/lib/auth.ts`
+  - Session cookie name is "session", expires in 7 days
+  - `getSession()` returns session with user included, or null
+  - Middleware redirects unauthenticated users to /signin with redirect param
+  - Protected routes: /account and /exclusive/*
+  - Next.js 16 shows middleware deprecation warning (use "proxy" instead) but it still works
+---
+
+## 2026-03-06 - US-010
+- **What was implemented:** Sign up page with form and server action
+- **Files changed:**
+  - prisma/schema.prisma (added verificationToken field to User model)
+  - src/app/actions/auth.ts (created - signUp server action with validation)
+  - src/app/signup/page.tsx (created - sign up form with email, password, confirm password)
+- **Learnings for future iterations:**
+  - Auth server actions go in `src/app/actions/auth.ts`
+  - Use `generateSessionToken()` for verification tokens too
+  - Use `useActionState` hook pattern for form state management (same as newsletter)
+  - Redirect with query params via `redirect("/path?param=value")`
+---
+
+## 2026-03-06 - US-011
+- **What was implemented:** Sign in page with form and server action
+- **Files changed:**
+  - src/app/actions/auth.ts (added signIn server action)
+  - src/app/signin/page.tsx (created - sign in form with email, password)
+- **Learnings for future iterations:**
+  - `useSearchParams()` must be wrapped in `<Suspense>` boundary for Next.js 16+ build
+  - Extract component using useSearchParams into separate function and wrap in Suspense
+  - signIn action validates credentials and creates session on success
+  - Display messages from query params (e.g., from signup redirect) in the form
+---
+
+## 2026-03-06 - US-012
+- **What was implemented:** Password reset flow with forgot-password and reset-password pages
+- **Files changed:**
+  - src/app/forgot-password/page.tsx (created - email form to request reset)
+  - src/app/reset-password/page.tsx (created - token-based password reset form with Suspense)
+  - src/app/actions/auth.ts (added requestPasswordReset and resetPassword server actions)
+- **Learnings for future iterations:**
+  - Password reset uses resetToken and resetTokenExp fields on User model (already existed)
+  - Always return success for password reset requests to prevent email enumeration
+  - Token expiry set to 1 hour via `setHours(getHours() + 1)`
+  - Clear reset token after successful password change
+  - Use `findFirst` with token (not unique) vs `findUnique` with email
+---
+
+## 2026-03-06 - US-013
+- **What was implemented:** Account page with profile update, password change, and sign out functionality
+- **Files changed:**
+  - src/app/account/page.tsx (created - server component with dynamic import for getSession)
+  - src/app/account/account-forms.tsx (created - client components for ProfileForm, PasswordForm, SignOutButton)
+  - src/app/actions/auth.ts (added updateProfile, changePassword, signOut server actions)
+- **Learnings for future iterations:**
+  - Use `dynamic import` for getSession in server component pages to avoid Prisma build-time initialization issues
+  - Split server component pages with forms into: server page (fetches data) + client form components (handles interactivity)
+  - Pattern: `const { getSession } = await import("@/lib/auth")` inside async function body
+  - `export const dynamic = "force-dynamic"` marks route as server-rendered on demand
+---
+
+## 2026-03-06 - US-014
+- **What was implemented:** Exclusive content list page with auth-gated content grid
+- **Files changed:**
+  - src/app/exclusive/page.tsx (created - server component with dynamic import for auth)
+- **Learnings for future iterations:**
+  - Same dynamic import pattern for getSession and db in server components
+  - Type badges use color-coded backgrounds: ARTICLE (cyan), VIDEO (coral), ANNOUNCEMENT (gold)
+  - Filter content by `publishedAt: { not: null }` to only show published items
+  - Use Card component with `glow` prop for interactive hover effects
+  - Grid layout: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` for responsive cards
+---
+
+## 2026-03-06 - US-015
+- **What was implemented:** Exclusive content detail page with auth protection and 404 handling
+- **Files changed:**
+  - src/app/exclusive/[slug]/page.tsx (created - dynamic route for individual content)
+- **Learnings for future iterations:**
+  - Dynamic route params in Next.js 16: `params` is a Promise, use `const { slug } = await params`
+  - Use `notFound()` from next/navigation for 404 responses
+  - Check both content exists AND publishedAt is set before displaying
+  - prose classes from Tailwind typography plugin for rendering HTML content
+  - Same dynamic import pattern for getSession and db in protected routes
+---
+
+## 2026-03-06 - US-016
+- **What was implemented:** Prisma seed script with 3 sample ExclusiveContent articles
+- **Files changed:**
+  - prisma/seed.ts (created - seed script with 3 articles using @prisma/adapter-pg)
+  - prisma.config.ts (updated - added seed command configuration)
+  - package.json (added prisma.seed config, @prisma/adapter-pg, pg, @types/pg, tsx dependencies)
+  - package-lock.json (updated)
+- **Learnings for future iterations:**
+  - Prisma 7 seed config goes in `prisma.config.ts` under `migrations.seed`, not in package.json
+  - Seed scripts in Prisma 7 require `@prisma/adapter-pg` adapter with `pg.Pool` for database connection
+  - Pattern: `new PrismaClient({ adapter: new PrismaPg(pool) })` where pool is `new pg.Pool({ connectionString })`
+  - Use `npx tsx prisma/seed.ts` as seed command for TypeScript seeds
+  - Seed script checks for existing slugs to avoid duplicates on re-run
+---
+
+## 2026-03-06 - US-017
+- **What was implemented:** Health check API endpoint for Railway deployment monitoring
+- **Files changed:**
+  - src/app/api/health/route.ts (created - GET handler with database connection test)
+- **Learnings for future iterations:**
+  - API routes go in `src/app/api/[route]/route.ts` following Next.js App Router convention
+  - Use dynamic import for db in API routes to avoid build-time Prisma initialization issues
+  - Health check pattern: `db.$queryRaw\`SELECT 1\`` to test database connectivity
+  - Return 500 status code when database connection fails
+---

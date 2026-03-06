@@ -1,0 +1,45 @@
+{
+  "projectName": "About Page",
+  "description": "An About page introducing Mateo with bio, mission, and values",
+  "branchName": "ralph/about-page",
+  "userStories": [
+    {
+      "id": "AB-001",
+      "title": "About Page Hero Section",
+      "description": "Create an About page at src/app/about/page.tsx with a hero section featuring Mateo's name, tagline, and brief bio introduction",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "File exists at src/app/about/page.tsx",
+        "Hero section with Mateo's name in brand gradient",
+        "Tagline or brief intro paragraph",
+        "Consistent styling with homepage"
+      ]
+    },
+    {
+      "id": "AB-002",
+      "title": "Mission and Values Section",
+      "description": "Add a section below the hero that outlines the mission/purpose and core values, using cards or a clean list layout",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Mission statement section with heading",
+        "2-4 core values displayed in cards or list",
+        "Uses existing Card component if appropriate",
+        "Responsive layout"
+      ]
+    },
+    {
+      "id": "AB-003",
+      "title": "Add About to Navigation",
+      "description": "Add an 'About' link to the site header navigation between Home and other links",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "About link appears in header navigation",
+        "Link navigates to /about",
+        "Positioned appropriately in nav order"
+      ]
+    }
+  ]
+}

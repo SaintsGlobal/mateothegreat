@@ -1,0 +1,26 @@
+# Ralph Progress Log
+Started: Fri Mar  6 10:23:20 EST 2026
+---
+
+## 2026-03-06 10:24 - FS-001
+- Added 3 social media icons to footer: YouTube, Twitter/X, Instagram
+- Each icon uses SVG with consistent 6x6 sizing
+- Icons link to placeholder URLs (youtube.com, twitter.com, instagram.com)
+- Icons spaced with gap-6 for visual balance
+- Files changed: src/components/layout/footer.tsx
+- **Learnings for future iterations:**
+  - Footer component is at src/components/layout/footer.tsx
+  - Brand colors available: brand-coral, brand-cyan for hover states
+  - Use aria-label for icon-only links for accessibility
+---
+
+## 2026-03-06 10:26 - FS-002
+- Added hover scale effect (scale-110) to all social icons
+- Changed transition-colors to transition-all with duration-200 for smooth animations
+- Hover now includes both color change (coral/cyan) and scale effect
+- Files changed: src/components/layout/footer.tsx
+- **Learnings for future iterations:**
+  - Use `transition-all` instead of `transition-colors` when combining multiple effects
+  - `duration-200` provides smooth, responsive hover feedback
+  - Scale effects on icons should be subtle (110%) to avoid layout shifts
+---
