@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function Header() {
   return (
@@ -20,6 +21,7 @@ export function Header() {
           <Link href="/signin" className="text-sm text-brand-gray hover:text-white transition-colors">
             Sign In
           </Link>
+          <ThemeToggle />
         </nav>
       </div>
     </header>
