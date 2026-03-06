@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateProfile, uploadAvatar, changePassword } from "@/app/actions/auth";
+import { updateProfile, uploadAvatar, changePassword, updatePreferences } from "@/app/actions/auth";
 import type { User } from "@prisma/client";
 import type { SubscriptionTier } from "@prisma/client";
 
@@ -130,7 +130,7 @@ export function ProfileLayout({ user }: ProfileLayoutProps) {
             </>
           )}
           {currentSection === "preferences" && (
-            <PreferencesSection />
+            <PreferencesSection user={user} />
           )}
           {currentSection === "billing" && (
             <BillingSection />
@@ -521,13 +521,98 @@ function ChangePasswordSection() {
   );
 }
 
-function PreferencesSection() {
+function PreferencesSection({ user }: { user: User }) {
+  const [bio, setBio] = useState(user.bio || "");
+  const preferences = (user.preferences as Record<string, unknown>) || {};
+  const [showEmailPublicly, setShowEmailPublicly] = useState(
+    (preferences.showEmailPublicly as boolean) || false
+  );
+
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(
+    async (_prevState, formData) => {
+      const result = await updatePreferences(formData);
+      if ("error" in result) {
+        return { error: result.error };
+      }
+      return { success: true };
+    },
+    null
+  );
+
+  const charCount = bio.length;
+  const maxChars = 500;
+
   return (
     <Card>
-      <h2 className="text-xl font-semibold mb-4">Preferences</h2>
-      <p className="text-brand-gray">
-        Customize your experience and notification settings.
-      </p>
+      <h2 className="text-xl font-semibold mb-6">Bio & Display</h2>
+
+      <form action={formAction} className="space-y-6">
+        {/* Bio */}
+        <div>
+          <label htmlFor="bio" className="block text-sm font-medium text-brand-gray mb-1">
+            Bio
+          </label>
+          <textarea
+            id="bio"
+            name="bio"
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            disabled={isPending}
+            maxLength={maxChars}
+            rows={4}
+            placeholder="Tell others about yourself..."
+            className="w-full px-4 py-3 bg-dark border border-brand-gray/20 rounded-lg text-white placeholder:text-brand-gray/50 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/50 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+          />
+          <div className="mt-1 flex justify-end">
+            <span className={`text-xs ${charCount >= maxChars ? "text-brand-coral" : "text-brand-gray"}`}>
+              {charCount}/{maxChars}
+            </span>
+          </div>
+        </div>
+
+        {/* Show email publicly toggle */}
+        <div className="flex items-center justify-between">
+          <div>
+            <label htmlFor="showEmailPublicly" className="text-sm font-medium text-white">
+              Show email publicly
+            </label>
+            <p className="text-xs text-brand-gray mt-0.5">
+              Allow others to see your email address on your profile
+            </p>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="showEmailPublicly"
+              name="showEmailPublicly"
+              checked={showEmailPublicly}
+              onChange={(e) => setShowEmailPublicly(e.target.checked)}
+              disabled={isPending}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-brand-gray/30 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-cyan/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-cyan peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+          </label>
+        </div>
+
+        {/* Error message */}
+        {state?.error && (
+          <p className="text-sm text-brand-coral">{state.error}</p>
+        )}
+
+        {/* Success message */}
+        {state?.success && (
+          <div className="rounded-lg bg-brand-green/10 p-3 text-sm text-brand-green">
+            Preferences saved successfully!
+          </div>
+        )}
+
+        {/* Save button */}
+        <div>
+          <Button type="submit" loading={isPending}>
+            Save Preferences
+          </Button>
+        </div>
+      </form>
     </Card>
   );
 }

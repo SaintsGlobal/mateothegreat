@@ -344,3 +344,46 @@ export async function uploadAvatar(
 
   return { success: true, avatarUrl };
 }
+
+type UpdatePreferencesResult = { success: true } | { error: string };
+
+export async function updatePreferences(
+  formData: FormData
+): Promise<UpdatePreferencesResult> {
+  const { getSession } = await import("@/lib/auth");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const bio = formData.get("bio")?.toString().trim() || null;
+  const showEmailPublicly = formData.get("showEmailPublicly") === "on";
+
+  // Validate bio length
+  if (bio && bio.length > 500) {
+    return { error: "Bio must be 500 characters or less" };
+  }
+
+  // Get existing preferences and merge
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { preferences: true },
+  });
+
+  const existingPreferences = (user?.preferences as Record<string, unknown>) || {};
+  const newPreferences = {
+    ...existingPreferences,
+    showEmailPublicly,
+  };
+
+  await db.user.update({
+    where: { id: session.user.id },
+    data: {
+      bio,
+      preferences: newPreferences,
+    },
+  });
+
+  return { success: true };
+}
