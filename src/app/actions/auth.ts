@@ -273,3 +273,74 @@ export async function signOut(): Promise<void> {
   await destroySession();
   redirect("/");
 }
+
+type UploadAvatarResult = { success: true; avatarUrl: string } | { error: string };
+
+export async function uploadAvatar(
+  formData: FormData
+): Promise<UploadAvatarResult> {
+  const { getSession } = await import("@/lib/auth");
+  const { writeFile, unlink } = await import("fs/promises");
+  const { existsSync } = await import("fs");
+  const path = await import("path");
+
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const file = formData.get("avatar") as File | null;
+
+  if (!file || file.size === 0) {
+    return { error: "No file provided" };
+  }
+
+  // Validate file type
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    return { error: "Only JPG, PNG, and WebP images are allowed" };
+  }
+
+  // Validate file size (2MB max)
+  const maxSize = 2 * 1024 * 1024;
+  if (file.size > maxSize) {
+    return { error: "File size must be less than 2MB" };
+  }
+
+  // Determine file extension
+  const extMap: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+  };
+  const ext = extMap[file.type];
+  const fileName = `${session.user.id}.${ext}`;
+
+  // Delete old avatar if exists (might be different extension)
+  const avatarsDir = path.join(process.cwd(), "public", "avatars");
+  for (const oldExt of ["jpg", "png", "webp"]) {
+    const oldPath = path.join(avatarsDir, `${session.user.id}.${oldExt}`);
+    if (existsSync(oldPath)) {
+      try {
+        await unlink(oldPath);
+      } catch {
+        // Ignore errors deleting old file
+      }
+    }
+  }
+
+  // Write new file
+  const filePath = path.join(avatarsDir, fileName);
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await writeFile(filePath, buffer);
+
+  // Update user avatarUrl
+  const avatarUrl = `/avatars/${fileName}`;
+  await db.user.update({
+    where: { id: session.user.id },
+    data: { avatarUrl },
+  });
+
+  return { success: true, avatarUrl };
+}

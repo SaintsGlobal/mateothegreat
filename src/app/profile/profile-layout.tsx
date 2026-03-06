@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateProfile } from "@/app/actions/auth";
+import { updateProfile, uploadAvatar } from "@/app/actions/auth";
 import type { User } from "@prisma/client";
 import type { SubscriptionTier } from "@prisma/client";
 
@@ -143,23 +143,25 @@ export function ProfileLayout({ user }: ProfileLayoutProps) {
 
 type FormState = { success?: boolean; error?: string } | null;
 
-function Avatar({ name, avatarUrl }: { name: string | null; avatarUrl: string | null }) {
+function Avatar({ name, avatarUrl, size = "md" }: { name: string | null; avatarUrl: string | null; size?: "md" | "lg" }) {
   const initials = name
     ? name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "?";
+
+  const sizeClasses = size === "lg" ? "h-24 w-24 text-3xl" : "h-20 w-20 text-2xl";
 
   if (avatarUrl) {
     return (
       <img
         src={avatarUrl}
         alt={name || "User avatar"}
-        className="h-20 w-20 rounded-full object-cover border-2 border-brand-cyan/30"
+        className={`${sizeClasses} rounded-full object-cover border-2 border-brand-cyan/30`}
       />
     );
   }
 
   return (
-    <div className="h-20 w-20 rounded-full bg-brand-cyan/20 flex items-center justify-center text-brand-cyan text-2xl font-bold border-2 border-brand-cyan/30">
+    <div className={`${sizeClasses} rounded-full bg-brand-cyan/20 flex items-center justify-center text-brand-cyan font-bold border-2 border-brand-cyan/30`}>
       {initials}
     </div>
   );
@@ -194,6 +196,73 @@ function ProfileSection({ user }: { user: User }) {
     null
   );
 
+  // Avatar upload state
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [avatarSuccess, setAvatarSuccess] = useState(false);
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(user.avatarUrl);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setAvatarError(null);
+    setAvatarSuccess(false);
+
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setAvatarError("Only JPG, PNG, and WebP images are allowed");
+      return;
+    }
+
+    // Validate file size (2MB max)
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setAvatarError("File size must be less than 2MB");
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setAvatarPreview(event.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    setAvatarFile(file);
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarFile) return;
+
+    setAvatarUploading(true);
+    setAvatarError(null);
+
+    const formData = new FormData();
+    formData.append("avatar", avatarFile);
+
+    const result = await uploadAvatar(formData);
+
+    if ("error" in result) {
+      setAvatarError(result.error);
+    } else {
+      setCurrentAvatarUrl(result.avatarUrl);
+      setAvatarSuccess(true);
+      setAvatarPreview(null);
+      setAvatarFile(null);
+    }
+
+    setAvatarUploading(false);
+  };
+
+  const cancelAvatarUpload = () => {
+    setAvatarPreview(null);
+    setAvatarFile(null);
+    setAvatarError(null);
+  };
+
   const formattedDate = new Date(user.createdAt).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -205,9 +274,62 @@ function ProfileSection({ user }: { user: User }) {
       <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
 
       <div className="flex flex-col sm:flex-row gap-6">
-        {/* Avatar */}
+        {/* Avatar with Upload */}
         <div className="flex-shrink-0">
-          <Avatar name={user.name} avatarUrl={user.avatarUrl} />
+          <div className="relative">
+            {avatarPreview ? (
+              <img
+                src={avatarPreview}
+                alt="Avatar preview"
+                className="h-24 w-24 rounded-full object-cover border-2 border-brand-cyan"
+              />
+            ) : (
+              <Avatar name={user.name} avatarUrl={currentAvatarUrl} size="lg" />
+            )}
+          </div>
+
+          {avatarPreview ? (
+            <div className="mt-3 flex gap-2">
+              <Button
+                size="sm"
+                onClick={handleAvatarUpload}
+                loading={avatarUploading}
+                disabled={avatarUploading}
+              >
+                Save
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={cancelAvatarUpload}
+                disabled={avatarUploading}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <label className="mt-3 block">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <span className="inline-flex items-center gap-1.5 text-sm text-brand-cyan hover:text-brand-cyan/80 cursor-pointer">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Change photo
+              </span>
+            </label>
+          )}
+
+          {avatarError && (
+            <p className="mt-2 text-xs text-brand-coral">{avatarError}</p>
+          )}
+          {avatarSuccess && (
+            <p className="mt-2 text-xs text-brand-green">Photo updated!</p>
+          )}
         </div>
 
         {/* Info */}

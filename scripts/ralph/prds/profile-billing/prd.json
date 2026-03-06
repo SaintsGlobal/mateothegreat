@@ -62,7 +62,7 @@
       "title": "Profile Section - Basic Info",
       "description": "As a user, I want to view and edit my basic profile information.",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Display current name and email",
         "Avatar display with initials fallback if no image",
@@ -78,7 +78,7 @@
       "title": "Profile Section - Avatar Upload",
       "description": "As a user, I want to upload a profile picture so my account feels personalized.",
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Avatar upload button with file input",
         "Accept jpg, png, webp up to 2MB",

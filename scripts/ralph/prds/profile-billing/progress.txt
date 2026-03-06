@@ -6,6 +6,8 @@
 - Protected routes check session and redirect to /signin
 - PB-001 billing models were merged to main, so ralph/profile-billing was created from main
 - Use @@index on Prisma foreign key fields for query performance
+- Run `npx prisma generate` after schema changes to update TypeScript types
+- Reuse existing Server Actions (e.g., updateProfile in auth.ts) rather than creating new ones
 
 ---
 
@@ -51,5 +53,36 @@
   - Sticky sidebar with `top-24` accounts for fixed header
   - Mobile tabs use overflow-x-auto with min-w-max for horizontal scrolling
   - Section content components can be expanded in future stories
+---
+
+## 2026-03-06 - PB-004
+- Implemented Profile Section - Basic Info in profile-layout.tsx
+- Avatar component with initials fallback (extracts first letters from name)
+- Name editing with inline save using existing updateProfile Server Action
+- useActionState hook for form state management with loading/error/success states
+- Email displayed read-only with "Contact support to change" note
+- Account creation date formatted with toLocaleDateString()
+- TierBadge component: Free (gray) / Premium (gold) styling
+- Files changed: src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - Reuse existing Server Actions from auth.ts (updateProfile already exists)
+  - useActionState<FormState, FormData> pattern for inline form editing
+  - After modifying Prisma schema fields, run `npx prisma generate` to update types
+  - npm run lint has pre-existing config issue with Next.js 16/ESLint 9 flat config
+---
+
+## 2026-03-06 - PB-005
+- Implemented avatar upload feature in ProfileSection
+- Added uploadAvatar Server Action to auth.ts (handles file validation, storage, db update)
+- Avatar stored in public/avatars/{userId}.{ext} (supports jpg, png, webp up to 2MB)
+- Client-side preview before upload with Save/Cancel buttons
+- Enhanced Avatar component with size prop for lg/md variants
+- Files changed: src/app/actions/auth.ts, src/app/profile/profile-layout.tsx
+- Created directory: public/avatars/
+- **Learnings for future iterations:**
+  - File uploads in Server Actions: receive File from FormData, use Buffer.from(await file.arrayBuffer())
+  - Delete old avatar files when uploading new one (may have different extension)
+  - FileReader.readAsDataURL() for client-side image preview
+  - Validate file type/size on both client and server for better UX and security
 ---
 
