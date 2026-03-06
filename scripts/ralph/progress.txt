@@ -85,3 +85,15 @@ Started: Initial setup
   - Footer uses YouTube SVG icon inline
   - Nav links: Home (/), Exclusive (/exclusive), Sign In (/signin)
 ---
+
+## 2026-03-06 - US-006
+- **What was implemented:** Landing page hero section with full viewport height, centered content, gradient text heading, tagline, and YouTube embed
+- **Files changed:**
+  - src/app/page.tsx (replaced default Next.js content with hero section)
+- **Learnings for future iterations:**
+  - Use `min-h-[calc(100vh-4rem)]` to account for fixed header padding (pt-16 = 4rem)
+  - YouTube embed uses `youtube-nocookie.com` domain for privacy
+  - Gradient text: `bg-gradient-to-r from-brand-coral to-brand-cyan bg-clip-text text-transparent`
+  - Gradient glow effect: absolute positioned div with `blur-3xl opacity-20`
+  - Use `aspect-video` for responsive YouTube iframe container
+---

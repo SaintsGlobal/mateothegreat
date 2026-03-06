@@ -113,7 +113,7 @@
       "title": "Landing Page Hero",
       "description": "As a visitor, I want to see an impactful hero section when I visit the homepage.",
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Update src/app/page.tsx with hero section",
         "Hero: full viewport height (min-h-screen), centered content",
