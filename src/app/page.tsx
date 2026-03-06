@@ -1,3 +1,5 @@
+import { NewsletterForm } from "@/components/newsletter-form";
+
 export default function Home() {
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center px-4">
@@ -28,6 +30,14 @@ export default function Home() {
               className="absolute inset-0 h-full w-full"
             />
           </div>
+        </div>
+
+        {/* Newsletter signup */}
+        <div className="mt-12 flex w-full flex-col items-center">
+          <h2 className="mb-4 text-xl font-medium text-white">
+            Stay in the loop
+          </h2>
+          <NewsletterForm />
         </div>
       </div>
     </div>
