@@ -5,3 +5,4 @@ export { ImageBlockComponent } from "./image-block";
 export { CodeBlockComponent } from "./code-block";
 export { LinkSnippetBlockComponent } from "./link-snippet";
 export { ExpandableBlockComponent } from "./expandable-block";
+export { CalloutBlockComponent } from "./callout-block";

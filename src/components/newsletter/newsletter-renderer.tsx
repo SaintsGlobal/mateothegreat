@@ -8,6 +8,7 @@ import { ImageBlockComponent } from "./blocks/image-block";
 import { CodeBlockComponent } from "./blocks/code-block";
 import { LinkSnippetBlockComponent } from "./blocks/link-snippet";
 import { ExpandableBlockComponent } from "./blocks/expandable-block";
+import { CalloutBlockComponent } from "./blocks/callout-block";
 
 interface NewsletterRendererProps {
   newsletter: Newsletter;
@@ -45,12 +46,7 @@ function BlockRenderer({ block }: { block: Block }) {
         </blockquote>
       );
     case "callout":
-      // TODO: NL-011 - Callout block implementation
-      return (
-        <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r mb-4">
-          <p className="text-gray-700 dark:text-gray-300">{block.content.text}</p>
-        </div>
-      );
+      return <CalloutBlockComponent block={block} />;
     case "expandable":
       return (
         <ExpandableBlockComponent block={block}>
