@@ -12,6 +12,9 @@ if (!databaseUrl) {
 
 export default defineConfig({
   schema: path.join(import.meta.dirname, "prisma", "schema.prisma"),
+  migrations: {
+    seed: "npx tsx prisma/seed.ts",
+  },
   datasource: {
     url: databaseUrl,
   },
