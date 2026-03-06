@@ -202,3 +202,74 @@ export async function resetPassword(
 
   redirect("/signin?message=Password reset successful. Please sign in.");
 }
+
+type UpdateProfileResult = { success: true } | { error: string };
+
+export async function updateProfile(
+  formData: FormData
+): Promise<UpdateProfileResult> {
+  const { getSession } = await import("@/lib/auth");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const name = formData.get("name")?.toString().trim() || null;
+
+  await db.user.update({
+    where: { id: session.user.id },
+    data: { name },
+  });
+
+  return { success: true };
+}
+
+type ChangePasswordResult = { success: true } | { error: string };
+
+export async function changePassword(
+  formData: FormData
+): Promise<ChangePasswordResult> {
+  const { getSession } = await import("@/lib/auth");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const currentPassword = formData.get("currentPassword")?.toString();
+  const newPassword = formData.get("newPassword")?.toString();
+  const confirmPassword = formData.get("confirmPassword")?.toString();
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    return { error: "All fields are required" };
+  }
+
+  if (newPassword.length < 8) {
+    return { error: "New password must be at least 8 characters" };
+  }
+
+  if (newPassword !== confirmPassword) {
+    return { error: "New passwords do not match" };
+  }
+
+  const isValid = await verifyPassword(currentPassword, session.user.passwordHash);
+
+  if (!isValid) {
+    return { error: "Current password is incorrect" };
+  }
+
+  const passwordHash = await hashPassword(newPassword);
+  await db.user.update({
+    where: { id: session.user.id },
+    data: { passwordHash },
+  });
+
+  return { success: true };
+}
+
+export async function signOut(): Promise<void> {
+  const { destroySession } = await import("@/lib/auth");
+  await destroySession();
+  redirect("/");
+}
