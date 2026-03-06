@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications, getSubscriptionDetails, upgradeSubscription } from "@/app/actions/auth";
+import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications, getSubscriptionDetails, upgradeSubscription, cancelUserSubscription } from "@/app/actions/auth";
 import type { SubscriptionDetails } from "@/app/actions/auth";
 import type { User } from "@prisma/client";
 import type { SubscriptionTier } from "@prisma/client";
@@ -755,6 +755,13 @@ function BillingSection({ user }: { user: User }) {
   const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
 
+  // Cancel flow state
+  const [showManageDropdown, setShowManageDropdown] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isCanceling, setIsCanceling] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [canceledPeriodEnd, setCanceledPeriodEnd] = useState<Date | null>(null);
+
   useState(() => {
     // Fetch subscription details on mount
     getSubscriptionDetails().then((result) => {
@@ -766,6 +773,7 @@ function BillingSection({ user }: { user: User }) {
   });
 
   const isPremium = user.tier === "PREMIUM";
+  const isCanceled = subscription?.status === "CANCELED";
 
   const formatDate = (date: Date | null) => {
     if (!date) return "N/A";
@@ -795,6 +803,28 @@ function BillingSection({ user }: { user: User }) {
     setTimeout(() => {
       router.refresh();
     }, 1500);
+  };
+
+  const handleCancel = async () => {
+    setIsCanceling(true);
+    setCancelError(null);
+
+    const result = await cancelUserSubscription();
+
+    if ("error" in result) {
+      setCancelError(result.error);
+      setIsCanceling(false);
+      return;
+    }
+
+    setCanceledPeriodEnd(result.periodEnd);
+    setShowCancelModal(false);
+    setIsCanceling(false);
+
+    // Update local subscription state to reflect canceled status
+    if (subscription) {
+      setSubscription({ ...subscription, status: "CANCELED" });
+    }
   };
 
   return (
@@ -836,10 +866,46 @@ function BillingSection({ user }: { user: User }) {
                   )}
                 </div>
                 {isPremium && (
-                  <div className="text-right">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-green/10 text-brand-green border border-brand-green/30">
-                      Active
+                  <div className="text-right flex items-center gap-3">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                      isCanceled
+                        ? "bg-brand-coral/10 text-brand-coral border border-brand-coral/30"
+                        : "bg-brand-green/10 text-brand-green border border-brand-green/30"
+                    }`}>
+                      {isCanceled ? "Canceled" : "Active"}
                     </span>
+                    {!isCanceled && (
+                      <div className="relative">
+                        <button
+                          onClick={() => setShowManageDropdown(!showManageDropdown)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-brand-gray hover:text-white hover:bg-white/5 transition-colors"
+                        >
+                          Manage Plan
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {showManageDropdown && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={() => setShowManageDropdown(false)}
+                            />
+                            <div className="absolute right-0 mt-1 w-48 rounded-lg bg-dark-alt border border-brand-gray/20 shadow-lg z-20">
+                              <button
+                                onClick={() => {
+                                  setShowManageDropdown(false);
+                                  setShowCancelModal(true);
+                                }}
+                                className="w-full px-4 py-2.5 text-left text-sm text-brand-coral hover:bg-brand-coral/10 rounded-lg transition-colors"
+                              >
+                                Cancel subscription
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -847,20 +913,31 @@ function BillingSection({ user }: { user: User }) {
               {/* Billing Cycle for Premium */}
               {isPremium && subscription && (
                 <div className="mt-4 pt-4 border-t border-brand-gray/20">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-brand-gray mb-1">Current period</p>
-                      <p className="text-white">
-                        {formatDate(subscription.currentPeriodStart)} - {formatDate(subscription.currentPeriodEnd)}
+                  {isCanceled ? (
+                    <div className="bg-brand-coral/10 border border-brand-coral/30 rounded-lg p-4">
+                      <p className="text-brand-coral flex items-center gap-2">
+                        <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Your access continues until {formatDate(canceledPeriodEnd || subscription.currentPeriodEnd)}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-brand-gray mb-1">Next billing</p>
-                      <p className="text-white">
-                        {formatDate(subscription.currentPeriodEnd)} &middot; $9.99
-                      </p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-brand-gray mb-1">Current period</p>
+                        <p className="text-white">
+                          {formatDate(subscription.currentPeriodStart)} - {formatDate(subscription.currentPeriodEnd)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-brand-gray mb-1">Next billing</p>
+                        <p className="text-white">
+                          {formatDate(subscription.currentPeriodEnd)} &middot; $9.99
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 
@@ -1037,6 +1114,80 @@ function BillingSection({ user }: { user: User }) {
                   Maybe later
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Subscription Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => !isCanceling && setShowCancelModal(false)}
+          />
+
+          {/* Modal Content */}
+          <div className="relative z-10 w-full max-w-md mx-4 bg-brand-bg border border-brand-gray/30 rounded-2xl shadow-2xl">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowCancelModal(false)}
+              disabled={isCanceling}
+              className="absolute top-4 right-4 text-brand-gray hover:text-white transition-colors disabled:opacity-50"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="p-6">
+              {/* Header */}
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-coral/10 mb-4">
+                  <svg className="h-8 w-8 text-brand-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white">Cancel Subscription?</h3>
+                <p className="text-brand-gray mt-2">
+                  Are you sure you want to cancel your Premium subscription?
+                </p>
+              </div>
+
+              {/* Info Message */}
+              <div className="bg-brand-cyan/10 border border-brand-cyan/30 rounded-lg p-4 mb-6">
+                <p className="text-sm text-brand-cyan">
+                  Your access will continue until <strong>{formatDate(subscription?.currentPeriodEnd ?? null)}</strong>.
+                  After that, you&apos;ll be downgraded to the Free plan.
+                </p>
+              </div>
+
+              {/* Error Message */}
+              {cancelError && (
+                <div className="bg-brand-coral/10 border border-brand-coral/30 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-brand-coral">{cancelError}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => setShowCancelModal(false)}
+                  disabled={isCanceling}
+                >
+                  Keep Subscription
+                </Button>
+                <button
+                  onClick={handleCancel}
+                  disabled={isCanceling}
+                  className="flex-1 px-4 py-2.5 rounded-lg font-medium bg-brand-coral text-white hover:bg-brand-coral/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isCanceling ? "Canceling..." : "Yes, Cancel"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
