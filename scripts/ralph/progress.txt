@@ -15,6 +15,7 @@ Started: Initial setup
 - Use `getSession()` in server components/actions to get current user (returns session.user or null)
 - After schema changes, always run `npx prisma generate` before building
 - `useSearchParams()` must be wrapped in `<Suspense>` for Next.js 16+ static builds
+- **Server component pages with Prisma:** Use dynamic import inside async function to avoid build-time init issues: `const { getSession } = await import("@/lib/auth")`
 ---
 
 ## 2026-03-06 - US-001
@@ -185,4 +186,17 @@ Started: Initial setup
   - Token expiry set to 1 hour via `setHours(getHours() + 1)`
   - Clear reset token after successful password change
   - Use `findFirst` with token (not unique) vs `findUnique` with email
+---
+
+## 2026-03-06 - US-013
+- **What was implemented:** Account page with profile update, password change, and sign out functionality
+- **Files changed:**
+  - src/app/account/page.tsx (created - server component with dynamic import for getSession)
+  - src/app/account/account-forms.tsx (created - client components for ProfileForm, PasswordForm, SignOutButton)
+  - src/app/actions/auth.ts (added updateProfile, changePassword, signOut server actions)
+- **Learnings for future iterations:**
+  - Use `dynamic import` for getSession in server component pages to avoid Prisma build-time initialization issues
+  - Split server component pages with forms into: server page (fetches data) + client form components (handles interactivity)
+  - Pattern: `const { getSession } = await import("@/lib/auth")` inside async function body
+  - `export const dynamic = "force-dynamic"` marks route as server-rendered on demand
 ---

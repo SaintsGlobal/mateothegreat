@@ -221,7 +221,7 @@
       "title": "Account Page",
       "description": "As a user, I want to view and manage my account settings.",
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/app/account/page.tsx (protected route)",
         "Display current user email and name",
