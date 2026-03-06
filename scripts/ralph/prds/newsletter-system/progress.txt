@@ -447,3 +447,16 @@
   - NL-022 implemented more than its scope; approve/list/preview subcommands were all documented together
   - No code changes needed when skill instructions are already complete
 ---
+
+## 2026-03-06 - NL-024
+- **What was implemented**: /newsletter Skill - List Command validation
+- **Files changed**: None (functionality already existed in SKILL.md from NL-022)
+- **Implementation details**:
+  - The list subcommand was already documented in ~/.claude/skills/newsletter/SKILL.md (lines 105-117)
+  - Skill instructions cover: read all JSON files from drafts/, display table with slug/title/template/status/version
+  - Indicates which are ready for approval (status: draft) vs already approved
+  - Verification: npm run build passes
+- **Learnings for future iterations:**
+  - NL-022 implemented more than its scope; create/approve/list/preview subcommands were all documented together
+  - Skills are instruction files - once documented, the functionality is "implemented" for Claude to follow
+---

@@ -337,7 +337,7 @@
       "title": "/newsletter Skill - List Command",
       "description": "As a content creator, I want to list all draft newsletters.",
       "priority": 24,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Skill supports /newsletter list syntax",
         "Shows table: slug, title, template, status, version",
