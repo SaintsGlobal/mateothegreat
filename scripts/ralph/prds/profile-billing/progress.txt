@@ -284,3 +284,22 @@
   - tier-guard utility is standalone and doesn't depend on session context - takes userId directly
 ---
 
+## 2026-03-06 - PB-017
+- Implemented Profile Header Dropdown for authenticated users
+- Created UserDropdown client component with:
+  - Small Avatar component (8x8) with initials fallback
+  - Compact TierBadge (10px font) for Free/Premium display
+  - Dropdown menu with Profile, Billing, Sign out options
+  - Click-away backdrop pattern for closing dropdown
+  - Sign out uses existing signOut action with loading state
+- Updated Header to async server component that fetches session
+- Conditional rendering: UserDropdown when logged in, "Sign In" link when not
+- Files changed: src/components/layout/header.tsx, src/components/layout/user-dropdown.tsx (new)
+- **Learnings for future iterations:**
+  - Header can be async server component to fetch session server-side
+  - getSession() can be imported directly (not dynamic import) in server components
+  - UserDropdown must be "use client" for useState and onClick handlers
+  - Reuse dropdown backdrop pattern: fixed inset-0 z-10 div that closes on click
+  - Name is hidden on mobile (hidden sm:inline) to save space
+---
+
