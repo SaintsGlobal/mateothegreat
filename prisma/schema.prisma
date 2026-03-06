@@ -44,6 +44,9 @@ model User {
   updatedAt         DateTime        @updatedAt
   verificationToken String?
   tier              SubscriptionTier @default(FREE)
+  avatarUrl         String?
+  bio               String?
+  preferences       Json            @default("{}")
   sessions          Session[]
   subscriptions     Subscription[]
   paymentMethods    PaymentMethod[]
