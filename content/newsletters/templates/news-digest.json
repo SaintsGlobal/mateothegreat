@@ -1,0 +1,216 @@
+{
+  "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+  "title": "News Digest Template",
+  "slug": "news-digest-template",
+  "template": "news-digest",
+  "status": "draft",
+  "author": "Your Name",
+  "version": 1,
+  "publishedAt": null,
+  "blocks": [
+    {
+      "type": "header",
+      "content": {
+        "text": "This Week in Tech: Your News Digest",
+        "level": "h1"
+      },
+      "style": {
+        "align": "center",
+        "emphasis": "highlight"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Welcome to your curated news digest! We've gathered the most important stories from this week, organized by category so you can quickly find what matters most to you. Each item includes a brief summary and our take on why it's significant."
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "AI & Machine Learning",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "snippet",
+      "content": {
+        "url": "https://example.com/ai-breakthrough-2024",
+        "title": "Major AI Research Lab Announces Breakthrough in Reasoning",
+        "description": "Researchers demonstrate new architecture achieving state-of-the-art results on complex reasoning benchmarks, potentially opening doors to more capable AI assistants.",
+        "image": "https://example.com/images/ai-research.jpg",
+        "favicon": "https://example.com/favicon.ico",
+        "domain": "example.com"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "*Our take:* This advancement could significantly impact how AI systems handle multi-step problem solving. Worth watching for enterprise applications."
+      }
+    },
+    {
+      "type": "snippet",
+      "content": {
+        "url": "https://techblog.example.com/open-source-llm-release",
+        "title": "New Open Source LLM Challenges Proprietary Models",
+        "description": "Community-driven project releases weights for a competitive large language model, sparking discussions about democratizing AI access.",
+        "favicon": "https://techblog.example.com/favicon.ico",
+        "domain": "techblog.example.com"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "*Our take:* The open source AI ecosystem continues to grow. This release is particularly notable for its efficiency on consumer hardware."
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Developer Tools",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "snippet",
+      "content": {
+        "url": "https://devnews.example.com/new-framework-release",
+        "title": "Popular Framework Releases Version 5.0 with Breaking Changes",
+        "description": "The widely-used web framework introduces significant performance improvements and a new plugin architecture, but migration will require effort.",
+        "image": "https://devnews.example.com/images/framework-v5.png",
+        "favicon": "https://devnews.example.com/favicon.ico",
+        "domain": "devnews.example.com"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "*Our take:* The performance gains are impressive (40% faster builds), but plan your migration carefully. Check the official migration guide before upgrading."
+      }
+    },
+    {
+      "type": "snippet",
+      "content": {
+        "url": "https://cloud.example.com/serverless-updates",
+        "title": "Cloud Provider Introduces New Serverless Tier",
+        "description": "More generous free tier and improved cold start times aim to make serverless more accessible for hobby projects and startups.",
+        "favicon": "https://cloud.example.com/favicon.ico",
+        "domain": "cloud.example.com"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "*Our take:* Finally, a free tier that's actually usable for real projects. Great option for side projects and MVPs."
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Industry & Business",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "snippet",
+      "content": {
+        "url": "https://businesstech.example.com/startup-acquisition",
+        "title": "Tech Giant Acquires Developer Tooling Startup for $2B",
+        "description": "The acquisition signals continued investment in developer experience, though users express concerns about the product's future direction.",
+        "image": "https://businesstech.example.com/images/acquisition.jpg",
+        "favicon": "https://businesstech.example.com/favicon.ico",
+        "domain": "businesstech.example.com"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "*Our take:* History suggests caution here. We recommend having backup options ready, just in case the product roadmap changes significantly."
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Security & Privacy",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "snippet",
+      "content": {
+        "url": "https://security.example.com/vulnerability-disclosure",
+        "title": "Critical Vulnerability Discovered in Popular Package",
+        "description": "Security researchers disclose a high-severity vulnerability affecting millions of projects. Patches are available and immediate update is recommended.",
+        "favicon": "https://security.example.com/favicon.ico",
+        "domain": "security.example.com"
+      }
+    },
+    {
+      "type": "callout",
+      "content": {
+        "text": "Action required: Check if your projects use this dependency and update immediately. Run `npm audit` or `yarn audit` to check your dependencies.",
+        "variant": "warning"
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Community & Events",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "snippet",
+      "content": {
+        "url": "https://events.example.com/developer-conference",
+        "title": "Major Developer Conference Announces 2024 Schedule",
+        "description": "Early bird tickets now available. This year's theme focuses on AI integration and sustainable software practices.",
+        "image": "https://events.example.com/images/conference.jpg",
+        "favicon": "https://events.example.com/favicon.ico",
+        "domain": "events.example.com"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "*Our take:* The speaker lineup looks strong this year. Consider attending if you're interested in hands-on AI workshops."
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Quick Links",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "list",
+      "content": {
+        "items": [
+          "**Tutorial:** Building type-safe APIs with the latest TypeScript features",
+          "**Podcast:** Interview with the creator of a popular testing framework",
+          "**Tool:** New CLI for managing multiple cloud environments",
+          "**Read:** Deep dive into database query optimization techniques"
+        ],
+        "ordered": false
+      }
+    },
+    {
+      "type": "callout",
+      "content": {
+        "text": "That's all for this week! Found a story we should cover? Reply to this email or tag us on social media with #NewsDigest.",
+        "variant": "tip"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "**[Subscribe](https://example.com/subscribe)** | **[Archive](https://example.com/archive)** | **[Submit a story](https://example.com/submit)**"
+      },
+      "style": {
+        "align": "center"
+      }
+    }
+  ]
+}
