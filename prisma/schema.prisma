@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,39 +6,44 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  name              String?
-  passwordHash      String
-  emailVerified     Boolean   @default(false)
-  verificationToken String?
-  resetToken        String?
-  resetTokenExp     DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  sessions          Session[]
+model ExclusiveContent {
+  id          String      @id
+  title       String
+  slug        String      @unique
+  content     String
+  type        ContentType @default(ARTICLE)
+  createdAt   DateTime    @default(now())
+  publishedAt DateTime?
+}
+
+model NewsletterSubscriber {
+  id           String           @id
+  email        String           @unique
+  status       SubscriberStatus @default(ACTIVE)
+  subscribedAt DateTime         @default(now())
 }
 
 model Session {
-  id        String   @id @default(cuid())
+  id        String   @id
   userId    String
   token     String   @unique
   expiresAt DateTime
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-enum SubscriberStatus {
-  ACTIVE
-  UNSUBSCRIBED
-}
-
-model NewsletterSubscriber {
-  id           String           @id @default(cuid())
-  email        String           @unique
-  status       SubscriberStatus @default(ACTIVE)
-  subscribedAt DateTime         @default(now())
+model User {
+  id                String    @id
+  email             String    @unique
+  name              String?
+  passwordHash      String
+  emailVerified     Boolean   @default(false)
+  resetToken        String?
+  resetTokenExp     DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime
+  verificationToken String?
+  Session           Session[]
 }
 
 enum ContentType {
@@ -50,12 +52,21 @@ enum ContentType {
   ANNOUNCEMENT
 }
 
-model ExclusiveContent {
-  id          String      @id @default(cuid())
+enum SubscriberStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+model Newsletter {
+  id          String    @id @default(cuid())
   title       String
-  slug        String      @unique
-  content     String
-  type        ContentType @default(ARTICLE)
-  createdAt   DateTime    @default(now())
+  slug        String    @unique
+  template    String
+  content     Json
+  author      String
+  status      String    @default("draft")
+  version     Int       @default(1)
   publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
