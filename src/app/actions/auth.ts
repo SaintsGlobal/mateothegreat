@@ -428,3 +428,38 @@ export async function updateNotifications(
 
   return { success: true };
 }
+
+export type SubscriptionDetails = {
+  tier: "FREE" | "PREMIUM";
+  status: "ACTIVE" | "CANCELED" | "PAST_DUE" | null;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+};
+
+type GetSubscriptionResult =
+  | { success: true; subscription: SubscriptionDetails }
+  | { error: string };
+
+export async function getSubscriptionDetails(): Promise<GetSubscriptionResult> {
+  const { getSession } = await import("@/lib/auth");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const subscription = await db.subscription.findFirst({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return {
+    success: true,
+    subscription: {
+      tier: session.user.tier,
+      status: subscription?.status ?? null,
+      currentPeriodStart: subscription?.currentPeriodStart ?? null,
+      currentPeriodEnd: subscription?.currentPeriodEnd ?? null,
+    },
+  };
+}

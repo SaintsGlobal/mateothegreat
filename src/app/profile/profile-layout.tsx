@@ -5,7 +5,8 @@ import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications } from "@/app/actions/auth";
+import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications, getSubscriptionDetails } from "@/app/actions/auth";
+import type { SubscriptionDetails } from "@/app/actions/auth";
 import type { User } from "@prisma/client";
 import type { SubscriptionTier } from "@prisma/client";
 
@@ -136,7 +137,7 @@ export function ProfileLayout({ user }: ProfileLayoutProps) {
             </>
           )}
           {currentSection === "billing" && (
-            <BillingSection />
+            <BillingSection user={user} />
           )}
           {currentSection === "invoices" && (
             <InvoicesSection />
@@ -731,13 +732,173 @@ function NotificationsSection({ user }: { user: User }) {
   );
 }
 
-function BillingSection() {
+const FREE_FEATURES = [
+  "Access to free newsletters",
+  "Basic content library",
+  "Community access",
+];
+
+const PREMIUM_FEATURES = [
+  "All free features included",
+  "Exclusive premium content",
+  "Early access to new releases",
+  "Priority support",
+  "Ad-free experience",
+];
+
+function BillingSection({ user }: { user: User }) {
+  const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useState(() => {
+    // Fetch subscription details on mount
+    getSubscriptionDetails().then((result) => {
+      if ("success" in result && result.success) {
+        setSubscription(result.subscription);
+      }
+      setLoading(false);
+    });
+  });
+
+  const isPremium = user.tier === "PREMIUM";
+
+  const formatDate = (date: Date | null) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <Card>
-      <h2 className="text-xl font-semibold mb-4">Billing</h2>
-      <p className="text-brand-gray">
-        Manage your subscription and payment methods.
-      </p>
+      <h2 className="text-xl font-semibold mb-6">Current Plan</h2>
+
+      {loading ? (
+        <div className="animate-pulse space-y-4">
+          <div className="h-32 bg-brand-gray/10 rounded-lg"></div>
+          <div className="h-24 bg-brand-gray/10 rounded-lg"></div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* Current Plan Card */}
+          <div
+            className={`rounded-xl border-2 p-6 ${
+              isPremium
+                ? "border-brand-gold/50 bg-brand-gold/5"
+                : "border-brand-gray/30 bg-brand-gray/5"
+            }`}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-2xl font-bold">
+                    {isPremium ? "Premium" : "Free"}
+                  </h3>
+                  <TierBadge tier={user.tier} />
+                </div>
+                {isPremium ? (
+                  <p className="text-brand-gold font-semibold text-lg">
+                    $9.99<span className="text-sm font-normal text-brand-gray">/month</span>
+                  </p>
+                ) : (
+                  <p className="text-brand-gray">
+                    Basic access to newsletters
+                  </p>
+                )}
+              </div>
+              {isPremium && (
+                <div className="text-right">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-brand-green/10 text-brand-green border border-brand-green/30">
+                    Active
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Billing Cycle for Premium */}
+            {isPremium && subscription && (
+              <div className="mt-4 pt-4 border-t border-brand-gray/20">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-brand-gray mb-1">Current period</p>
+                    <p className="text-white">
+                      {formatDate(subscription.currentPeriodStart)} - {formatDate(subscription.currentPeriodEnd)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-brand-gray mb-1">Next billing</p>
+                    <p className="text-white">
+                      {formatDate(subscription.currentPeriodEnd)} &middot; $9.99
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Upgrade CTA for Free users */}
+            {!isPremium && (
+              <div className="mt-4">
+                <Button variant="primary" size="lg" className="w-full sm:w-auto">
+                  Upgrade to Premium
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Plan Comparison */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Free Plan Features */}
+            <div className={`rounded-lg border p-5 ${!isPremium ? "border-brand-cyan/30 bg-brand-cyan/5" : "border-brand-gray/20"}`}>
+              <div className="flex items-center gap-2 mb-4">
+                <h4 className="font-semibold text-white">Free</h4>
+                {!isPremium && (
+                  <span className="text-xs text-brand-cyan">(Current)</span>
+                )}
+              </div>
+              <ul className="space-y-2">
+                {FREE_FEATURES.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm text-brand-gray">
+                    <svg className="h-5 w-5 text-brand-gray/50 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Premium Plan Features */}
+            <div className={`rounded-lg border p-5 ${isPremium ? "border-brand-gold/30 bg-brand-gold/5" : "border-brand-gray/20"}`}>
+              <div className="flex items-center gap-2 mb-4">
+                <h4 className="font-semibold text-white">Premium</h4>
+                <span className="text-brand-gold text-sm font-medium">$9.99/mo</span>
+                {isPremium && (
+                  <span className="text-xs text-brand-gold">(Current)</span>
+                )}
+              </div>
+              <ul className="space-y-2">
+                {PREMIUM_FEATURES.map((feature) => (
+                  <li key={feature} className="flex items-start gap-2 text-sm text-brand-gray">
+                    <svg className="h-5 w-5 text-brand-gold flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              {!isPremium && (
+                <div className="mt-4">
+                  <Button variant="secondary" size="sm" className="w-full">
+                    Upgrade Now
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
