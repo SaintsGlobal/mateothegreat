@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { hashPassword, verifyPassword, generateSessionToken, createSession } from "@/lib/auth";
 import { resend, EMAIL_FROM } from "@/lib/email";
-import { verificationEmail } from "@/lib/email-templates";
+import { verificationEmail, passwordResetEmail } from "@/lib/email-templates";
 import { redirect } from "next/navigation";
 
 type SignUpResult = { success: true } | { error: string };
@@ -99,4 +99,106 @@ export async function signIn(formData: FormData): Promise<SignInResult> {
   await createSession(user.id);
 
   redirect("/account");
+}
+
+type PasswordResetRequestResult = { success: true } | { error: string };
+
+export async function requestPasswordReset(
+  formData: FormData
+): Promise<PasswordResetRequestResult> {
+  const email = formData.get("email")?.toString().trim().toLowerCase();
+
+  if (!email) {
+    return { error: "Email is required" };
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return { error: "Please enter a valid email address" };
+  }
+
+  const user = await db.user.findUnique({
+    where: { email },
+  });
+
+  // Always return success to prevent email enumeration
+  if (!user) {
+    return { success: true };
+  }
+
+  // Generate reset token with 1 hour expiry
+  const resetToken = generateSessionToken();
+  const resetTokenExp = new Date();
+  resetTokenExp.setHours(resetTokenExp.getHours() + 1);
+
+  await db.user.update({
+    where: { id: user.id },
+    data: { resetToken, resetTokenExp },
+  });
+
+  // Send reset email
+  try {
+    const { subject, html } = passwordResetEmail(resetToken);
+    await resend.emails.send({
+      from: EMAIL_FROM,
+      to: email,
+      subject,
+      html,
+    });
+  } catch {
+    console.error("Failed to send password reset email");
+  }
+
+  return { success: true };
+}
+
+type ResetPasswordResult = { success: true } | { error: string };
+
+export async function resetPassword(
+  formData: FormData
+): Promise<ResetPasswordResult> {
+  const token = formData.get("token")?.toString();
+  const password = formData.get("password")?.toString();
+  const confirmPassword = formData.get("confirmPassword")?.toString();
+
+  if (!token) {
+    return { error: "Invalid reset link" };
+  }
+
+  if (!password || !confirmPassword) {
+    return { error: "All fields are required" };
+  }
+
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters" };
+  }
+
+  if (password !== confirmPassword) {
+    return { error: "Passwords do not match" };
+  }
+
+  const user = await db.user.findFirst({
+    where: { resetToken: token },
+  });
+
+  if (!user) {
+    return { error: "Invalid or expired reset link" };
+  }
+
+  if (!user.resetTokenExp || user.resetTokenExp < new Date()) {
+    return { error: "Reset link has expired. Please request a new one." };
+  }
+
+  // Update password and clear reset token
+  const passwordHash = await hashPassword(password);
+  await db.user.update({
+    where: { id: user.id },
+    data: {
+      passwordHash,
+      resetToken: null,
+      resetTokenExp: null,
+    },
+  });
+
+  redirect("/signin?message=Password reset successful. Please sign in.");
 }
