@@ -12,6 +12,7 @@ import { CalloutBlockComponent } from "./blocks/callout-block";
 import { VideoBlockComponent } from "./blocks/video-block";
 import { BlockquoteBlockComponent } from "./blocks/blockquote-block";
 import { TabsBlockComponent } from "./blocks/tabs-block";
+import { CopyArticleButton } from "./copy-article-button";
 
 interface NewsletterRendererProps {
   newsletter: Newsletter;
@@ -61,7 +62,10 @@ function BlockRenderer({ block }: { block: Block }) {
 
 export function NewsletterRenderer({ newsletter }: NewsletterRendererProps) {
   return (
-    <article className="max-w-3xl mx-auto px-4 py-8">
+    <article className="max-w-3xl mx-auto px-4 py-8 relative">
+      <div className="sticky top-4 z-10 flex justify-end mb-4">
+        <CopyArticleButton newsletter={newsletter} />
+      </div>
       <header className="mb-8">
         <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
           <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs font-medium uppercase">
