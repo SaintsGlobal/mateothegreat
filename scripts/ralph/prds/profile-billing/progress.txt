@@ -165,3 +165,20 @@
   - Grid layout (md:grid-cols-2) works well for plan comparison
 ---
 
+## 2026-03-06 - PB-011
+- Implemented Billing Section - Upgrade Flow
+- Added upgradeSubscription Server Action to auth.ts (calls createSubscription service)
+- Created modal overlay for upgrade flow with fixed positioning and backdrop blur
+- Modal shows Premium price ($9.99/month) and full feature list
+- Subscribe button with loading state during API call
+- Success message with auto-refresh to show updated tier
+- Info banner: "Payment processing coming soon"
+- Error handling with styled error message
+- Files changed: src/app/actions/auth.ts, src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - Modal pattern: fixed inset-0 with z-50, backdrop uses bg-black/70 backdrop-blur-sm
+  - Use router.refresh() to reload server components after state change
+  - Disable close button during async operation to prevent invalid state
+  - setTimeout before refresh allows user to see success message
+---
+
