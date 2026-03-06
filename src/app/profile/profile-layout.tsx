@@ -5,8 +5,9 @@ import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications, getSubscriptionDetails, upgradeSubscription, cancelUserSubscription } from "@/app/actions/auth";
+import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications, getSubscriptionDetails, upgradeSubscription, cancelUserSubscription, getPaymentMethods, addUserPaymentMethod, removeUserPaymentMethod, setUserDefaultPaymentMethod } from "@/app/actions/auth";
 import type { SubscriptionDetails } from "@/app/actions/auth";
+import type { PaymentMethod } from "@prisma/client";
 import type { User } from "@prisma/client";
 import type { SubscriptionTier } from "@prisma/client";
 
@@ -746,6 +747,480 @@ const PREMIUM_FEATURES = [
   "Ad-free experience",
 ];
 
+function CardBrandIcon({ brand }: { brand: string }) {
+  const brandLower = brand.toLowerCase();
+
+  if (brandLower === "visa") {
+    return (
+      <svg className="h-8 w-12" viewBox="0 0 48 32" fill="none">
+        <rect width="48" height="32" rx="4" fill="#1A1F71" />
+        <path d="M19.5 21H17L18.8 11H21.3L19.5 21ZM15.6 11L13.2 17.8L12.9 16.4L12.9 16.4L12 12C12 12 11.9 11 10.6 11H6.1L6 11.2C6 11.2 7.5 11.5 9.2 12.5L11.4 21H14L18.5 11H15.6ZM35 21H37.5L35.4 11H33.3C32.2 11 31.9 11.8 31.9 11.8L28 21H30.6L31.1 19.6H34.3L34.6 21H35ZM31.8 17.5L33.1 13.7L33.9 17.5H31.8ZM28.5 13.8L28.9 11.3C28.9 11.3 27.6 11 26.2 11C24.7 11 21.3 11.6 21.3 14.5C21.3 17.2 25 17.2 25 18.6C25 20 21.6 19.6 20.4 18.7L20 21.3C20 21.3 21.3 22 23.3 22C25.3 22 28.4 20.9 28.4 18.2C28.4 15.4 24.7 15.2 24.7 13.9C24.7 12.6 27.4 12.8 28.5 13.8Z" fill="white" />
+      </svg>
+    );
+  }
+
+  if (brandLower === "mastercard") {
+    return (
+      <svg className="h-8 w-12" viewBox="0 0 48 32" fill="none">
+        <rect width="48" height="32" rx="4" fill="#000" />
+        <circle cx="19" cy="16" r="8" fill="#EB001B" />
+        <circle cx="29" cy="16" r="8" fill="#F79E1B" />
+        <path d="M24 10.5C25.8 12 27 14.3 27 16.9C27 19.5 25.8 21.8 24 23.3C22.2 21.8 21 19.5 21 16.9C21 14.3 22.2 12 24 10.5Z" fill="#FF5F00" />
+      </svg>
+    );
+  }
+
+  if (brandLower === "amex") {
+    return (
+      <svg className="h-8 w-12" viewBox="0 0 48 32" fill="none">
+        <rect width="48" height="32" rx="4" fill="#006FCF" />
+        <path d="M8 16L10.5 11H13L16 16L13 21H10.5L8 16ZM24 11H21L18 16L21 21H24L27 16L24 11ZM38 16L35.5 11H33L30 16L33 21H35.5L38 16Z" fill="white" />
+      </svg>
+    );
+  }
+
+  if (brandLower === "discover") {
+    return (
+      <svg className="h-8 w-12" viewBox="0 0 48 32" fill="none">
+        <rect width="48" height="32" rx="4" fill="#fff" />
+        <rect x="0.5" y="0.5" width="47" height="31" rx="3.5" stroke="#E5E7EB" />
+        <circle cx="30" cy="16" r="7" fill="#F47216" />
+        <text x="8" y="18" fontSize="8" fontWeight="bold" fill="#000">DISCOVER</text>
+      </svg>
+    );
+  }
+
+  // Generic card icon
+  return (
+    <svg className="h-8 w-12 text-brand-gray" viewBox="0 0 48 32" fill="none">
+      <rect width="48" height="32" rx="4" fill="currentColor" fillOpacity="0.2" />
+      <rect x="6" y="10" width="12" height="8" rx="1" fill="currentColor" fillOpacity="0.5" />
+      <rect x="6" y="22" width="20" height="2" rx="1" fill="currentColor" fillOpacity="0.5" />
+    </svg>
+  );
+}
+
+function PaymentMethodsCard() {
+  const router = useRouter();
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+
+  // Dropdown and remove states
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [showRemoveModal, setShowRemoveModal] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
+  const [isSettingDefault, setIsSettingDefault] = useState<string | null>(null);
+
+  // Form state
+  const [cardNumber, setCardNumber] = useState("");
+  const [expiryMonth, setExpiryMonth] = useState("");
+  const [expiryYear, setExpiryYear] = useState("");
+
+  useState(() => {
+    getPaymentMethods().then((result) => {
+      if ("success" in result && result.success) {
+        setPaymentMethods(result.paymentMethods);
+      }
+      setLoading(false);
+    });
+  });
+
+  const formatCardNumber = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 16);
+    const groups = digits.match(/.{1,4}/g) || [];
+    return groups.join(" ");
+  };
+
+  const handleAddCard = async () => {
+    setIsAdding(true);
+    setAddError(null);
+
+    const formData = new FormData();
+    formData.set("cardNumber", cardNumber.replace(/\s/g, ""));
+    formData.set("expiryMonth", expiryMonth);
+    formData.set("expiryYear", expiryYear);
+
+    const result = await addUserPaymentMethod(formData);
+
+    if ("error" in result) {
+      setAddError(result.error);
+      setIsAdding(false);
+      return;
+    }
+
+    // Add new card to list and close modal
+    setPaymentMethods((prev) => {
+      // If this is the first card (isDefault), update existing cards
+      if (result.paymentMethod.isDefault) {
+        return [result.paymentMethod, ...prev.map(m => ({ ...m, isDefault: false }))];
+      }
+      return [...prev, result.paymentMethod];
+    });
+    setShowAddModal(false);
+    setIsAdding(false);
+    setCardNumber("");
+    setExpiryMonth("");
+    setExpiryYear("");
+    router.refresh();
+  };
+
+  const handleRemove = async (paymentMethodId: string) => {
+    setIsRemoving(true);
+    setRemoveError(null);
+
+    const result = await removeUserPaymentMethod(paymentMethodId);
+
+    if ("error" in result) {
+      setRemoveError(result.error);
+      setIsRemoving(false);
+      return;
+    }
+
+    // Remove from local list
+    setPaymentMethods((prev) => prev.filter((m) => m.id !== paymentMethodId));
+    setShowRemoveModal(null);
+    setIsRemoving(false);
+    router.refresh();
+  };
+
+  const handleSetDefault = async (paymentMethodId: string) => {
+    setIsSettingDefault(paymentMethodId);
+
+    const result = await setUserDefaultPaymentMethod(paymentMethodId);
+
+    if ("error" in result) {
+      setIsSettingDefault(null);
+      return;
+    }
+
+    // Update local list
+    setPaymentMethods((prev) =>
+      prev.map((m) => ({
+        ...m,
+        isDefault: m.id === paymentMethodId,
+      }))
+    );
+    setActiveDropdown(null);
+    setIsSettingDefault(null);
+    router.refresh();
+  };
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 15 }, (_, i) => currentYear + i);
+
+  return (
+    <>
+      <Card className="mt-6">
+        <h2 className="text-xl font-semibold mb-4">Payment Methods</h2>
+
+        {/* Info Banner */}
+        <div className="bg-brand-cyan/10 border border-brand-cyan/30 rounded-lg p-3 mb-6">
+          <p className="text-sm text-brand-cyan flex items-center gap-2">
+            <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Payment processing will be available soon
+          </p>
+        </div>
+
+        {loading ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-20 bg-brand-gray/10 rounded-lg"></div>
+            <div className="h-20 bg-brand-gray/10 rounded-lg"></div>
+          </div>
+        ) : paymentMethods.length === 0 ? (
+          /* Empty State */
+          <div className="text-center py-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-gray/10 mb-4">
+              <svg className="h-8 w-8 text-brand-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            <p className="text-brand-gray mb-4">No payment methods yet</p>
+            <Button variant="primary" onClick={() => setShowAddModal(true)}>
+              Add Payment Method
+            </Button>
+          </div>
+        ) : (
+          /* Payment Methods List */
+          <div className="space-y-3">
+            {paymentMethods.map((method) => (
+              <div
+                key={method.id}
+                className="flex items-center justify-between p-4 rounded-lg border border-brand-gray/20 bg-brand-gray/5 hover:bg-brand-gray/10 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  <CardBrandIcon brand={method.brand} />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white font-medium">
+                        {method.brand} ending in {method.last4}
+                      </span>
+                      {method.isDefault && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-gold/10 text-brand-gold border border-brand-gold/30">
+                          Default
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-brand-gray">
+                      Expires {method.expiryMonth.toString().padStart(2, "0")}/{method.expiryYear}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Actions Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setActiveDropdown(activeDropdown === method.id ? null : method.id)}
+                    disabled={isSettingDefault === method.id}
+                    className="p-2 rounded-lg text-brand-gray hover:text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+                  >
+                    {isSettingDefault === method.id ? (
+                      <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                      </svg>
+                    )}
+                  </button>
+
+                  {activeDropdown === method.id && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-10"
+                        onClick={() => setActiveDropdown(null)}
+                      />
+                      <div className="absolute right-0 mt-1 w-48 rounded-lg bg-dark-alt border border-brand-gray/20 shadow-lg z-20">
+                        {!method.isDefault && (
+                          <button
+                            onClick={() => handleSetDefault(method.id)}
+                            className="w-full px-4 py-2.5 text-left text-sm text-white hover:bg-white/5 rounded-t-lg transition-colors"
+                          >
+                            Set as default
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setActiveDropdown(null);
+                            setShowRemoveModal(method.id);
+                          }}
+                          className={`w-full px-4 py-2.5 text-left text-sm text-brand-coral hover:bg-brand-coral/10 transition-colors ${method.isDefault ? "rounded-lg" : "rounded-b-lg"}`}
+                        >
+                          Remove card
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {/* Add Card Button */}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="w-full p-4 rounded-lg border border-dashed border-brand-gray/30 text-brand-gray hover:text-white hover:border-brand-cyan/50 hover:bg-brand-cyan/5 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add payment method
+            </button>
+          </div>
+        )}
+      </Card>
+
+      {/* Add Card Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => !isAdding && setShowAddModal(false)}
+          />
+          <div className="relative z-10 w-full max-w-md mx-4 bg-brand-bg border border-brand-gray/30 rounded-2xl shadow-2xl">
+            <button
+              onClick={() => setShowAddModal(false)}
+              disabled={isAdding}
+              className="absolute top-4 right-4 text-brand-gray hover:text-white transition-colors disabled:opacity-50"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-cyan/10 mb-4">
+                  <svg className="h-8 w-8 text-brand-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white">Add Payment Method</h3>
+              </div>
+
+              {/* Info Banner */}
+              <div className="bg-brand-cyan/10 border border-brand-cyan/30 rounded-lg p-3 mb-6">
+                <p className="text-sm text-brand-cyan">
+                  This is a demo. No real payment will be processed.
+                </p>
+              </div>
+
+              {/* Card Form */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-brand-gray mb-1.5">
+                    Card Number
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="4242 4242 4242 4242"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                    disabled={isAdding}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-brand-gray mb-1.5">
+                      Expiry Month
+                    </label>
+                    <select
+                      value={expiryMonth}
+                      onChange={(e) => setExpiryMonth(e.target.value)}
+                      disabled={isAdding}
+                      className="w-full px-3 py-2.5 rounded-lg bg-dark border border-brand-gray/30 text-white focus:border-brand-cyan focus:outline-none"
+                    >
+                      <option value="">Month</option>
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                        <option key={m} value={m}>
+                          {m.toString().padStart(2, "0")}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-brand-gray mb-1.5">
+                      Expiry Year
+                    </label>
+                    <select
+                      value={expiryYear}
+                      onChange={(e) => setExpiryYear(e.target.value)}
+                      disabled={isAdding}
+                      className="w-full px-3 py-2.5 rounded-lg bg-dark border border-brand-gray/30 text-white focus:border-brand-cyan focus:outline-none"
+                    >
+                      <option value="">Year</option>
+                      {years.map((y) => (
+                        <option key={y} value={y}>
+                          {y}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Error Message */}
+              {addError && (
+                <div className="bg-brand-coral/10 border border-brand-coral/30 rounded-lg p-3 mt-4">
+                  <p className="text-sm text-brand-coral">{addError}</p>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full mt-6"
+                onClick={handleAddCard}
+                loading={isAdding}
+                disabled={isAdding || !cardNumber || !expiryMonth || !expiryYear}
+              >
+                Add Card
+              </Button>
+
+              <button
+                onClick={() => setShowAddModal(false)}
+                disabled={isAdding}
+                className="w-full mt-3 text-sm text-brand-gray hover:text-white transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Card Confirmation Modal */}
+      {showRemoveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => !isRemoving && setShowRemoveModal(null)}
+          />
+          <div className="relative z-10 w-full max-w-md mx-4 bg-brand-bg border border-brand-gray/30 rounded-2xl shadow-2xl">
+            <button
+              onClick={() => setShowRemoveModal(null)}
+              disabled={isRemoving}
+              className="absolute top-4 right-4 text-brand-gray hover:text-white transition-colors disabled:opacity-50"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <div className="p-6">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-coral/10 mb-4">
+                  <svg className="h-8 w-8 text-brand-coral" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-white">Remove Card?</h3>
+                <p className="text-brand-gray mt-2">
+                  Are you sure you want to remove this payment method?
+                </p>
+              </div>
+
+              {/* Error Message */}
+              {removeError && (
+                <div className="bg-brand-coral/10 border border-brand-coral/30 rounded-lg p-3 mb-4">
+                  <p className="text-sm text-brand-coral">{removeError}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => setShowRemoveModal(null)}
+                  disabled={isRemoving}
+                >
+                  Cancel
+                </Button>
+                <button
+                  onClick={() => handleRemove(showRemoveModal)}
+                  disabled={isRemoving}
+                  className="flex-1 px-4 py-2.5 rounded-lg font-medium bg-brand-coral text-white hover:bg-brand-coral/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isRemoving ? "Removing..." : "Remove"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function BillingSection({ user }: { user: User }) {
   const router = useRouter();
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
@@ -1014,6 +1489,9 @@ function BillingSection({ user }: { user: User }) {
           </div>
         )}
       </Card>
+
+      {/* Payment Methods Section */}
+      <PaymentMethodsCard />
 
       {/* Upgrade Modal */}
       {showUpgradeModal && (
