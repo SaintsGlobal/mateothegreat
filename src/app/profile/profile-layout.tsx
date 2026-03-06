@@ -5,9 +5,9 @@ import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications, getSubscriptionDetails, upgradeSubscription, cancelUserSubscription, getPaymentMethods, addUserPaymentMethod, removeUserPaymentMethod, setUserDefaultPaymentMethod } from "@/app/actions/auth";
-import type { SubscriptionDetails } from "@/app/actions/auth";
-import type { PaymentMethod } from "@prisma/client";
+import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications, getSubscriptionDetails, upgradeSubscription, cancelUserSubscription, getPaymentMethods, addUserPaymentMethod, removeUserPaymentMethod, setUserDefaultPaymentMethod, getUserInvoices } from "@/app/actions/auth";
+import type { SubscriptionDetails, InvoicesPagination } from "@/app/actions/auth";
+import type { PaymentMethod, Invoice } from "@prisma/client";
 import type { User } from "@prisma/client";
 import type { SubscriptionTier } from "@prisma/client";
 
@@ -141,7 +141,7 @@ export function ProfileLayout({ user }: ProfileLayoutProps) {
             <BillingSection user={user} />
           )}
           {currentSection === "invoices" && (
-            <InvoicesSection />
+            <InvoicesSection user={user} />
           )}
         </main>
       </div>
@@ -1674,13 +1674,292 @@ function BillingSection({ user }: { user: User }) {
   );
 }
 
-function InvoicesSection() {
+function InvoicesSection({ user }: { user: User }) {
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [pagination, setPagination] = useState<InvoicesPagination | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const fetchInvoices = async (page: number) => {
+    setLoading(true);
+    setError(null);
+    const result = await getUserInvoices(page, 10);
+    if ("success" in result && result.success) {
+      setInvoices(result.invoices);
+      setPagination(result.pagination);
+    } else if ("error" in result) {
+      setError(result.error);
+    }
+    setLoading(false);
+  };
+
+  useState(() => {
+    fetchInvoices(1);
+  });
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchInvoices(page);
+  };
+
+  const handleDownloadPdf = (invoiceId: string) => {
+    setDownloadingId(invoiceId);
+    // Simulate download delay then show toast
+    setTimeout(() => {
+      setDownloadingId(null);
+      alert("PDF generation coming soon");
+    }, 500);
+  };
+
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+    }).format(amount / 100);
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "PAID":
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-green/20 text-brand-green">
+            Paid
+          </span>
+        );
+      case "PENDING":
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-gold/20 text-brand-gold">
+            Pending
+          </span>
+        );
+      case "FAILED":
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-coral/20 text-brand-coral">
+            Failed
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-brand-gray/20 text-brand-gray">
+            {status}
+          </span>
+        );
+    }
+  };
+
+  // Free users see upgrade CTA
+  if (user.tier === "FREE") {
+    return (
+      <Card>
+        <h2 className="text-xl font-semibold mb-4">Invoices</h2>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-4 rounded-full bg-brand-gray/10 p-4">
+            <svg className="h-8 w-8 text-brand-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium mb-2">No invoices yet</h3>
+          <p className="text-brand-gray mb-6 max-w-sm">
+            Upgrade to Premium to access exclusive content and start building your billing history.
+          </p>
+          <Button
+            onClick={() => {
+              // Navigate to billing section to upgrade
+              const url = new URL(window.location.href);
+              url.searchParams.set("section", "billing");
+              window.location.href = url.toString();
+            }}
+            className="bg-brand-gold text-dark hover:bg-brand-gold/90"
+          >
+            Upgrade to Premium
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Loading state
+  if (loading && invoices.length === 0) {
+    return (
+      <Card>
+        <h2 className="text-xl font-semibold mb-4">Invoices</h2>
+        <div className="animate-pulse space-y-3">
+          <div className="h-12 bg-brand-gray/10 rounded" />
+          <div className="h-12 bg-brand-gray/10 rounded" />
+          <div className="h-12 bg-brand-gray/10 rounded" />
+        </div>
+      </Card>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Card>
+        <h2 className="text-xl font-semibold mb-4">Invoices</h2>
+        <div className="rounded-lg bg-brand-coral/10 border border-brand-coral/30 p-4 text-brand-coral">
+          {error}
+        </div>
+      </Card>
+    );
+  }
+
+  // Empty state for Premium users with no invoices
+  if (invoices.length === 0) {
+    return (
+      <Card>
+        <h2 className="text-xl font-semibold mb-4">Invoices</h2>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="mb-4 rounded-full bg-brand-gray/10 p-4">
+            <svg className="h-8 w-8 text-brand-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium mb-2">No invoices yet</h3>
+          <p className="text-brand-gray max-w-sm">
+            Your billing history will appear here after your first billing cycle.
+          </p>
+        </div>
+      </Card>
+    );
+  }
+
+  // Invoice table
   return (
     <Card>
       <h2 className="text-xl font-semibold mb-4">Invoices</h2>
-      <p className="text-brand-gray">
+      <p className="text-brand-gray mb-6">
         View your billing history and download invoices.
       </p>
+
+      {/* Desktop Table */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-brand-gray/20">
+              <th className="text-left py-3 px-4 text-sm font-medium text-brand-gray">Date</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-brand-gray">Description</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-brand-gray">Amount</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-brand-gray">Status</th>
+              <th className="text-right py-3 px-4 text-sm font-medium text-brand-gray">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoices.map((invoice) => (
+              <tr key={invoice.id} className="border-b border-brand-gray/10 hover:bg-white/5">
+                <td className="py-3 px-4 text-sm">{formatDate(invoice.createdAt)}</td>
+                <td className="py-3 px-4 text-sm">
+                  Premium Subscription ({formatDate(invoice.periodStart)} - {formatDate(invoice.periodEnd)})
+                </td>
+                <td className="py-3 px-4 text-sm font-medium">
+                  {formatCurrency(invoice.amount, invoice.currency)}
+                </td>
+                <td className="py-3 px-4 text-sm">{getStatusBadge(invoice.status)}</td>
+                <td className="py-3 px-4 text-sm text-right">
+                  <button
+                    onClick={() => handleDownloadPdf(invoice.id)}
+                    disabled={downloadingId === invoice.id}
+                    className="text-brand-cyan hover:text-brand-cyan/80 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {downloadingId === invoice.id ? (
+                      <span className="flex items-center gap-1">
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        PDF
+                      </span>
+                    )}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-3">
+        {invoices.map((invoice) => (
+          <div key={invoice.id} className="p-4 rounded-lg border border-brand-gray/20 bg-dark-alt">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <div className="text-sm text-brand-gray">{formatDate(invoice.createdAt)}</div>
+                <div className="font-medium mt-1">
+                  {formatCurrency(invoice.amount, invoice.currency)}
+                </div>
+              </div>
+              {getStatusBadge(invoice.status)}
+            </div>
+            <div className="text-sm text-brand-gray mb-3">
+              Premium Subscription ({formatDate(invoice.periodStart)} - {formatDate(invoice.periodEnd)})
+            </div>
+            <button
+              onClick={() => handleDownloadPdf(invoice.id)}
+              disabled={downloadingId === invoice.id}
+              className="text-sm text-brand-cyan hover:text-brand-cyan/80 disabled:opacity-50 flex items-center gap-1"
+            >
+              {downloadingId === invoice.id ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  Downloading...
+                </>
+              ) : (
+                <>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download PDF
+                </>
+              )}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Pagination */}
+      {pagination && pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-brand-gray/20">
+          <div className="text-sm text-brand-gray">
+            Page {pagination.page} of {pagination.totalPages} ({pagination.total} invoices)
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1 || loading}
+              className="px-3 py-1.5 text-sm rounded-lg border border-brand-gray/30 text-brand-gray hover:text-white hover:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === pagination.totalPages || loading}
+              className="px-3 py-1.5 text-sm rounded-lg border border-brand-gray/30 text-brand-gray hover:text-white hover:border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
