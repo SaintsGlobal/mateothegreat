@@ -249,7 +249,7 @@
       "title": "Tier Access Control",
       "description": "As a developer, I need tier-based access control for content.",
       "priority": 16,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/lib/auth/tier-guard.ts utility",
         "Function: requirePremium() returns boolean for access check",

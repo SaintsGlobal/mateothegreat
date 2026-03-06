@@ -263,3 +263,24 @@
   - alert() works for simple toast-like messages, can be replaced with proper toast later
 ---
 
+## 2026-03-06 - PB-016
+- Implemented Tier Access Control utility and exclusive content gating
+- Created src/lib/auth/tier-guard.ts with:
+  - getUserTier(userId) - returns current SubscriptionTier (FREE or PREMIUM)
+  - requirePremium(userId) - returns boolean for access check
+- Updated /exclusive list page:
+  - Shows "Upgrade to Premium" button in header for Free users
+  - Shows info banner explaining preview-only access for Free users
+  - Adds "Premium" badge on content cards for Free users
+- Updated /exclusive/[slug] content page:
+  - Premium users: see full content
+  - Free users: see content preview (first 200 chars) with "Upgrade to Access" overlay
+  - Overlay includes lock icon, explanation text, and CTA button linking to /profile?section=billing
+- Files changed: src/lib/auth/tier-guard.ts (new), src/app/exclusive/page.tsx, src/app/exclusive/[slug]/page.tsx
+- **Learnings for future iterations:**
+  - Import SubscriptionTier enum from @prisma/client for type safety
+  - Use content.replace(/<[^>]*>/g, "") to strip HTML tags for text preview
+  - bg-gradient-to-t from-dark via-dark/95 to-transparent creates smooth fade overlay
+  - tier-guard utility is standalone and doesn't depend on session context - takes userId directly
+---
+
