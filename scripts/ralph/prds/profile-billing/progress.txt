@@ -4,7 +4,7 @@
 - Dark theme with brand colors: cyan (#4CC2D5), coral (#FF7593), gold (#FFC927)
 - Components use Tailwind CSS classes
 - Protected routes check session and redirect to /signin
-- New PRD branches should be created from ralph/newsletter-system (not main) - that's where the codebase lives
+- PB-001 billing models were merged to main, so ralph/profile-billing was created from main
 - Use @@index on Prisma foreign key fields for query performance
 
 ---
@@ -25,5 +25,31 @@
   - Branch needed to be created from ralph/newsletter-system (not main) since that's where the codebase lives
   - User model needs relations added for new billing models (Subscription[], PaymentMethod[], Invoice[])
   - Use @@index on foreign key fields for query performance
+---
+
+## 2026-03-06 - PB-002
+- Added profile fields to User model in Prisma schema
+- avatarUrl (nullable String) for profile pictures
+- bio (nullable String) for user bios (max 500 chars enforced at app level)
+- preferences (Json with default "{}") for storing user preferences
+- Files changed: prisma/schema.prisma
+- **Learnings for future iterations:**
+  - Prisma doesn't enforce max string length at schema level - use app-level validation
+  - Json fields need string default "{}" not object {} in Prisma
+---
+
+## 2026-03-06 - PB-003
+- Created profile page layout at src/app/profile/page.tsx
+- Implemented sidebar navigation with sections: Profile, Preferences, Billing, Invoices
+- Active section highlighted with brand-cyan color
+- URL updates with section query param (e.g., /profile?section=billing)
+- Mobile: horizontal tab navigation with pill-style buttons
+- Protected route redirects to /signin if not authenticated
+- Files changed: src/app/profile/page.tsx, src/app/profile/profile-layout.tsx (new)
+- **Learnings for future iterations:**
+  - Use useSearchParams() and router.push() for query param navigation
+  - Sticky sidebar with `top-24` accounts for fixed header
+  - Mobile tabs use overflow-x-auto with min-w-max for horizontal scrolling
+  - Section content components can be expanded in future stories
 ---
 

@@ -32,7 +32,7 @@
       "title": "User Profile Fields",
       "description": "As a developer, I need additional user fields for profile features.",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Add avatarUrl field to User model (nullable String)",
         "Add bio field to User model (nullable String, max 500 chars)",
@@ -46,7 +46,7 @@
       "title": "Profile Page Layout",
       "description": "As a user, I want a profile page with clear sections so I can manage my account.",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create profile page at src/app/profile/page.tsx (protected route)",
         "Sidebar navigation with sections: Profile, Preferences, Billing, Invoices",
