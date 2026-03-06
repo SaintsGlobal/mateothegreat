@@ -11,6 +11,8 @@ Started: Initial setup
 - Prisma 7 uses `prisma.config.ts` for DATABASE_URL (not in schema.prisma)
 - PrismaClient singleton exported from `src/lib/db.ts` as `db`
 - Resend client in `src/lib/email.ts`, templates in `src/lib/email-templates.ts`
+- Auth utilities in `src/lib/auth.ts`: hashPassword, verifyPassword, createSession, getSession, destroySession
+- Use `getSession()` in server components/actions to get current user (returns session.user or null)
 ---
 
 ## 2026-03-06 - US-001
@@ -126,4 +128,20 @@ Started: Initial setup
   - Use `EMAIL_FROM` constant for consistent sender address
   - Wrap email sending in try/catch to avoid failing the main operation if email fails
   - Templates use brand colors and consistent styling defined at top of file
+---
+
+## 2026-03-06 - US-009
+- **What was implemented:** Auth utilities with password hashing (bcrypt) and session management
+- **Files changed:**
+  - package.json (added bcryptjs, @types/bcryptjs)
+  - package-lock.json (updated)
+  - src/lib/auth.ts (created - hashPassword, verifyPassword, generateSessionToken, createSession, getSession, destroySession)
+  - src/middleware.ts (created - protects /account and /exclusive/* routes)
+- **Learnings for future iterations:**
+  - Auth utilities in `src/lib/auth.ts`
+  - Session cookie name is "session", expires in 7 days
+  - `getSession()` returns session with user included, or null
+  - Middleware redirects unauthenticated users to /signin with redirect param
+  - Protected routes: /account and /exclusive/*
+  - Next.js 16 shows middleware deprecation warning (use "proxy" instead) but it still works
 ---

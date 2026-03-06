@@ -159,7 +159,7 @@
       "title": "Auth Utilities",
       "description": "As a developer, I need password hashing and session management utilities.",
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Run: npm install bcryptjs && npm install -D @types/bcryptjs",
         "Create src/lib/auth.ts with: hashPassword(password), verifyPassword(password, hash), generateSessionToken(), createSession(userId), getSession(cookies), destroySession(cookies)",
