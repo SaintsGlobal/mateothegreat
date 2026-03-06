@@ -476,3 +476,18 @@
   - Skills are instruction files - no code changes needed, Claude follows the instructions using its tools
   - When acceptance criteria are documentation/instructions only, verify build passes but no git commit needed
 ---
+
+## 2026-03-06 - NL-026
+- **What was implemented**: CI Newsletter Publish Integration with GitHub Actions
+- **Files changed**:
+  - `.github/workflows/deploy-newsletters.yml` - New workflow for automatic newsletter publishing
+- **Implementation details**:
+  - Triggers on push to main branch when content/newsletters/** files change
+  - Steps: checkout → setup node 20 → npm ci → db:generate → build → publish:newsletters
+  - DATABASE_URL passed from GitHub secrets for Prisma connection
+  - Railway handles automatic database deployments (no additional config needed)
+- **Learnings for future iterations:**
+  - Use `paths:` filter to trigger workflow only when specific directories change
+  - Must run db:generate before build to ensure Prisma client is generated
+  - GitHub secrets provide DATABASE_URL for CI environment
+---

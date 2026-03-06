@@ -363,7 +363,7 @@
       "title": "CI Newsletter Publish Integration",
       "description": "As a developer, I want approved newsletters to publish on deploy.",
       "priority": 26,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Update .github/workflows/test.yml or create deploy workflow",
         "Run npm run publish:newsletters after build",
