@@ -33,7 +33,7 @@ model Session {
 }
 
 model User {
-  id                String          @id
+  id                String          @id @default(cuid())
   email             String          @unique
   name              String?
   passwordHash      String
@@ -41,13 +41,13 @@ model User {
   resetToken        String?
   resetTokenExp     DateTime?
   createdAt         DateTime        @default(now())
-  updatedAt         DateTime
+  updatedAt         DateTime        @updatedAt
   verificationToken String?
   tier              SubscriptionTier @default(FREE)
-  Session           Session[]
-  Subscription      Subscription[]
-  PaymentMethod     PaymentMethod[]
-  Invoice           Invoice[]
+  sessions          Session[]
+  subscriptions     Subscription[]
+  paymentMethods    PaymentMethod[]
+  invoices          Invoice[]
 }
 
 enum ContentType {
