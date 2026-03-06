@@ -136,7 +136,7 @@
       "title": "Billing Service Layer",
       "description": "As a developer, I need a service layer that abstracts billing operations for easy Stripe integration later.",
       "priority": 9,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/lib/billing/subscription-service.ts",
         "Functions: createSubscription(), cancelSubscription(), getSubscription(), reactivateSubscription()",
@@ -154,7 +154,7 @@
       "title": "Billing Section - Current Plan Display",
       "description": "As a user, I want to see my current subscription plan clearly.",
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Display current tier (Free or Premium) with visual card",
         "Plan features comparison: Free (newsletters only) vs Premium (exclusive content + early access)",

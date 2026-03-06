@@ -132,3 +132,36 @@
   - setTimeout to auto-clear success messages provides toast-like UX without extra dependencies
 ---
 
+## 2026-03-06 - PB-009
+- Implemented Billing Service Layer with three service modules
+- Created src/lib/billing/subscription-service.ts with createSubscription, cancelSubscription, getSubscription, reactivateSubscription
+- Created src/lib/billing/payment-service.ts with addPaymentMethod, removePaymentMethod, setDefaultPaymentMethod, listPaymentMethods
+- Created src/lib/billing/invoice-service.ts with listInvoices, getInvoice (includes pagination)
+- All functions have // STRIPE_INTEGRATION_POINT comment markers for future Stripe integration
+- Uses typed result unions for success/error handling (e.g., SubscriptionResult, PaymentMethodResult)
+- Files changed: src/lib/billing/subscription-service.ts (new), src/lib/billing/payment-service.ts (new), src/lib/billing/invoice-service.ts (new)
+- **Learnings for future iterations:**
+  - Service layer pattern: separate modules by domain (subscription, payment, invoice)
+  - Use discriminated union types for results: `{ success: true; data: T } | { success: false; error: string }`
+  - First payment method should auto-set isDefault: true
+  - When removing default payment method, auto-promote another method to default
+  - Pagination pattern: return { items, pagination: { total, page, pageSize, totalPages } }
+---
+
+## 2026-03-06 - PB-010
+- Implemented Billing Section - Current Plan Display
+- Added getSubscriptionDetails Server Action to auth.ts for fetching subscription data
+- Updated BillingSection to accept user prop and display current plan
+- Current tier displayed with visual card (gold border for Premium, gray for Free)
+- Plan features comparison grid showing Free vs Premium features
+- For Premium users: billing cycle dates and next billing amount ($9.99/month)
+- For Free users: prominent "Upgrade to Premium" CTA button
+- Added loading skeleton while fetching subscription data
+- Files changed: src/app/actions/auth.ts, src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - Use useState callback pattern to fetch data on mount in client components
+  - TierBadge component already exists and can be reused
+  - Plan features as const arrays make it easy to maintain and display
+  - Grid layout (md:grid-cols-2) works well for plan comparison
+---
+
