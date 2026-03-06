@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { hashPassword, generateSessionToken } from "@/lib/auth";
+import { hashPassword, verifyPassword, generateSessionToken, createSession } from "@/lib/auth";
 import { resend, EMAIL_FROM } from "@/lib/email";
 import { verificationEmail } from "@/lib/email-templates";
 import { redirect } from "next/navigation";
@@ -70,4 +70,33 @@ export async function signUp(formData: FormData): Promise<SignUpResult> {
   }
 
   redirect("/signin?message=Account created. Please check your email to verify.");
+}
+
+type SignInResult = { success: true } | { error: string };
+
+export async function signIn(formData: FormData): Promise<SignInResult> {
+  const email = formData.get("email")?.toString().trim().toLowerCase();
+  const password = formData.get("password")?.toString();
+
+  if (!email || !password) {
+    return { error: "Email and password are required" };
+  }
+
+  const user = await db.user.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    return { error: "Invalid email or password" };
+  }
+
+  const isValid = await verifyPassword(password, user.passwordHash);
+
+  if (!isValid) {
+    return { error: "Invalid email or password" };
+  }
+
+  await createSession(user.id);
+
+  redirect("/account");
 }
