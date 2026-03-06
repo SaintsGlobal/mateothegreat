@@ -279,7 +279,7 @@
       "title": "Seed Mock Billing Data",
       "description": "As a developer, I need seed data for testing billing UI.",
       "priority": 18,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create or update prisma/seed.ts",
         "Create test user with Premium subscription",
