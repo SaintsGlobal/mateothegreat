@@ -303,3 +303,18 @@
   - Name is hidden on mobile (hidden sm:inline) to save space
 ---
 
+## 2026-03-06 - PB-018
+- Updated prisma/seed.ts with mock billing data for testing
+- Created Premium test user: premium@mateothegreat.ai / premium1234 (tier: PREMIUM)
+- Created Premium subscription with ACTIVE status and current billing period
+- Added 2 payment methods: Visa ending 4242 (default), Mastercard ending 5555
+- Added 3 invoices with PAID status for past 3 months ($9.99 each)
+- Configured seed command in prisma.config.ts (migrations.seed property)
+- Files changed: prisma/seed.ts, prisma.config.ts
+- **Learnings for future iterations:**
+  - Prisma 6+ uses prisma.config.ts for seed config: `migrations: { seed: "npx tsx prisma/seed.ts" }`
+  - Seed script is idempotent - checks for existing records before creating
+  - Amount stored in cents (999 = $9.99)
+  - Invoice periods use first/last day of month pattern with Date constructors
+---
+
