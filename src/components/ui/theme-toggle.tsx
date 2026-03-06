@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, useCallback } from "react";
+import { useSyncExternalStore, useCallback, useEffect } from "react";
 
 function getThemeSnapshot() {
   if (typeof window === "undefined") return true;
@@ -33,6 +33,23 @@ export function ThemeToggle() {
       localStorage.setItem("theme", "dark");
     }
   }, [isDark]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: light)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      try {
+        if (!localStorage.getItem("theme")) {
+          if (e.matches) {
+            document.documentElement.classList.add("light");
+          } else {
+            document.documentElement.classList.remove("light");
+          }
+        }
+      } catch {}
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
   return (
     <button
