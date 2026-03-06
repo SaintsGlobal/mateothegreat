@@ -173,7 +173,7 @@
       "title": "Sign Up Page",
       "description": "As a visitor, I want to create an account.",
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/app/signup/page.tsx with sign up form",
         "Form fields: email, password, confirm password",

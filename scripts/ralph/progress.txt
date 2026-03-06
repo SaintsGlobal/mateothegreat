@@ -13,6 +13,7 @@ Started: Initial setup
 - Resend client in `src/lib/email.ts`, templates in `src/lib/email-templates.ts`
 - Auth utilities in `src/lib/auth.ts`: hashPassword, verifyPassword, createSession, getSession, destroySession
 - Use `getSession()` in server components/actions to get current user (returns session.user or null)
+- After schema changes, always run `npx prisma generate` before building
 ---
 
 ## 2026-03-06 - US-001
@@ -144,4 +145,17 @@ Started: Initial setup
   - Middleware redirects unauthenticated users to /signin with redirect param
   - Protected routes: /account and /exclusive/*
   - Next.js 16 shows middleware deprecation warning (use "proxy" instead) but it still works
+---
+
+## 2026-03-06 - US-010
+- **What was implemented:** Sign up page with form and server action
+- **Files changed:**
+  - prisma/schema.prisma (added verificationToken field to User model)
+  - src/app/actions/auth.ts (created - signUp server action with validation)
+  - src/app/signup/page.tsx (created - sign up form with email, password, confirm password)
+- **Learnings for future iterations:**
+  - Auth server actions go in `src/app/actions/auth.ts`
+  - Use `generateSessionToken()` for verification tokens too
+  - Use `useActionState` hook pattern for form state management (same as newsletter)
+  - Redirect with query params via `redirect("/path?param=value")`
 ---
