@@ -72,7 +72,7 @@
       "title": "Tailwind Design Tokens",
       "description": "As a developer, I need the brand colors and design tokens configured in Tailwind.",
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Update tailwind.config.ts to extend colors with: brand-green (#5EC180), brand-cyan (#4CC2D5), brand-coral (#FF7593), brand-orange (#FF9F55), brand-yellow-light (#FFD683), brand-gold (#FFC927), brand-gray (#BCBCBC), dark (#0a0a0a), dark-alt (#1a1a1a)",
         "Add Inter font via next/font/google in src/app/layout.tsx",

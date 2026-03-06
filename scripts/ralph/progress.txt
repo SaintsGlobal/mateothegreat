@@ -6,6 +6,8 @@ Started: Initial setup
 - Next.js app uses port 7000 for dev server (`npm run dev`)
 - Project root is `/Users/gloucore/dev/claude-ralph-loop/`
 - Tailwind CSS v4 with @tailwindcss/postcss setup
+- Tailwind v4: Custom colors via `@theme inline` in globals.css (e.g., `--color-brand-coral: #FF7593`)
+- Use Tailwind classes like `bg-brand-coral`, `text-brand-green`, `bg-dark-alt`
 - Prisma 7 uses `prisma.config.ts` for DATABASE_URL (not in schema.prisma)
 - PrismaClient singleton exported from `src/lib/db.ts` as `db`
 ---
@@ -43,4 +45,16 @@ Started: Initial setup
   - Use `new PrismaClient()` without datasourceUrl option - it reads from env automatically
   - User model includes resetToken/resetTokenExp fields for password reset flow
   - Run `npx prisma db push` to sync schema with database
+---
+
+## 2026-03-06 - US-003
+- **What was implemented:** Tailwind design tokens and brand colors configured via CSS variables (Tailwind v4 style)
+- **Files changed:**
+  - src/app/globals.css (added brand colors in @theme block, set dark background/white text)
+  - src/app/layout.tsx (changed from Geist to Inter font, updated metadata)
+- **Learnings for future iterations:**
+  - Tailwind v4 uses `@theme inline` block in CSS for custom colors, not tailwind.config.ts
+  - Colors are defined as CSS variables: `--color-brand-green`, `--color-brand-coral`, etc.
+  - Use `bg-brand-green`, `text-brand-coral` etc. in Tailwind classes
+  - Inter font loaded via next/font/google with variable `--font-inter`
 ---
