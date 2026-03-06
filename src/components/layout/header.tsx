@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { UserDropdown } from "./user-dropdown";
+import { getSession } from "@/lib/auth";
 
-export function Header() {
+export async function Header() {
+  const session = await getSession();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-dark/80 backdrop-blur-sm border-b border-white/10">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -21,9 +25,17 @@ export function Header() {
           <Link href="/contact" className="text-sm text-brand-gray hover:text-white transition-colors">
             Contact
           </Link>
-          <Link href="/signin" className="text-sm text-brand-gray hover:text-white transition-colors">
-            Sign In
-          </Link>
+          {session ? (
+            <UserDropdown
+              name={session.user.name}
+              avatarUrl={session.user.avatarUrl}
+              tier={session.user.tier}
+            />
+          ) : (
+            <Link href="/signin" className="text-sm text-brand-gray hover:text-white transition-colors">
+              Sign In
+            </Link>
+          )}
           <ThemeToggle />
         </nav>
       </div>
