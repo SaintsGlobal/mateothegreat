@@ -1,0 +1,194 @@
+{
+  "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+  "title": "Special Announcement Template",
+  "slug": "special-announcement-template",
+  "template": "special-announcement",
+  "status": "draft",
+  "author": "Your Name",
+  "version": 1,
+  "publishedAt": null,
+  "blocks": [
+    {
+      "type": "header",
+      "content": {
+        "text": "BIG NEWS: Your Announcement Title Here",
+        "level": "h1"
+      },
+      "style": {
+        "align": "center",
+        "emphasis": "highlight"
+      }
+    },
+    {
+      "type": "callout",
+      "content": {
+        "text": "This is a special announcement. Replace this with a brief, impactful summary of your news in 1-2 sentences.",
+        "variant": "important"
+      },
+      "style": {
+        "emphasis": "highlight"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "We're thrilled to share some **exciting news** with you today. This is the main body of your announcement where you explain what's happening, why it matters, and what it means for your audience.\n\nUse this space to tell the full story. Be clear, be direct, and convey the significance of this moment. Your readers should feel the importance of this announcement."
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Key Details",
+        "level": "h2"
+      },
+      "style": {
+        "emphasis": "highlight"
+      }
+    },
+    {
+      "type": "list",
+      "content": {
+        "items": [
+          "What: Describe the announcement in one line",
+          "When: Date and time (if applicable)",
+          "Where: Location or platform details",
+          "Who: Who this affects or involves",
+          "Why: The impact and significance"
+        ],
+        "ordered": false
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "What This Means For You",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Here's what you need to know and what actions (if any) you should take:\n\n1. **Immediate impact** - What changes right now\n2. **Coming soon** - What to expect in the near future\n3. **Your next steps** - What you can do today"
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Take Action Now",
+        "level": "h2"
+      },
+      "style": {
+        "align": "center",
+        "emphasis": "highlight"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "**[Primary CTA Button - Main Action](https://example.com/action)**"
+      },
+      "style": {
+        "align": "center",
+        "emphasis": "highlight"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "[Secondary Action - Learn More](https://example.com/learn-more) | [Share This News](https://example.com/share)"
+      },
+      "style": {
+        "align": "center"
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Frequently Asked Questions",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "expandable",
+      "content": {
+        "title": "What exactly is changing?",
+        "preview": "A brief overview of the changes...",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "content": {
+              "markdown": "Provide a detailed explanation of what's changing. Be specific and thorough so readers understand the full scope of the announcement."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "expandable",
+      "content": {
+        "title": "When does this take effect?",
+        "preview": "Timeline and important dates...",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "content": {
+              "markdown": "Outline the timeline:\n\n- **Announcement date**: Today\n- **Rollout begins**: [Date]\n- **Full availability**: [Date]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "expandable",
+      "content": {
+        "title": "How does this affect existing users/customers?",
+        "preview": "Impact on current community members...",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "content": {
+              "markdown": "Explain how this impacts your existing audience. Address any concerns they might have and reassure them about continuity, support, or migration paths if applicable."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "expandable",
+      "content": {
+        "title": "What if I have more questions?",
+        "preview": "How to get in touch...",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "content": {
+              "markdown": "We're here to help! Reach out through any of these channels:\n\n- **Email**: support@example.com\n- **Twitter/X**: @example\n- **Community Forum**: forum.example.com"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "callout",
+      "content": {
+        "text": "Questions? Reply directly to this newsletter or reach out on social media. We read every message!",
+        "variant": "info"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Thank you for being part of our community. This announcement marks an exciting new chapter, and we can't wait to share this journey with you."
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "**[Visit Our Website](https://example.com)** | **[Follow on Twitter](https://twitter.com/example)** | **[Join the Community](https://example.com/community)**"
+      },
+      "style": {
+        "align": "center"
+      }
+    }
+  ]
+}
