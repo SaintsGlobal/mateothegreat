@@ -16,6 +16,7 @@ Started: Initial setup
 - After schema changes, always run `npx prisma generate` before building
 - `useSearchParams()` must be wrapped in `<Suspense>` for Next.js 16+ static builds
 - **Server component pages with Prisma:** Use dynamic import inside async function to avoid build-time init issues: `const { getSession } = await import("@/lib/auth")`
+- **Prisma 7 seed scripts:** Must use `@prisma/adapter-pg` with `pg.Pool` for database connection (not bare PrismaClient)
 ---
 
 ## 2026-03-06 - US-001
@@ -223,4 +224,19 @@ Started: Initial setup
   - Check both content exists AND publishedAt is set before displaying
   - prose classes from Tailwind typography plugin for rendering HTML content
   - Same dynamic import pattern for getSession and db in protected routes
+---
+
+## 2026-03-06 - US-016
+- **What was implemented:** Prisma seed script with 3 sample ExclusiveContent articles
+- **Files changed:**
+  - prisma/seed.ts (created - seed script with 3 articles using @prisma/adapter-pg)
+  - prisma.config.ts (updated - added seed command configuration)
+  - package.json (added prisma.seed config, @prisma/adapter-pg, pg, @types/pg, tsx dependencies)
+  - package-lock.json (updated)
+- **Learnings for future iterations:**
+  - Prisma 7 seed config goes in `prisma.config.ts` under `migrations.seed`, not in package.json
+  - Seed scripts in Prisma 7 require `@prisma/adapter-pg` adapter with `pg.Pool` for database connection
+  - Pattern: `new PrismaClient({ adapter: new PrismaPg(pool) })` where pool is `new pg.Pool({ connectionString })`
+  - Use `npx tsx prisma/seed.ts` as seed command for TypeScript seeds
+  - Seed script checks for existing slugs to avoid duplicates on re-run
 ---

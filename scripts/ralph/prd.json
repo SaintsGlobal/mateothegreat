@@ -268,7 +268,7 @@
       "title": "Seed Placeholder Content",
       "description": "As a developer, I need sample content in the database.",
       "priority": 16,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create prisma/seed.ts with sample ExclusiveContent entries",
         "Add 3 articles: 'The Rise of AI Agents', 'Claude vs GPT: A Comparison', 'Building with Next.js 14'",
