@@ -8,3 +8,4 @@ export { ExpandableBlockComponent } from "./expandable-block";
 export { CalloutBlockComponent } from "./callout-block";
 export { VideoBlockComponent } from "./video-block";
 export { BlockquoteBlockComponent } from "./blockquote-block";
+export { TabsBlockComponent } from "./tabs-block";

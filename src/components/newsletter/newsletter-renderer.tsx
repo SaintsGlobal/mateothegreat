@@ -11,6 +11,7 @@ import { ExpandableBlockComponent } from "./blocks/expandable-block";
 import { CalloutBlockComponent } from "./blocks/callout-block";
 import { VideoBlockComponent } from "./blocks/video-block";
 import { BlockquoteBlockComponent } from "./blocks/blockquote-block";
+import { TabsBlockComponent } from "./blocks/tabs-block";
 
 interface NewsletterRendererProps {
   newsletter: Newsletter;
@@ -43,11 +44,13 @@ function BlockRenderer({ block }: { block: Block }) {
         </ExpandableBlockComponent>
       );
     case "tabs":
-      // TODO: NL-013 - Tabs block implementation
       return (
-        <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-          <p className="text-gray-500">Tabs: {block.content.tabs.map(t => t.label).join(", ")}</p>
-        </div>
+        <TabsBlockComponent
+          block={block}
+          renderBlock={(nestedBlock, index) => (
+            <BlockRenderer key={index} block={nestedBlock} />
+          )}
+        />
       );
     case "snippet":
       return <LinkSnippetBlockComponent block={block} />;
