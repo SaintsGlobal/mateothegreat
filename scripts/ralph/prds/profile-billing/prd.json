@@ -168,7 +168,7 @@
       "title": "Billing Section - Upgrade Flow",
       "description": "As a Free user, I want to upgrade to Premium.",
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Upgrade to Premium button opens pricing modal",
         "Modal shows: Premium $9.99/month with feature list",
