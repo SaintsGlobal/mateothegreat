@@ -658,3 +658,41 @@ export async function setUserDefaultPaymentMethod(
 
   return { success: true };
 }
+
+import type { Invoice } from "@prisma/client";
+
+export type InvoicesPagination = {
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+type GetInvoicesResult =
+  | { success: true; invoices: Invoice[]; pagination: InvoicesPagination }
+  | { error: string };
+
+export async function getUserInvoices(
+  page: number = 1,
+  pageSize: number = 10
+): Promise<GetInvoicesResult> {
+  const { getSession } = await import("@/lib/auth");
+  const { listInvoices } = await import("@/lib/billing/invoice-service");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const result = await listInvoices(session.user.id, { page, pageSize });
+
+  if (!result.success) {
+    return { error: result.error };
+  }
+
+  return {
+    success: true,
+    invoices: result.invoices,
+    pagination: result.pagination,
+  };
+}
