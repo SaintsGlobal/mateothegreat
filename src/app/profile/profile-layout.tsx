@@ -1,8 +1,13 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
+import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { updateProfile } from "@/app/actions/auth";
 import type { User } from "@prisma/client";
+import type { SubscriptionTier } from "@prisma/client";
 
 type Section = "profile" | "preferences" | "billing" | "invoices";
 
@@ -136,15 +141,152 @@ export function ProfileLayout({ user }: ProfileLayoutProps) {
   );
 }
 
+type FormState = { success?: boolean; error?: string } | null;
+
+function Avatar({ name, avatarUrl }: { name: string | null; avatarUrl: string | null }) {
+  const initials = name
+    ? name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name || "User avatar"}
+        className="h-20 w-20 rounded-full object-cover border-2 border-brand-cyan/30"
+      />
+    );
+  }
+
+  return (
+    <div className="h-20 w-20 rounded-full bg-brand-cyan/20 flex items-center justify-center text-brand-cyan text-2xl font-bold border-2 border-brand-cyan/30">
+      {initials}
+    </div>
+  );
+}
+
+function TierBadge({ tier }: { tier: SubscriptionTier }) {
+  if (tier === "PREMIUM") {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-gold/10 text-brand-gold border border-brand-gold/30">
+        Premium
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-gray/10 text-brand-gray border border-brand-gray/30">
+      Free
+    </span>
+  );
+}
+
 function ProfileSection({ user }: { user: User }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(
+    async (_prevState, formData) => {
+      const result = await updateProfile(formData);
+      if ("error" in result) {
+        return { error: result.error };
+      }
+      setIsEditing(false);
+      return { success: true };
+    },
+    null
+  );
+
+  const formattedDate = new Date(user.createdAt).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
   return (
     <Card>
-      <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
-      <p className="text-brand-gray">
-        Manage your personal information and account settings.
-      </p>
-      <div className="mt-4 text-sm text-brand-gray/60">
-        Logged in as: {user.email}
+      <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
+
+      <div className="flex flex-col sm:flex-row gap-6">
+        {/* Avatar */}
+        <div className="flex-shrink-0">
+          <Avatar name={user.name} avatarUrl={user.avatarUrl} />
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 space-y-4">
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-brand-gray mb-1">
+              Name
+            </label>
+            {isEditing ? (
+              <form action={formAction} className="flex gap-2">
+                <Input
+                  name="name"
+                  defaultValue={user.name || ""}
+                  placeholder="Enter your name"
+                  disabled={isPending}
+                  className="flex-1"
+                />
+                <Button type="submit" size="sm" loading={isPending}>
+                  Save
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isPending}
+                >
+                  Cancel
+                </Button>
+              </form>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-white">
+                  {user.name || <span className="text-brand-gray/60 italic">Not set</span>}
+                </span>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-brand-cyan text-sm hover:underline"
+                >
+                  Edit
+                </button>
+              </div>
+            )}
+            {state?.error && (
+              <p className="text-sm text-brand-coral mt-1">{state.error}</p>
+            )}
+            {state?.success && (
+              <p className="text-sm text-brand-green mt-1">Name updated successfully</p>
+            )}
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-brand-gray mb-1">
+              Email
+            </label>
+            <div className="text-white">{user.email}</div>
+            <p className="text-xs text-brand-gray/60 mt-1">
+              Contact support to change your email address
+            </p>
+          </div>
+
+          {/* Tier */}
+          <div>
+            <label className="block text-sm font-medium text-brand-gray mb-1">
+              Subscription
+            </label>
+            <TierBadge tier={user.tier} />
+          </div>
+
+          {/* Member Since */}
+          <div>
+            <label className="block text-sm font-medium text-brand-gray mb-1">
+              Member Since
+            </label>
+            <div className="text-white">{formattedDate}</div>
+          </div>
+        </div>
       </div>
     </Card>
   );
