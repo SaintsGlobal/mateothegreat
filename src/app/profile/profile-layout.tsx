@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateProfile, uploadAvatar } from "@/app/actions/auth";
+import { updateProfile, uploadAvatar, changePassword } from "@/app/actions/auth";
 import type { User } from "@prisma/client";
 import type { SubscriptionTier } from "@prisma/client";
 
@@ -124,7 +124,10 @@ export function ProfileLayout({ user }: ProfileLayoutProps) {
         {/* Main Content Area */}
         <main className="flex-1 min-w-0">
           {currentSection === "profile" && (
-            <ProfileSection user={user} />
+            <>
+              <ProfileSection user={user} />
+              <ChangePasswordSection />
+            </>
           )}
           {currentSection === "preferences" && (
             <PreferencesSection />
@@ -410,6 +413,110 @@ function ProfileSection({ user }: { user: User }) {
           </div>
         </div>
       </div>
+    </Card>
+  );
+}
+
+function ChangePasswordSection() {
+  const [showForm, setShowForm] = useState(false);
+  const [state, formAction, isPending] = useActionState<FormState, FormData>(
+    async (_prevState, formData) => {
+      const result = await changePassword(formData);
+      if ("error" in result) {
+        return { error: result.error };
+      }
+      setShowForm(false);
+      return { success: true };
+    },
+    null
+  );
+
+  return (
+    <Card className="mt-6">
+      <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+
+      {!showForm ? (
+        <div className="flex items-center justify-between">
+          <p className="text-brand-gray">
+            Update your password to keep your account secure.
+          </p>
+          <Button variant="secondary" size="sm" onClick={() => setShowForm(true)}>
+            Change Password
+          </Button>
+        </div>
+      ) : (
+        <form action={formAction} className="space-y-4 max-w-md">
+          <div>
+            <label htmlFor="currentPassword" className="block text-sm font-medium text-brand-gray mb-1">
+              Current Password
+            </label>
+            <Input
+              id="currentPassword"
+              name="currentPassword"
+              type="password"
+              required
+              disabled={isPending}
+              placeholder="Enter current password"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="newPassword" className="block text-sm font-medium text-brand-gray mb-1">
+              New Password
+            </label>
+            <Input
+              id="newPassword"
+              name="newPassword"
+              type="password"
+              required
+              minLength={8}
+              disabled={isPending}
+              placeholder="Enter new password (min 8 characters)"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-brand-gray mb-1">
+              Confirm New Password
+            </label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type="password"
+              required
+              minLength={8}
+              disabled={isPending}
+              placeholder="Confirm new password"
+            />
+          </div>
+
+          {state?.error && (
+            <p className="text-sm text-brand-coral">{state.error}</p>
+          )}
+
+          <div className="flex gap-2">
+            <Button type="submit" loading={isPending}>
+              Update Password
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                setShowForm(false);
+              }}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {state?.success && !showForm && (
+        <div className="mt-4 rounded-lg bg-brand-green/10 p-3 text-sm text-brand-green">
+          Password changed successfully!
+        </div>
+      )}
     </Card>
   );
 }
