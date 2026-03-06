@@ -196,6 +196,7 @@
   - Track both subscription status and canceledPeriodEnd state to show correct UI after cancel
   - Cancel returns periodEnd date from the active subscription before marking it canceled
   - Conditional badge styling: brand-green for Active, brand-coral for Canceled
+- Use useState callback pattern `useState(() => { fetch() })` to fetch on mount in client components
 ---
 
 ## 2026-03-06 - PB-013
@@ -220,5 +221,26 @@
   - Payment method service auto-sets isDefault: true for first card
   - Dropdown with actions uses activeDropdown state to track which card's dropdown is open
   - Select dropdowns need bg-dark and border-brand-gray/30 classes for consistent dark theme styling
+---
+
+## 2026-03-06 - PB-014
+- Implemented Invoices Section with full billing history UI
+- Added getUserInvoices Server Action to auth.ts (calls listInvoices service with pagination)
+- InvoicesSection component features:
+  - For Free users: Empty state with "No invoices yet" message and "Upgrade to Premium" CTA
+  - For Premium users: Table with date, description, amount, status, actions
+  - Status badges: Paid (green), Pending (yellow/gold), Failed (coral/red)
+  - Download PDF button with loading spinner, shows "PDF generation coming soon" alert
+  - Desktop: Full table layout with columns
+  - Mobile: Card-based layout with responsive design
+  - Pagination controls (Previous/Next) when more than 10 invoices
+  - Loading skeleton while fetching data
+  - Error state with styled error banner
+- Files changed: src/app/actions/auth.ts, src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - Use Intl.NumberFormat for currency formatting with amount/100 for cents to dollars
+  - Status badges use bg-{color}/20 with text-{color} pattern for muted background
+  - Mobile-first approach: use hidden md:block for desktop table, md:hidden for mobile cards
+  - alert() works for simple toast-like messages, can be replaced with proper toast later
 ---
 

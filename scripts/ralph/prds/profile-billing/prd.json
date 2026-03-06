@@ -216,7 +216,7 @@
       "title": "Invoices Section - History",
       "description": "As a user, I want to view my billing history.",
       "priority": 14,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Table of invoices: date, description, amount, status, actions",
         "Status badges: Paid (green), Pending (yellow), Failed (red)",
