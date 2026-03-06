@@ -28,245 +28,268 @@
     "styling": "Tailwind CSS v3",
     "deployment": "Railway"
   },
+  "setupComplete": {
+    "github": "https://github.com/SaintsGlobal/mateothegreat",
+    "railway": "https://railway.com/project/e3fd19a5-7755-4764-b34d-3ca66c09cb92",
+    "database": "PostgreSQL provisioned",
+    "envVars": "Configured in Railway and .env"
+  },
   "userStories": [
     {
       "id": "US-001",
-      "title": "Project Setup & Infrastructure",
-      "description": "As a developer, I need the project scaffolded with all tooling so I can start building features.",
+      "title": "Next.js Project Scaffold",
+      "description": "As a developer, I need the Next.js app created with TypeScript and Tailwind CSS.",
       "priority": 1,
       "passes": false,
       "acceptanceCriteria": [
-        "Initialize Next.js 14+ with App Router, TypeScript, Tailwind CSS",
-        "Configure for port 7000 in development",
-        "Set up Prisma with PostgreSQL schema",
-        "Initialize GitHub repository",
-        "Configure Railway project with PostgreSQL database",
-        "Set up environment variables (.env.example documented)",
-        "Typecheck and lint pass"
+        "Run: npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias '@/*' (use --yes or answer prompts)",
+        "Update package.json scripts: dev command uses port 7000 (next dev -p 7000)",
+        "Verify: npm run build completes without errors",
+        "Verify: npm run lint passes"
       ]
     },
     {
       "id": "US-002",
-      "title": "Database Schema",
-      "description": "As a developer, I need the database schema defined for users, sessions, and content.",
+      "title": "Prisma Database Setup",
+      "description": "As a developer, I need Prisma configured with the PostgreSQL database.",
       "priority": 2,
       "passes": false,
       "acceptanceCriteria": [
-        "User model: id, email, name, passwordHash, emailVerified, createdAt, updatedAt",
-        "Session model: id, userId, token, expiresAt, createdAt",
-        "NewsletterSubscriber model: id, email, subscribedAt, status",
-        "ExclusiveContent model: id, title, slug, content, type, createdAt, publishedAt",
-        "Migration runs successfully",
-        "Typecheck passes"
+        "Run: npm install prisma @prisma/client",
+        "Run: npx prisma init",
+        "Update prisma/schema.prisma with User, Session, NewsletterSubscriber, ExclusiveContent models",
+        "User model: id (cuid), email (unique), name, passwordHash, emailVerified (Boolean default false), createdAt, updatedAt",
+        "Session model: id (cuid), userId (relation), token (unique), expiresAt, createdAt",
+        "NewsletterSubscriber model: id (cuid), email (unique), status (enum: ACTIVE, UNSUBSCRIBED), subscribedAt",
+        "ExclusiveContent model: id (cuid), title, slug (unique), content (text), type (enum: ARTICLE, VIDEO, ANNOUNCEMENT), createdAt, publishedAt (nullable)",
+        "Run: npx prisma db push (connects to DATABASE_URL from .env)",
+        "Create src/lib/db.ts with PrismaClient singleton export",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-003",
-      "title": "Design System & Styling",
-      "description": "As a developer, I need a consistent design system using the brand color palette.",
+      "title": "Tailwind Design Tokens",
+      "description": "As a developer, I need the brand colors and design tokens configured in Tailwind.",
       "priority": 3,
       "passes": false,
       "acceptanceCriteria": [
-        "Tailwind config with custom color palette (green #5EC180, cyan #4CC2D5, coral #FF7593, orange #FF9F55, lightYellow #FFD683, gold #FFC927, gray #BCBCBC)",
-        "Dark theme base colors (#0a0a0a, #1a1a1a)",
-        "Gradient utilities using brand colors",
-        "Glow/blur effects for cards and buttons",
-        "Typography scale with Inter font",
-        "Button, input, and card component styles",
-        "Smooth transitions and hover states",
-        "Typecheck passes"
+        "Update tailwind.config.ts to extend colors with: brand-green (#5EC180), brand-cyan (#4CC2D5), brand-coral (#FF7593), brand-orange (#FF9F55), brand-yellow-light (#FFD683), brand-gold (#FFC927), brand-gray (#BCBCBC), dark (#0a0a0a), dark-alt (#1a1a1a)",
+        "Add Inter font via next/font/google in src/app/layout.tsx",
+        "Update src/app/globals.css: set body background to dark (#0a0a0a), text to white",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-004",
-      "title": "Navigation & Layout",
-      "description": "As a visitor, I want minimal navigation so I can access key sections easily.",
+      "title": "UI Components",
+      "description": "As a developer, I need reusable Button, Input, and Card components.",
       "priority": 4,
       "passes": false,
       "acceptanceCriteria": [
-        "Root layout with dark theme",
-        "Fixed header with logo/brand name",
-        "Nav links: Home, Exclusive (shows lock if not authenticated), Sign In",
-        "Footer with copyright 'MTG Intellectual Reserve, LLC' and social links",
-        "Smooth scroll behavior",
-        "Responsive mobile menu",
-        "Typecheck passes",
-        "Verify in browser"
+        "Create src/components/ui/button.tsx: variants (primary uses brand-coral, secondary uses brand-cyan), sizes (sm, md, lg), disabled state, loading state with spinner",
+        "Create src/components/ui/input.tsx: styled input with label, error message support, dark theme styling",
+        "Create src/components/ui/card.tsx: dark-alt background, subtle border, optional glow effect on hover",
+        "Export all from src/components/ui/index.ts",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-005",
-      "title": "Landing Page Hero",
-      "description": "As a visitor, I want to see an impactful hero section so I understand the brand immediately.",
+      "title": "Layout Shell",
+      "description": "As a visitor, I want to see a consistent header and footer across all pages.",
       "priority": 5,
       "passes": false,
       "acceptanceCriteria": [
-        "Full-viewport hero with brand name 'Mateo The Great'",
-        "Tagline/brand statement",
-        "Embedded YouTube video (placeholder: use dQw4w9WgXcQ or latest from @_mateothegreat)",
-        "Dark theme with gradient accents using brand colors",
-        "Responsive on mobile/tablet/desktop",
-        "Typecheck passes",
-        "Verify in browser"
+        "Create src/components/layout/header.tsx: fixed position, brand name 'Mateo The Great' on left, nav links on right (Home, Exclusive, Sign In)",
+        "Create src/components/layout/footer.tsx: copyright '© 2024 MTG Intellectual Reserve, LLC', YouTube link to @_mateothegreat",
+        "Update src/app/layout.tsx: include Header and Footer, wrap children in main with min-h-screen",
+        "Verify: npm run dev starts and page renders at localhost:7000",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-006",
-      "title": "Newsletter Signup Component",
-      "description": "As a visitor, I want to subscribe to the newsletter so I stay updated.",
+      "title": "Landing Page Hero",
+      "description": "As a visitor, I want to see an impactful hero section when I visit the homepage.",
       "priority": 6,
       "passes": false,
       "acceptanceCriteria": [
-        "Email input with validation",
-        "Submit button with loading state",
-        "Success/error feedback messages",
-        "Stores subscriber in database via Server Action",
-        "Prevents duplicate subscriptions",
-        "Typecheck passes",
-        "Verify in browser"
+        "Update src/app/page.tsx with hero section",
+        "Hero: full viewport height (min-h-screen), centered content",
+        "Display brand name 'Mateo The Great' as large heading (text-5xl md:text-7xl)",
+        "Tagline below: 'AI insights for the curious mind' or similar",
+        "Embed YouTube video using iframe (use video ID: dQw4w9WgXcQ as placeholder), youtube-nocookie.com domain",
+        "Add gradient accent using brand colors (coral to cyan)",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-007",
-      "title": "Resend Integration",
-      "description": "As a developer, I need Resend configured for transactional emails.",
+      "title": "Newsletter Signup",
+      "description": "As a visitor, I want to subscribe to the newsletter from the homepage.",
       "priority": 7,
       "passes": false,
       "acceptanceCriteria": [
-        "Resend SDK installed and configured",
-        "Welcome email template for new subscribers",
-        "Email verification template for auth",
-        "Password reset template",
-        "Emails configured for noreply@mateothegreat.ai (document DNS setup for Squarespace)",
-        "Typecheck passes"
+        "Create src/app/actions/newsletter.ts with 'subscribe' server action",
+        "Server action: validate email format, check for duplicates, insert into NewsletterSubscriber table",
+        "Return { success: true } or { error: 'message' }",
+        "Create src/components/newsletter-form.tsx: email input, submit button, success/error message display",
+        "Add NewsletterForm to homepage below hero section",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-008",
-      "title": "Authentication - Sign Up",
-      "description": "As a visitor, I want to create an account so I can access exclusive content.",
+      "title": "Resend Email Setup",
+      "description": "As a developer, I need Resend configured to send transactional emails.",
       "priority": 8,
       "passes": false,
       "acceptanceCriteria": [
-        "Sign up page at /signup",
-        "Form: email, password, confirm password",
-        "Password requirements: min 8 chars",
-        "Email verification flow via Resend",
-        "Stores user with hashed password (bcrypt)",
-        "Redirects to /account on success",
-        "Typecheck passes",
-        "Verify in browser"
+        "Run: npm install resend",
+        "Create src/lib/email.ts: export resend client instance using RESEND_API_KEY",
+        "Create src/lib/email-templates.ts: export functions for welcomeEmail(), verificationEmail(token), passwordResetEmail(token)",
+        "Each template returns { subject, html } object with inline-styled HTML",
+        "Update newsletter server action to send welcome email after successful subscription",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-009",
-      "title": "Authentication - Sign In",
-      "description": "As a user, I want to sign in so I can access my account.",
+      "title": "Auth Utilities",
+      "description": "As a developer, I need password hashing and session management utilities.",
       "priority": 9,
       "passes": false,
       "acceptanceCriteria": [
-        "Sign in page at /signin",
-        "Form: email, password",
-        "Forgot password? link",
-        "Error message for invalid credentials",
-        "Creates session cookie on success",
-        "Redirects to /account or previous page",
-        "Typecheck passes",
-        "Verify in browser"
+        "Run: npm install bcryptjs && npm install -D @types/bcryptjs",
+        "Create src/lib/auth.ts with: hashPassword(password), verifyPassword(password, hash), generateSessionToken(), createSession(userId), getSession(cookies), destroySession(cookies)",
+        "Sessions stored in database, token stored in HTTP-only cookie named 'session'",
+        "Create src/middleware.ts: check session cookie, add user to request context for protected routes (/account, /exclusive/*)",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-010",
-      "title": "Authentication - Password Reset",
-      "description": "As a user, I want to reset my password if I forget it.",
+      "title": "Sign Up Page",
+      "description": "As a visitor, I want to create an account.",
       "priority": 10,
       "passes": false,
       "acceptanceCriteria": [
-        "Forgot password page at /forgot-password",
-        "Sends reset link via Resend",
-        "Reset page at /reset-password?token=xxx",
-        "Token expires after 1 hour",
-        "Success redirects to sign in",
-        "Typecheck passes",
-        "Verify in browser"
+        "Create src/app/signup/page.tsx with sign up form",
+        "Form fields: email, password, confirm password",
+        "Create src/app/actions/auth.ts with signUp server action",
+        "Validation: email format, password min 8 chars, passwords match",
+        "On success: create user with hashed password, send verification email, redirect to /signin with message",
+        "On error: display error message on form",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-011",
-      "title": "Account Management Page",
-      "description": "As a user, I want to manage my account settings.",
+      "title": "Sign In Page",
+      "description": "As a user, I want to sign into my account.",
       "priority": 11,
       "passes": false,
       "acceptanceCriteria": [
-        "Account page at /account (protected route)",
-        "Display current email and name",
-        "Edit name functionality",
-        "Change password functionality",
-        "Sign out button",
-        "Typecheck passes",
-        "Verify in browser"
+        "Create src/app/signin/page.tsx with sign in form",
+        "Form fields: email, password",
+        "Add signIn server action to src/app/actions/auth.ts",
+        "Validation: check credentials against database",
+        "On success: create session, set cookie, redirect to /account",
+        "On error: display 'Invalid email or password' message",
+        "Add 'Forgot password?' link to /forgot-password",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-012",
-      "title": "Exclusive Content - List View",
-      "description": "As a member, I want to see all exclusive content available to me.",
+      "title": "Password Reset Flow",
+      "description": "As a user, I want to reset my password if I forget it.",
       "priority": 12,
       "passes": false,
       "acceptanceCriteria": [
-        "Exclusive content page at /exclusive (protected route)",
-        "Grid/list of content cards with title, type, date",
-        "Content types: article, video, announcement",
-        "Empty state if no content yet",
-        "Non-authenticated users see teaser + sign up CTA",
-        "Typecheck passes",
-        "Verify in browser"
+        "Create src/app/forgot-password/page.tsx: email input form",
+        "Add requestPasswordReset server action: generate token, store in user record with expiry (1 hour), send reset email",
+        "Create src/app/reset-password/page.tsx: reads token from URL, shows new password form",
+        "Add resetPassword server action: validate token not expired, update password hash, clear token",
+        "On success: redirect to /signin with success message",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-013",
-      "title": "Exclusive Content - Detail View",
-      "description": "As a member, I want to view individual exclusive content pieces.",
+      "title": "Account Page",
+      "description": "As a user, I want to view and manage my account settings.",
       "priority": 13,
       "passes": false,
       "acceptanceCriteria": [
-        "Content detail page at /exclusive/[slug] (protected route)",
-        "Renders markdown/rich content",
-        "Shows publish date and content type",
-        "Back to list link",
-        "Non-authenticated users redirected to sign in",
-        "Typecheck passes",
-        "Verify in browser"
+        "Create src/app/account/page.tsx (protected route)",
+        "Display current user email and name",
+        "Form to update name",
+        "Form to change password (current password, new password, confirm)",
+        "Sign out button that destroys session and redirects to /",
+        "Add updateProfile and changePassword server actions",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-014",
-      "title": "Seed Placeholder Content",
-      "description": "As a developer, I need placeholder exclusive content for the members area.",
+      "title": "Exclusive Content List",
+      "description": "As a member, I want to browse exclusive content.",
       "priority": 14,
       "passes": false,
       "acceptanceCriteria": [
-        "Prisma seed script created",
-        "3 placeholder articles about current AI news (Claude 4, GPT-5 rumors, AI agents)",
-        "Articles have realistic titles, dates, and markdown content",
-        "Seed runs successfully",
-        "Typecheck passes"
+        "Create src/app/exclusive/page.tsx",
+        "If authenticated: fetch and display ExclusiveContent from database as card grid",
+        "Each card shows: title, type badge, publishedAt date, link to /exclusive/[slug]",
+        "If not authenticated: show teaser message with sign up CTA",
+        "Handle empty state: 'No exclusive content yet. Check back soon!'",
+        "Verify: npm run build passes"
       ]
     },
     {
       "id": "US-015",
-      "title": "Railway Deployment Configuration",
-      "description": "As a developer, I need Railway configured for production deployment.",
+      "title": "Exclusive Content Detail",
+      "description": "As a member, I want to read individual exclusive content.",
       "priority": 15,
       "passes": false,
       "acceptanceCriteria": [
-        "Railway project created and linked via CLI",
-        "PostgreSQL database provisioned",
-        "Environment variables configured in Railway",
-        "Auto-deploy from main branch",
-        "Custom domain www.mateothegreat.ai configured",
-        "Health check endpoint at /api/health",
-        "Document SSL/DNS setup steps for Squarespace"
+        "Create src/app/exclusive/[slug]/page.tsx (protected route)",
+        "Fetch content by slug from database",
+        "Display: title, type badge, publishedAt, content (render as HTML or markdown)",
+        "Back link to /exclusive",
+        "404 if slug not found",
+        "Redirect to /signin if not authenticated",
+        "Verify: npm run build passes"
+      ]
+    },
+    {
+      "id": "US-016",
+      "title": "Seed Placeholder Content",
+      "description": "As a developer, I need sample content in the database.",
+      "priority": 16,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create prisma/seed.ts with sample ExclusiveContent entries",
+        "Add 3 articles: 'The Rise of AI Agents', 'Claude vs GPT: A Comparison', 'Building with Next.js 14'",
+        "Each has: title, slug (kebab-case), content (2-3 paragraphs markdown), type ARTICLE, publishedAt",
+        "Update package.json: add prisma.seed config pointing to seed.ts",
+        "Run: npx prisma db seed",
+        "Verify: seed runs without errors"
+      ]
+    },
+    {
+      "id": "US-017",
+      "title": "Health Check Endpoint",
+      "description": "As a developer, I need a health check endpoint for Railway.",
+      "priority": 17,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/app/api/health/route.ts",
+        "GET handler returns { status: 'ok', timestamp: Date.now() }",
+        "Test database connection in health check, return { status: 'error' } if db fails",
+        "Verify: npm run build passes",
+        "Verify: curl http://localhost:7000/api/health returns JSON response"
       ]
     }
   ],
