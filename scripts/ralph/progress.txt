@@ -72,3 +72,16 @@ Started: Initial setup
   - Card `glow` prop enables hover effect with cyan shadow
   - Use `forwardRef` pattern for all form components
 ---
+
+## 2026-03-06 - US-005
+- **What was implemented:** Layout shell with fixed header and footer
+- **Files changed:**
+  - src/components/layout/header.tsx (created - fixed header with brand name and nav links)
+  - src/components/layout/footer.tsx (created - copyright and YouTube link)
+  - src/app/layout.tsx (updated - added Header/Footer, main wrapper with min-h-screen and pt-16)
+- **Learnings for future iterations:**
+  - Layout components in `src/components/layout/`
+  - Header is fixed with `pt-16` padding on main to offset
+  - Footer uses YouTube SVG icon inline
+  - Nav links: Home (/), Exclusive (/exclusive), Sign In (/signin)
+---
