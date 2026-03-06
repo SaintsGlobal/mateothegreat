@@ -94,7 +94,7 @@
       "title": "Profile Section - Change Password",
       "description": "As a user, I want to change my password from my profile.",
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Change password form: current password, new password, confirm password",
         "Validate current password before allowing change",
@@ -109,7 +109,7 @@
       "title": "Preferences Section - Bio & Display",
       "description": "As a user, I want to set a bio and display preferences.",
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Bio textarea with character count (max 500)",
         "Toggle for Show email publicly (stored in preferences JSON)",
@@ -123,7 +123,7 @@
       "title": "Preferences Section - Notifications",
       "description": "As a user, I want to control what notifications I receive.",
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Email notification toggles: Newsletter updates, New content alerts, Account activity",
         "Store settings in user preferences JSON field",
