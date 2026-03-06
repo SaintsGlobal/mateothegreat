@@ -53,7 +53,7 @@
       "title": "Prisma Database Setup",
       "description": "As a developer, I need Prisma configured with the PostgreSQL database.",
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Run: npm install prisma @prisma/client",
         "Run: npx prisma init",

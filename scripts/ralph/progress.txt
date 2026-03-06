@@ -6,6 +6,8 @@ Started: Initial setup
 - Next.js app uses port 7000 for dev server (`npm run dev`)
 - Project root is `/Users/gloucore/dev/claude-ralph-loop/`
 - Tailwind CSS v4 with @tailwindcss/postcss setup
+- Prisma 7 uses `prisma.config.ts` for DATABASE_URL (not in schema.prisma)
+- PrismaClient singleton exported from `src/lib/db.ts` as `db`
 ---
 
 ## 2026-03-06 - US-001
@@ -25,4 +27,20 @@ Started: Initial setup
   - create-next-app doesn't work in non-empty directories; need to create in temp dir and copy
   - Tailwind v4 uses @tailwindcss/postcss instead of tailwindcss plugin
   - Branch is `ralph/mateo-the-great`
+---
+
+## 2026-03-06 - US-002
+- **What was implemented:** Prisma 7 setup with PostgreSQL database connection
+- **Files changed:**
+  - package.json (added prisma, @prisma/client, dotenv dependencies)
+  - package-lock.json (updated)
+  - prisma.config.ts (created - Prisma 7 config with DATABASE_URL)
+  - prisma/schema.prisma (created - User, Session, NewsletterSubscriber, ExclusiveContent models)
+  - src/lib/db.ts (created - PrismaClient singleton)
+  - .gitignore (updated by Prisma init)
+- **Learnings for future iterations:**
+  - Prisma 7 requires `prisma.config.ts` for datasource URL (removed from schema.prisma)
+  - Use `new PrismaClient()` without datasourceUrl option - it reads from env automatically
+  - User model includes resetToken/resetTokenExp fields for password reset flow
+  - Run `npx prisma db push` to sync schema with database
 ---
