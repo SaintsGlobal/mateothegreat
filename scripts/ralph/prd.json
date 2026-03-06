@@ -129,7 +129,7 @@
       "title": "Newsletter Signup",
       "description": "As a visitor, I want to subscribe to the newsletter from the homepage.",
       "priority": 7,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/app/actions/newsletter.ts with 'subscribe' server action",
         "Server action: validate email format, check for duplicates, insert into NewsletterSubscriber table",

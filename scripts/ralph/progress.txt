@@ -97,3 +97,16 @@ Started: Initial setup
   - Gradient glow effect: absolute positioned div with `blur-3xl opacity-20`
   - Use `aspect-video` for responsive YouTube iframe container
 ---
+
+## 2026-03-06 - US-007
+- **What was implemented:** Newsletter signup with server action and client form component
+- **Files changed:**
+  - src/app/actions/newsletter.ts (created - subscribe server action with email validation, duplicate check)
+  - src/components/newsletter-form.tsx (created - client form with useActionState, success/error states)
+  - src/app/page.tsx (updated - added NewsletterForm below hero section)
+- **Learnings for future iterations:**
+  - Server actions go in `src/app/actions/` directory
+  - Use `useActionState` hook for form state management with server actions
+  - Newsletter server action pattern: validate email format, check duplicates, handle reactivation
+  - NewsletterSubscriber table uses email as unique key with ACTIVE/UNSUBSCRIBED status enum
+---
