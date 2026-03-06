@@ -223,6 +223,25 @@
   - Select dropdowns need bg-dark and border-brand-gray/30 classes for consistent dark theme styling
 ---
 
+## 2026-03-06 - PB-015
+- Implemented Billing API Endpoints with REST routes
+- Created 6 API route files in src/app/api/billing/:
+  - POST /api/billing/subscribe - creates subscription via service
+  - POST /api/billing/cancel - cancels subscription via service
+  - GET /api/billing/payment-methods - lists payment methods
+  - POST /api/billing/payment-methods - adds payment method
+  - DELETE /api/billing/payment-methods/[id] - removes payment method
+  - PATCH /api/billing/payment-methods/[id]/default - sets default
+  - GET /api/billing/invoices - lists invoices with pagination
+- All endpoints require authentication via getSession()
+- Files changed: src/app/api/billing/subscribe/route.ts, cancel/route.ts, payment-methods/route.ts, payment-methods/[id]/route.ts, payment-methods/[id]/default/route.ts, invoices/route.ts
+- **Learnings for future iterations:**
+  - Next.js 15+ dynamic route params are Promise-based: use `{ params }: { params: Promise<{ id: string }> }` and await params
+  - Import AddPaymentMethodInput type from payment-service for request body typing
+  - Use request.nextUrl.searchParams for query parameter parsing in GET routes
+  - Billing services already handle all business logic - API routes are thin wrappers
+---
+
 ## 2026-03-06 - PB-014
 - Implemented Invoices Section with full billing history UI
 - Added getUserInvoices Server Action to auth.ts (calls listInvoices service with pagination)
