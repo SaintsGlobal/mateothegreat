@@ -9,6 +9,8 @@ import { CodeBlockComponent } from "./blocks/code-block";
 import { LinkSnippetBlockComponent } from "./blocks/link-snippet";
 import { ExpandableBlockComponent } from "./blocks/expandable-block";
 import { CalloutBlockComponent } from "./blocks/callout-block";
+import { VideoBlockComponent } from "./blocks/video-block";
+import { BlockquoteBlockComponent } from "./blocks/blockquote-block";
 
 interface NewsletterRendererProps {
   newsletter: Newsletter;
@@ -25,26 +27,11 @@ function BlockRenderer({ block }: { block: Block }) {
     case "image":
       return <ImageBlockComponent block={block} />;
     case "video":
-      // TODO: NL-012 - Video block implementation
-      return (
-        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded mb-4 text-center text-gray-500">
-          Video: {block.content.title ?? block.content.youtubeId}
-        </div>
-      );
+      return <VideoBlockComponent block={block} />;
     case "code":
       return <CodeBlockComponent block={block} />;
     case "blockquote":
-      // TODO: NL-012 - Blockquote block implementation
-      return (
-        <blockquote className="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic mb-4">
-          <p className="text-gray-700 dark:text-gray-300">{block.content.text}</p>
-          {block.content.attribution && (
-            <cite className="text-sm text-gray-500 dark:text-gray-400">
-              — {block.content.attribution}
-            </cite>
-          )}
-        </blockquote>
-      );
+      return <BlockquoteBlockComponent block={block} />;
     case "callout":
       return <CalloutBlockComponent block={block} />;
     case "expandable":

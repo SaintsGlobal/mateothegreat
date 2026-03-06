@@ -6,3 +6,5 @@ export { CodeBlockComponent } from "./code-block";
 export { LinkSnippetBlockComponent } from "./link-snippet";
 export { ExpandableBlockComponent } from "./expandable-block";
 export { CalloutBlockComponent } from "./callout-block";
+export { VideoBlockComponent } from "./video-block";
+export { BlockquoteBlockComponent } from "./blockquote-block";
