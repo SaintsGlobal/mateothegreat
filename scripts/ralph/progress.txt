@@ -1,3 +1,28 @@
 # Ralph Progress Log
 Started: Initial setup
 ---
+
+## Codebase Patterns
+- Next.js app uses port 7000 for dev server (`npm run dev`)
+- Project root is `/Users/gloucore/dev/claude-ralph-loop/`
+- Tailwind CSS v4 with @tailwindcss/postcss setup
+---
+
+## 2026-03-06 - US-001
+- **What was implemented:** Next.js 14+ project scaffold with TypeScript, Tailwind CSS v4, ESLint, App Router, and src directory
+- **Files changed:**
+  - package.json (created - dev script uses port 7000)
+  - package-lock.json (created)
+  - tsconfig.json (created)
+  - next.config.ts (created)
+  - postcss.config.mjs (created)
+  - eslint.config.mjs (created)
+  - src/app/layout.tsx (created)
+  - src/app/page.tsx (created)
+  - src/app/globals.css (created)
+  - public/ (created with default SVG assets)
+- **Learnings for future iterations:**
+  - create-next-app doesn't work in non-empty directories; need to create in temp dir and copy
+  - Tailwind v4 uses @tailwindcss/postcss instead of tailwindcss plugin
+  - Branch is `ralph/mateo-the-great`
+---

@@ -40,7 +40,7 @@
       "title": "Next.js Project Scaffold",
       "description": "As a developer, I need the Next.js app created with TypeScript and Tailwind CSS.",
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Run: npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias '@/*' (use --yes or answer prompts)",
         "Update package.json scripts: dev command uses port 7000 (next dev -p 7000)",
