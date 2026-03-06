@@ -12,11 +12,19 @@ type FormState = { error?: string } | null;
 export default function SignUpPage() {
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prevState, formData) => {
-      const result = await signUp(formData);
-      if ("error" in result) {
-        return { error: result.error };
+      try {
+        const result = await signUp(formData);
+        if (result && "error" in result) {
+          return { error: result.error };
+        }
+        return null;
+      } catch (error) {
+        // Re-throw redirect errors so Next.js can handle them
+        if (error && typeof error === "object" && "digest" in error) {
+          throw error;
+        }
+        return { error: "An unexpected error occurred" };
       }
-      return null;
     },
     null
   );

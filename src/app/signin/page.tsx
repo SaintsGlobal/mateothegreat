@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 
+// Demo credentials for testing
+const DEMO_EMAIL = "demo@mateothegreat.ai";
+const DEMO_PASSWORD = "demo1234";
+
 type FormState = { error?: string } | null;
 
 function SignInForm() {
@@ -16,11 +20,19 @@ function SignInForm() {
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prevState, formData) => {
-      const result = await signIn(formData);
-      if ("error" in result) {
-        return { error: result.error };
+      try {
+        const result = await signIn(formData);
+        if (result && "error" in result) {
+          return { error: result.error };
+        }
+        return null;
+      } catch (error) {
+        // Re-throw redirect errors so Next.js can handle them
+        if (error && typeof error === "object" && "digest" in error) {
+          throw error;
+        }
+        return { error: "An unexpected error occurred" };
       }
-      return null;
     },
     null
   );
@@ -41,6 +53,7 @@ function SignInForm() {
           type="email"
           name="email"
           placeholder="you@example.com"
+          defaultValue={DEMO_EMAIL}
           required
           disabled={isPending}
         />
@@ -50,6 +63,7 @@ function SignInForm() {
           type="password"
           name="password"
           placeholder="Your password"
+          defaultValue={DEMO_PASSWORD}
           required
           disabled={isPending}
         />
@@ -62,6 +76,10 @@ function SignInForm() {
           Sign In
         </Button>
       </form>
+
+      <p className="mt-4 text-center text-xs text-brand-gray/60">
+        Demo: {DEMO_EMAIL} / {DEMO_PASSWORD}
+      </p>
 
       <div className="mt-6 space-y-2 text-center text-sm">
         <p>

@@ -2,12 +2,20 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import pg from "pg";
+import bcrypt from "bcryptjs";
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
+
+// Demo user credentials
+const DEMO_USER = {
+  email: "demo@mateothegreat.ai",
+  password: "demo1234",
+  name: "Demo User",
+};
 
 const articles = [
   {
@@ -48,6 +56,27 @@ const articles = [
 async function main() {
   console.log("Seeding database...");
 
+  // Create demo user
+  const existingUser = await prisma.user.findUnique({
+    where: { email: DEMO_USER.email },
+  });
+
+  if (existingUser) {
+    console.log(`Demo user "${DEMO_USER.email}" already exists, skipping...`);
+  } else {
+    const passwordHash = await bcrypt.hash(DEMO_USER.password, 12);
+    await prisma.user.create({
+      data: {
+        email: DEMO_USER.email,
+        name: DEMO_USER.name,
+        passwordHash,
+        emailVerified: true,
+      },
+    });
+    console.log(`Created demo user: ${DEMO_USER.email} / ${DEMO_USER.password}`);
+  }
+
+  // Create articles
   for (const article of articles) {
     const existing = await prisma.exclusiveContent.findUnique({
       where: { slug: article.slug },
@@ -74,4 +103,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

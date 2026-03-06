@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
+  const startTime = Date.now();
+
   try {
     const { db } = await import("@/lib/db");
 
@@ -9,13 +13,16 @@ export async function GET() {
 
     return NextResponse.json({
       status: "ok",
-      timestamp: Date.now(),
+      timestamp: startTime,
+      latency: Date.now() - startTime,
     });
-  } catch {
+  } catch (error) {
+    console.error("Health check failed:", error);
     return NextResponse.json(
       {
         status: "error",
-        timestamp: Date.now(),
+        timestamp: startTime,
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );
