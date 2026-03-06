@@ -14,6 +14,7 @@ Started: Initial setup
 - Auth utilities in `src/lib/auth.ts`: hashPassword, verifyPassword, createSession, getSession, destroySession
 - Use `getSession()` in server components/actions to get current user (returns session.user or null)
 - After schema changes, always run `npx prisma generate` before building
+- `useSearchParams()` must be wrapped in `<Suspense>` for Next.js 16+ static builds
 ---
 
 ## 2026-03-06 - US-001
@@ -158,4 +159,16 @@ Started: Initial setup
   - Use `generateSessionToken()` for verification tokens too
   - Use `useActionState` hook pattern for form state management (same as newsletter)
   - Redirect with query params via `redirect("/path?param=value")`
+---
+
+## 2026-03-06 - US-011
+- **What was implemented:** Sign in page with form and server action
+- **Files changed:**
+  - src/app/actions/auth.ts (added signIn server action)
+  - src/app/signin/page.tsx (created - sign in form with email, password)
+- **Learnings for future iterations:**
+  - `useSearchParams()` must be wrapped in `<Suspense>` boundary for Next.js 16+ build
+  - Extract component using useSearchParams into separate function and wrap in Suspense
+  - signIn action validates credentials and creates session on success
+  - Display messages from query params (e.g., from signup redirect) in the form
 ---

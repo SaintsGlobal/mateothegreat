@@ -189,7 +189,7 @@
       "title": "Sign In Page",
       "description": "As a user, I want to sign into my account.",
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/app/signin/page.tsx with sign in form",
         "Form fields: email, password",
