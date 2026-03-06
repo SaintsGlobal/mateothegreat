@@ -17,6 +17,13 @@ const DEMO_USER = {
   name: "Demo User",
 };
 
+// Premium test user for billing UI testing
+const PREMIUM_USER = {
+  email: "premium@mateothegreat.ai",
+  password: "premium1234",
+  name: "Premium User",
+};
+
 const articles = [
   {
     title: "The Rise of AI Agents",
@@ -74,6 +81,90 @@ async function main() {
       },
     });
     console.log(`Created demo user: ${DEMO_USER.email} / ${DEMO_USER.password}`);
+  }
+
+  // Create Premium test user with billing data
+  const existingPremiumUser = await prisma.user.findUnique({
+    where: { email: PREMIUM_USER.email },
+  });
+
+  if (existingPremiumUser) {
+    console.log(`Premium user "${PREMIUM_USER.email}" already exists, skipping...`);
+  } else {
+    const premiumPasswordHash = await bcrypt.hash(PREMIUM_USER.password, 12);
+    const premiumUser = await prisma.user.create({
+      data: {
+        email: PREMIUM_USER.email,
+        name: PREMIUM_USER.name,
+        passwordHash: premiumPasswordHash,
+        emailVerified: true,
+        tier: "PREMIUM",
+      },
+    });
+    console.log(`Created premium user: ${PREMIUM_USER.email} / ${PREMIUM_USER.password}`);
+
+    // Create Premium subscription
+    const now = new Date();
+    const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const subscription = await prisma.subscription.create({
+      data: {
+        userId: premiumUser.id,
+        tier: "PREMIUM",
+        status: "ACTIVE",
+        currentPeriodStart: periodStart,
+        currentPeriodEnd: periodEnd,
+      },
+    });
+    console.log("Created Premium subscription");
+
+    // Create 2 mock payment methods
+    await prisma.paymentMethod.create({
+      data: {
+        userId: premiumUser.id,
+        type: "card",
+        last4: "4242",
+        brand: "visa",
+        expiryMonth: 12,
+        expiryYear: 2028,
+        isDefault: true,
+      },
+    });
+    console.log("Created payment method: Visa ending 4242 (default)");
+
+    await prisma.paymentMethod.create({
+      data: {
+        userId: premiumUser.id,
+        type: "card",
+        last4: "5555",
+        brand: "mastercard",
+        expiryMonth: 6,
+        expiryYear: 2027,
+        isDefault: false,
+      },
+    });
+    console.log("Created payment method: Mastercard ending 5555");
+
+    // Create 3 mock invoices for past 3 months (all PAID)
+    for (let i = 2; i >= 0; i--) {
+      const invoiceMonth = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const invoicePeriodEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+
+      await prisma.invoice.create({
+        data: {
+          userId: premiumUser.id,
+          subscriptionId: subscription.id,
+          amount: 999, // $9.99 in cents
+          currency: "usd",
+          status: "PAID",
+          periodStart: invoiceMonth,
+          periodEnd: invoicePeriodEnd,
+          createdAt: invoiceMonth,
+        },
+      });
+      console.log(`Created invoice for ${invoiceMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`);
+    }
   }
 
   // Create articles
