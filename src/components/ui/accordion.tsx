@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, ReactNode } from "react";
+import { useState, ReactNode } from "react";
 
 interface AccordionItemProps {
   title: string;
@@ -14,16 +14,6 @@ export function AccordionItem({
   defaultOpen = false,
 }: AccordionItemProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<number | undefined>(
-    defaultOpen ? undefined : 0
-  );
-
-  useEffect(() => {
-    if (contentRef.current) {
-      setHeight(isOpen ? contentRef.current.scrollHeight : 0);
-    }
-  }, [isOpen]);
 
   return (
     <div className="border-b border-border">
@@ -51,11 +41,14 @@ export function AccordionItem({
         </svg>
       </button>
       <div
-        style={{ height }}
-        className="overflow-hidden transition-[height] duration-300 ease-in-out"
+        className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
+          isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
       >
-        <div ref={contentRef} className="pb-4 text-muted">
-          {children}
+        <div className="overflow-hidden">
+          <div className="pb-4 text-muted">
+            {children}
+          </div>
         </div>
       </div>
     </div>

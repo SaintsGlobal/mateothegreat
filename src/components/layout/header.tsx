@@ -18,6 +18,9 @@ export function Header() {
           <Link href="/exclusive" className="text-sm text-brand-gray hover:text-white transition-colors">
             Exclusive
           </Link>
+          <Link href="/faq" className="text-sm text-brand-gray hover:text-white transition-colors">
+            FAQ
+          </Link>
           <Link href="/signin" className="text-sm text-brand-gray hover:text-white transition-colors">
             Sign In
           </Link>
