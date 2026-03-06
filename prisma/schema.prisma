@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String
+  emailVerified Boolean   @default(false)
+  resetToken    String?
+  resetTokenExp DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum SubscriberStatus {
+  ACTIVE
+  UNSUBSCRIBED
+}
+
+model NewsletterSubscriber {
+  id           String           @id @default(cuid())
+  email        String           @unique
+  status       SubscriberStatus @default(ACTIVE)
+  subscribedAt DateTime         @default(now())
+}
+
+enum ContentType {
+  ARTICLE
+  VIDEO
+  ANNOUNCEMENT
+}
+
+model ExclusiveContent {
+  id          String      @id @default(cuid())
+  title       String
+  slug        String      @unique
+  content     String
+  type        ContentType @default(ARTICLE)
+  createdAt   DateTime    @default(now())
+  publishedAt DateTime?
+}
