@@ -6,6 +6,7 @@ import { ParagraphBlockComponent } from "./blocks/paragraph-block";
 import { ListBlockComponent } from "./blocks/list-block";
 import { ImageBlockComponent } from "./blocks/image-block";
 import { CodeBlockComponent } from "./blocks/code-block";
+import { LinkSnippetBlockComponent } from "./blocks/link-snippet";
 
 interface NewsletterRendererProps {
   newsletter: Newsletter;
@@ -71,27 +72,7 @@ function BlockRenderer({ block }: { block: Block }) {
         </div>
       );
     case "snippet":
-      // TODO: NL-009 - Link snippet block implementation
-      return (
-        <a
-          href={block.content.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block mb-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-        >
-          <h4 className="font-medium text-blue-600 dark:text-blue-400">
-            {block.content.title}
-          </h4>
-          {block.content.description && (
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {block.content.description}
-            </p>
-          )}
-          <span className="text-xs text-gray-400 mt-2 block">
-            {block.content.domain}
-          </span>
-        </a>
-      );
+      return <LinkSnippetBlockComponent block={block} />;
     default:
       return null;
   }
