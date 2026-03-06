@@ -527,3 +527,134 @@ export async function cancelUserSubscription(): Promise<CancelResult> {
 
   return { success: true, periodEnd: subscription.currentPeriodEnd };
 }
+
+import type { PaymentMethod } from "@prisma/client";
+
+type PaymentMethodsResult =
+  | { success: true; paymentMethods: PaymentMethod[] }
+  | { error: string };
+
+export async function getPaymentMethods(): Promise<PaymentMethodsResult> {
+  const { getSession } = await import("@/lib/auth");
+  const { listPaymentMethods } = await import("@/lib/billing/payment-service");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const result = await listPaymentMethods(session.user.id);
+
+  if (!result.success) {
+    return { error: result.error };
+  }
+
+  return { success: true, paymentMethods: result.paymentMethods };
+}
+
+type AddPaymentMethodResult =
+  | { success: true; paymentMethod: PaymentMethod }
+  | { error: string };
+
+export async function addUserPaymentMethod(
+  formData: FormData
+): Promise<AddPaymentMethodResult> {
+  const { getSession } = await import("@/lib/auth");
+  const { addPaymentMethod } = await import("@/lib/billing/payment-service");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const cardNumber = formData.get("cardNumber")?.toString().replace(/\s/g, "");
+  const expiryMonth = parseInt(formData.get("expiryMonth")?.toString() || "0");
+  const expiryYear = parseInt(formData.get("expiryYear")?.toString() || "0");
+
+  if (!cardNumber || cardNumber.length < 13 || cardNumber.length > 19) {
+    return { error: "Invalid card number" };
+  }
+
+  if (expiryMonth < 1 || expiryMonth > 12) {
+    return { error: "Invalid expiry month" };
+  }
+
+  const currentYear = new Date().getFullYear();
+  if (expiryYear < currentYear || expiryYear > currentYear + 20) {
+    return { error: "Invalid expiry year" };
+  }
+
+  // Detect card brand from number
+  const brand = detectCardBrand(cardNumber);
+  const last4 = cardNumber.slice(-4);
+
+  const result = await addPaymentMethod(session.user.id, {
+    type: "card",
+    last4,
+    brand,
+    expiryMonth,
+    expiryYear,
+  });
+
+  if (!result.success) {
+    return { error: result.error };
+  }
+
+  return { success: true, paymentMethod: result.paymentMethod };
+}
+
+function detectCardBrand(cardNumber: string): string {
+  if (cardNumber.startsWith("4")) return "Visa";
+  if (/^5[1-5]/.test(cardNumber)) return "Mastercard";
+  if (/^3[47]/.test(cardNumber)) return "Amex";
+  if (/^6(?:011|5)/.test(cardNumber)) return "Discover";
+  return "Card";
+}
+
+type RemovePaymentMethodResult =
+  | { success: true }
+  | { error: string };
+
+export async function removeUserPaymentMethod(
+  paymentMethodId: string
+): Promise<RemovePaymentMethodResult> {
+  const { getSession } = await import("@/lib/auth");
+  const { removePaymentMethod } = await import("@/lib/billing/payment-service");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const result = await removePaymentMethod(session.user.id, paymentMethodId);
+
+  if (!result.success) {
+    return { error: result.error };
+  }
+
+  return { success: true };
+}
+
+type SetDefaultPaymentMethodResult =
+  | { success: true }
+  | { error: string };
+
+export async function setUserDefaultPaymentMethod(
+  paymentMethodId: string
+): Promise<SetDefaultPaymentMethodResult> {
+  const { getSession } = await import("@/lib/auth");
+  const { setDefaultPaymentMethod } = await import("@/lib/billing/payment-service");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  const result = await setDefaultPaymentMethod(session.user.id, paymentMethodId);
+
+  if (!result.success) {
+    return { error: result.error };
+  }
+
+  return { success: true };
+}
