@@ -58,3 +58,17 @@ Started: Initial setup
   - Use `bg-brand-green`, `text-brand-coral` etc. in Tailwind classes
   - Inter font loaded via next/font/google with variable `--font-inter`
 ---
+
+## 2026-03-06 - US-004
+- **What was implemented:** Reusable UI components (Button, Input, Card) with Tailwind v4 styling
+- **Files changed:**
+  - src/components/ui/button.tsx (created - primary/secondary variants, sm/md/lg sizes, loading spinner)
+  - src/components/ui/input.tsx (created - label, error message support, dark theme)
+  - src/components/ui/card.tsx (created - dark-alt bg, subtle border, optional glow on hover)
+  - src/components/ui/index.ts (created - barrel export)
+- **Learnings for future iterations:**
+  - UI components exported from `src/components/ui/index.ts`
+  - Button variants: `primary` (brand-coral), `secondary` (brand-cyan)
+  - Card `glow` prop enables hover effect with cyan shadow
+  - Use `forwardRef` pattern for all form components
+---

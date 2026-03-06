@@ -85,7 +85,7 @@
       "title": "UI Components",
       "description": "As a developer, I need reusable Button, Input, and Card components.",
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/components/ui/button.tsx: variants (primary uses brand-coral, secondary uses brand-cyan), sizes (sm, md, lg), disabled state, loading state with spinner",
         "Create src/components/ui/input.tsx: styled input with label, error message support, dark theme styling",
