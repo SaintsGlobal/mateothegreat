@@ -463,3 +463,29 @@ export async function getSubscriptionDetails(): Promise<GetSubscriptionResult> {
     },
   };
 }
+
+type UpgradeResult =
+  | { success: true }
+  | { error: string };
+
+export async function upgradeSubscription(): Promise<UpgradeResult> {
+  const { getSession } = await import("@/lib/auth");
+  const { createSubscription } = await import("@/lib/billing/subscription-service");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  if (session.user.tier === "PREMIUM") {
+    return { error: "Already subscribed to Premium" };
+  }
+
+  const result = await createSubscription(session.user.id, "PREMIUM");
+
+  if (!result.success) {
+    return { error: result.error };
+  }
+
+  return { success: true };
+}
