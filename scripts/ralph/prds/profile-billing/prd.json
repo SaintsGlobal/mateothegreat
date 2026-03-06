@@ -231,7 +231,7 @@
       "title": "Billing API Endpoints",
       "description": "As a developer, I need API endpoints for billing operations.",
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "POST /api/billing/subscribe - creates subscription via service",
         "POST /api/billing/cancel - cancels subscription via service",
