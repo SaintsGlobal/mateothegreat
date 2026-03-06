@@ -27,8 +27,10 @@ export function ThemeToggle() {
     const root = document.documentElement;
     if (isDark) {
       root.classList.add("light");
+      localStorage.setItem("theme", "light");
     } else {
       root.classList.remove("light");
+      localStorage.setItem("theme", "dark");
     }
   }, [isDark]);
 
