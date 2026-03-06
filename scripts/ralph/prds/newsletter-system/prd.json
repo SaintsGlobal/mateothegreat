@@ -1,0 +1,387 @@
+{
+  "projectName": "Newsletter Content System",
+  "branchName": "ralph/newsletter-system",
+  "description": "Structured JSON newsletter system with templates, CLI skill for creation, draft/approval workflow, and rich content rendering including markdown support, versioning, and preview routes.",
+  "techStack": {
+    "rendering": "React components with Tailwind",
+    "syntax": "Shiki for code highlighting",
+    "markdown": "react-markdown + remark-gfm",
+    "storage": "JSON files (drafts) + PostgreSQL (published)",
+    "validation": "Zod schemas"
+  },
+  "userStories": [
+    {
+      "id": "NL-001",
+      "title": "Newsletter JSON Schema",
+      "description": "As a developer, I need a documented JSON schema for newsletter content so all newsletters have consistent structure.",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create docs/newsletter-schema.md documenting the JSON structure",
+        "Create src/lib/newsletter-schema.ts with Zod schema",
+        "Schema supports block types: header, paragraph, list, image, video, code, blockquote, callout, expandable, tabs, snippet",
+        "Each block has type, content, and optional style properties",
+        "Paragraph blocks support markdown content",
+        "Root schema: id, title, slug, template, status (draft|approved|published), author, version, publishedAt, blocks[]",
+        "Export TypeScript types from schema",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-002",
+      "title": "Template - Weekly Update",
+      "description": "As a content creator, I want a Weekly Update template for consistent weekly newsletters.",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create content/newsletters/templates/weekly-update.json",
+        "Template includes: hero header, intro paragraph, 3-5 highlight sections, bullet lists, closing CTA",
+        "Template has placeholder content showing expected structure",
+        "JSON validates against Zod schema (add test)"
+      ]
+    },
+    {
+      "id": "NL-003",
+      "title": "Template - Deep Dive",
+      "description": "As a content creator, I want a Deep Dive template for in-depth technical content.",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create content/newsletters/templates/deep-dive.json",
+        "Template includes: title, intro, multiple h2/h3 sections, code snippets, images, blockquotes, conclusion",
+        "Supports expandable sections for long content",
+        "JSON validates against schema"
+      ]
+    },
+    {
+      "id": "NL-004",
+      "title": "Template - News Digest",
+      "description": "As a content creator, I want a News Digest template for curating news items.",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create content/newsletters/templates/news-digest.json",
+        "Template includes: intro, 5-7 news item cards with link snippets, brief commentary, category tags",
+        "Each news item has title, source, summary, link",
+        "JSON validates against schema"
+      ]
+    },
+    {
+      "id": "NL-005",
+      "title": "Template - Behind-the-Scenes",
+      "description": "As a content creator, I want a Behind-the-Scenes template for informal updates.",
+      "priority": 5,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create content/newsletters/templates/behind-the-scenes.json",
+        "Template includes: casual intro, image gallery section, story blocks, personal notes callout",
+        "Supports embedded media (photos, videos)",
+        "JSON validates against schema"
+      ]
+    },
+    {
+      "id": "NL-006",
+      "title": "Template - Special Announcement",
+      "description": "As a content creator, I want a Special Announcement template for important news.",
+      "priority": 6,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create content/newsletters/templates/special-announcement.json",
+        "Template includes: bold hero header, announcement body, key details list, CTA buttons, FAQ expandable",
+        "High-impact visual styling hints in style properties",
+        "JSON validates against schema"
+      ]
+    },
+    {
+      "id": "NL-007",
+      "title": "Newsletter Renderer Component",
+      "description": "As a user, I want newsletters to render beautifully from JSON.",
+      "priority": 7,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/components/newsletter/newsletter-renderer.tsx",
+        "Renders all block types via sub-components in src/components/newsletter/blocks/",
+        "Create block components: header-block.tsx, paragraph-block.tsx, list-block.tsx, image-block.tsx",
+        "Paragraph block renders markdown using react-markdown",
+        "Responsive layout matching site aesthetic",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-008",
+      "title": "Code Block with Syntax Highlighting",
+      "description": "As a user, I want code snippets with syntax highlighting.",
+      "priority": 8,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Install shiki: npm install shiki",
+        "Create src/components/newsletter/blocks/code-block.tsx",
+        "Supports languages: javascript, typescript, python, bash, json, tsx",
+        "Copy button on each code block",
+        "Dark theme styling matching site",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-009",
+      "title": "Link Snippet Block",
+      "description": "As a user, I want link snippets with rich previews.",
+      "priority": 9,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/components/newsletter/blocks/link-snippet.tsx",
+        "Displays: title, description, favicon, domain, optional image",
+        "Card-style layout with hover state",
+        "Snippet data stored in JSON (not fetched at runtime)",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-010",
+      "title": "Expandable Section Block",
+      "description": "As a user, I want expandable sections for long content.",
+      "priority": 10,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/components/newsletter/blocks/expandable-block.tsx",
+        "Click to expand/collapse with smooth CSS transition",
+        "Shows title and preview when collapsed",
+        "Chevron indicator rotates on state change",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-011",
+      "title": "Callout Block",
+      "description": "As a user, I want callout boxes for important information.",
+      "priority": 11,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/components/newsletter/blocks/callout-block.tsx",
+        "Variants: info (cyan), warning (orange), tip (green), important (coral)",
+        "Icon + colored border/background per variant",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-012",
+      "title": "Video and Blockquote Blocks",
+      "description": "As a user, I want video embeds and styled blockquotes.",
+      "priority": 12,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/components/newsletter/blocks/video-block.tsx",
+        "Supports YouTube embeds via youtube-nocookie.com",
+        "Create src/components/newsletter/blocks/blockquote-block.tsx",
+        "Blockquote has left border accent, italic styling, optional attribution",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-013",
+      "title": "Tabs Block",
+      "description": "As a user, I want tabbed content sections.",
+      "priority": 13,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/components/newsletter/blocks/tabs-block.tsx",
+        "Tab headers with active state indicator",
+        "Smooth content transition between tabs",
+        "Each tab can contain any block type",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-014",
+      "title": "Copy Article Button",
+      "description": "As a user, I want to copy the entire article with one click.",
+      "priority": 14,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Add copy button component in top-right area of article",
+        "Button copies article content as formatted plain text (not JSON)",
+        "Shows 'Copied!' confirmation for 2 seconds",
+        "Position sticky so accessible while scrolling",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-015",
+      "title": "Draft Storage Directory",
+      "description": "As a developer, I need draft newsletters stored as tracked files.",
+      "priority": 15,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create content/newsletters/drafts/ directory with .gitkeep",
+        "Create content/newsletters/published/ directory with .gitkeep",
+        "Draft files named {slug}.json",
+        "Drafts are git-tracked (no gitignore)",
+        "Add README.md in content/newsletters/ explaining structure"
+      ]
+    },
+    {
+      "id": "NL-016",
+      "title": "Newsletter Database Model",
+      "description": "As a developer, I need a database model for published newsletters.",
+      "priority": 16,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Add Newsletter model to prisma/schema.prisma",
+        "Fields: id, title, slug (unique), template, content (Json), author, status, version (Int), publishedAt, createdAt, updatedAt",
+        "Run: npx prisma db push",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-017",
+      "title": "Newsletter Versioning",
+      "description": "As a developer, I need version history for newsletters.",
+      "priority": 17,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Add NewsletterVersion model to Prisma schema",
+        "Fields: id, newsletterId (relation), version (Int), content (Json), createdAt",
+        "On publish, create version record with current content",
+        "Version increments on each publish of same slug",
+        "Run: npx prisma db push"
+      ]
+    },
+    {
+      "id": "NL-018",
+      "title": "Publish Newsletter Script",
+      "description": "As a developer, I need approved newsletters to publish to database.",
+      "priority": 18,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create scripts/publish-newsletters.ts",
+        "Script reads all files in content/newsletters/drafts/",
+        "For files with status approved: insert/update Newsletter, create version record, set status published, move to published/",
+        "Add npm script: publish:newsletters",
+        "Script runs without errors on empty drafts folder"
+      ]
+    },
+    {
+      "id": "NL-019",
+      "title": "Newsletter Preview Route",
+      "description": "As a content creator, I want to preview draft newsletters before publishing.",
+      "priority": 19,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/app/preview/[slug]/page.tsx",
+        "Reads from content/newsletters/drafts/{slug}.json",
+        "Renders using NewsletterRenderer component",
+        "Shows 'PREVIEW - NOT PUBLISHED' banner at top",
+        "404 if draft not found",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-020",
+      "title": "Newsletter List Page",
+      "description": "As a user, I want to browse published newsletters.",
+      "priority": 20,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Update /exclusive page or create /newsletters page",
+        "Fetch from Newsletter table where status = published",
+        "Display cards: title, date, template badge, version number",
+        "Link to /exclusive/{slug} or /newsletters/{slug}",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-021",
+      "title": "Newsletter Detail Page",
+      "description": "As a user, I want to view a published newsletter with full content.",
+      "priority": 21,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Update /exclusive/[slug] to fetch newsletter by slug from database",
+        "Pass JSON content to NewsletterRenderer",
+        "Include copy button (NL-014)",
+        "Show version and publish date in header",
+        "404 if slug not found",
+        "npm run build passes"
+      ]
+    },
+    {
+      "id": "NL-022",
+      "title": "/newsletter Skill - Create Flow",
+      "description": "As a content creator, I want a CLI skill that interviews me to create newsletters.",
+      "priority": 22,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create skill at ~/.claude/skills/newsletter/skill.md",
+        "Skill asks: template choice, title, slug, author",
+        "Interview adapts questions based on template chosen",
+        "Generates valid JSON matching schema",
+        "Saves to content/newsletters/drafts/{slug}.json",
+        "Sets status: draft, version: 1"
+      ]
+    },
+    {
+      "id": "NL-023",
+      "title": "/newsletter Skill - Approve Command",
+      "description": "As a content creator, I want to approve newsletters via CLI.",
+      "priority": 23,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Skill supports /newsletter approve <slug> syntax",
+        "Sets status: approved in draft JSON",
+        "Confirms: Newsletter 'title' approved. Run npm run publish:newsletters to deploy.",
+        "Error message if slug not found in drafts/"
+      ]
+    },
+    {
+      "id": "NL-024",
+      "title": "/newsletter Skill - List Command",
+      "description": "As a content creator, I want to list all draft newsletters.",
+      "priority": 24,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Skill supports /newsletter list syntax",
+        "Shows table: slug, title, template, status, version",
+        "Reads from content/newsletters/drafts/",
+        "Indicates which are ready for approval"
+      ]
+    },
+    {
+      "id": "NL-025",
+      "title": "/newsletter Skill - Preview Command",
+      "description": "As a content creator, I want to preview drafts before approving.",
+      "priority": 25,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Skill supports /newsletter preview <slug> syntax",
+        "Opens http://localhost:7000/preview/{slug} in browser if browser tools available",
+        "Otherwise displays formatted summary in terminal",
+        "Error if slug not found"
+      ]
+    },
+    {
+      "id": "NL-026",
+      "title": "CI Newsletter Publish Integration",
+      "description": "As a developer, I want approved newsletters to publish on deploy.",
+      "priority": 26,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Update .github/workflows/test.yml or create deploy workflow",
+        "Run npm run publish:newsletters after build",
+        "Only triggers when content/newsletters/ files change",
+        "Railway deploys database changes automatically"
+      ]
+    }
+  ],
+  "nonGoals": [
+    "No WYSIWYG browser editor (CLI skill is authoring interface)",
+    "No real-time collaboration on drafts",
+    "No scheduled publishing (immediate on approval + deploy)",
+    "No email delivery of newsletters (web-only)",
+    "No comments or reactions on newsletters",
+    "No A/B testing of content"
+  ],
+  "envVariables": [
+    "DATABASE_URL",
+    "NEXT_PUBLIC_SITE_URL"
+  ]
+}

@@ -1,0 +1,435 @@
+# Newsletter System Progress Log
+
+## Codebase Patterns
+- Project uses ES modules (`"type": "module"` in package.json)
+- Zod v4 recursive schemas: define TypeScript types manually first, then use `z.ZodType<T>` annotation for recursive schema variables
+- For nested block structures (expandable, tabs), limit to base blocks to avoid circular type issues
+- Project root is /Users/gloucore/dev/claude-ralph-loop (not the prd directory)
+- Dev server runs on port 7000
+- Template UUIDs must be valid (not all-zeros) - use format like `a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d`
+- Test files go in `src/lib/__tests__/` directory
+- Vitest config at project root: `vitest.config.ts`
+- Tailwind v4: use `@import "tailwindcss"` in globals.css (not @tailwind directives)
+- Block components: `src/components/newsletter/blocks/{type}-block.tsx` with `{Type}BlockComponent` naming
+- Client components using react-markdown need "use client" directive
+- Prisma 7: config in `prisma.config.ts` at project root, schema in `prisma/schema.prisma`, use dotenv for DATABASE_URL
+
+---
+
+## 2026-03-06 - NL-001
+- **What was implemented**: Newsletter JSON schema with Zod validation and documentation
+- **Files changed**:
+  - `package.json` (created - was missing from project)
+  - `tsconfig.json` (created)
+  - `next.config.js` (created)
+  - `src/lib/newsletter-schema.ts` - Zod schema with all 11 block types
+  - `src/app/layout.tsx` - minimal app layout
+  - `src/app/page.tsx` - minimal home page
+  - `docs/newsletter-schema.md` - documentation
+- **Learnings for future iterations:**
+  - Project was missing package.json - had to recreate based on installed node_modules
+  - Zod v4 discriminatedUnion doesn't play well with z.lazy() for circular types - define TS types first, then schemas
+  - Next.js 16 needs `"type": "module"` in package.json
+  - Block schema supports: header, paragraph, list, image, video, code, blockquote, callout, expandable, tabs, snippet
+---
+
+## 2026-03-06 - NL-002
+- **What was implemented**: Weekly Update newsletter template with validation test
+- **Files changed**:
+  - `content/newsletters/templates/weekly-update.json` - Template with hero header, intro, 5 highlight sections with bullet lists, closing CTA
+  - `src/lib/__tests__/newsletter-templates.test.ts` - Vitest tests validating templates against Zod schema
+  - `vitest.config.ts` - Vitest configuration
+- **Learnings for future iterations:**
+  - Zod UUID validation rejects all-zeros UUIDs - must use valid random UUIDs
+  - Template validation tests dynamically discover all JSON files in templates directory
+  - Weekly update template structure: h1 hero, intro paragraph, h2 sections (3-5), bullet lists per section, callout CTA, centered link paragraph
+---
+
+## 2026-03-06 - NL-003
+- **What was implemented**: Deep Dive newsletter template for in-depth technical content
+- **Files changed**:
+  - `content/newsletters/templates/deep-dive.json` - Complete template with all required block types
+- **Template structure**:
+  - Hero h1 header with centered alignment
+  - Intro paragraph with markdown
+  - "Understanding the Fundamentals" h2 with h3 subsections
+  - Blockquotes with attribution
+  - "Implementation Guide" h2 with code snippets (bash, typescript, tsx)
+  - Callout blocks (warning, tip variants)
+  - Three expandable sections for advanced patterns (error handling, performance, testing)
+  - "Real-World Example" with architecture image and complete code
+  - "Common Pitfalls" list
+  - Conclusion with numbered recap
+- **Learnings for future iterations:**
+  - Deep dive templates benefit from expandable sections to keep main content scannable
+  - Include multiple code languages to demonstrate versatility
+  - Use h3 subsections under h2 for clear hierarchy
+---
+
+## 2026-03-06 - NL-004
+- **What was implemented**: News Digest newsletter template for curating news items
+- **Files changed**:
+  - `content/newsletters/templates/news-digest.json` - Complete template with 7 news items
+- **Template structure**:
+  - Hero h1 header with centered alignment
+  - Intro paragraph explaining the digest format
+  - 5 categorized sections: AI & ML, Developer Tools, Industry & Business, Security & Privacy, Community & Events
+  - 7 snippet blocks for news items with title, description, domain, optional image
+  - Commentary paragraphs after each snippet with "Our take:" format
+  - Warning callout for security action items
+  - Quick Links list for additional resources
+  - Closing CTA callout and social links
+- **Learnings for future iterations:**
+  - Snippet blocks are ideal for news items: url, title, description, domain, optional image/favicon
+  - Group news items by category using h2 headers
+  - Include brief commentary after snippets to add value beyond just linking
+  - Use warning callout variant for actionable security news
+---
+
+## 2026-03-06 - NL-005
+- **What was implemented**: Behind-the-Scenes newsletter template for informal, personal updates
+- **Files changed**:
+  - `content/newsletters/templates/behind-the-scenes.json` - Complete template with casual tone
+- **Template structure**:
+  - Hero h1 header with centered alignment and casual title format
+  - Casual intro paragraph with personal, conversational tone
+  - "What We've Been Up To" h2 with narrative story block and image
+  - "Photo Gallery" h2 with 4 image blocks for visual storytelling
+  - "The Story Behind the Latest Update" h2 with blockquote for user feedback
+  - Embedded video block showing development process
+  - "Lessons Learned" h2 with reflection list
+  - "Sneak Peek" h2 with teaser image and expandable spoiler section
+  - Personal notes callout (tip variant) for heartfelt thank you
+  - Social links footer
+- **Learnings for future iterations:**
+  - Behind-the-scenes templates benefit from multiple image blocks for gallery effect
+  - Use blockquotes to highlight user feedback that sparked changes
+  - Expandable sections work well for "spoiler" content readers can optionally reveal
+  - Callout with tip variant is good for personal, heartfelt notes
+  - Video blocks add authenticity to behind-the-scenes content
+- Newsletter renderer uses "use client" directive for react-markdown
+- Block components are in src/components/newsletter/blocks/ with index.ts exports
+- Tailwind v4 uses CSS-based config via @import "tailwindcss" in globals.css
+---
+
+## 2026-03-06 - NL-006
+- **What was implemented**: Special Announcement newsletter template for important news and announcements
+- **Files changed**:
+  - `content/newsletters/templates/special-announcement.json` - High-impact template with bold styling
+- **Template structure**:
+  - Bold hero h1 header with centered alignment and highlight emphasis
+  - Important callout (coral variant) for impactful summary
+  - Announcement body with markdown for full story explanation
+  - "Key Details" h2 with bullet list (What, When, Where, Who, Why format)
+  - "What This Means For You" h2 with numbered impact items
+  - "Take Action Now" h2 with CTA buttons (primary + secondary links)
+  - "Frequently Asked Questions" h2 with 4 expandable FAQ sections
+  - Info callout for contact information
+  - Closing thank you paragraph and social links footer
+- **Learnings for future iterations:**
+  - Use `"emphasis": "highlight"` style property for high-impact headers
+  - Important callout variant (coral) is ideal for critical announcements
+  - Expandable blocks work well for FAQ sections to keep main content scannable
+  - CTA buttons can be simulated with centered paragraphs containing markdown links
+  - Structure key details as a bullet list with consistent "Label: Description" format
+---
+
+## 2026-03-06 - NL-007
+- **What was implemented**: Newsletter Renderer Component with basic block types
+- **Files changed**:
+  - `src/app/globals.css` - Tailwind v4 CSS config with dark mode support
+  - `src/app/layout.tsx` - Added globals.css import
+  - `src/components/newsletter/newsletter-renderer.tsx` - Main renderer with BlockRenderer switch
+  - `src/components/newsletter/blocks/header-block.tsx` - h1-h4 with alignment and emphasis styles
+  - `src/components/newsletter/blocks/paragraph-block.tsx` - Markdown rendering with react-markdown + remark-gfm
+  - `src/components/newsletter/blocks/list-block.tsx` - Ordered/unordered lists
+  - `src/components/newsletter/blocks/image-block.tsx` - Images with captions
+  - `src/components/newsletter/blocks/index.ts` - Block exports
+  - `src/components/newsletter/index.ts` - Main component exports
+  - `package.json` - Added react-markdown and remark-gfm dependencies
+- **Learnings for future iterations:**
+  - Paragraph block needs "use client" directive for react-markdown
+  - Tailwind v4 uses `@import "tailwindcss"` instead of @tailwind directives
+  - Block components follow pattern: `{Type}BlockComponent` with `{Type}BlockProps` interface
+  - NewsletterRenderer handles all block types with placeholder implementations for future stories
+  - Export index files make imports cleaner: `from "@/components/newsletter"`
+---
+
+## 2026-03-06 - NL-008
+- **What was implemented**: Code Block with Syntax Highlighting using Shiki
+- **Files changed**:
+  - `package.json` - Added shiki dependency
+  - `src/components/newsletter/blocks/code-block.tsx` - New component with syntax highlighting
+  - `src/components/newsletter/blocks/index.ts` - Export CodeBlockComponent
+  - `src/components/newsletter/newsletter-renderer.tsx` - Import and use CodeBlockComponent
+- **Implementation details**:
+  - Uses shiki's `codeToHtml` function with github-dark theme
+  - Supports languages: javascript, typescript, python, bash, json, tsx
+  - Copy button appears on hover with "Copied!" confirmation for 2 seconds
+  - Optional filename header display above code block
+  - Falls back to plain code while shiki loads asynchronously
+- **Learnings for future iterations:**
+  - Shiki is async - use useEffect + useState pattern for client-side highlighting
+  - github-dark theme matches the site's dark mode aesthetic well
+  - Group hover with Tailwind: `group` on parent, `group-hover:opacity-100` on child
+  - Shiki injects its own pre styles - use `[&>pre]` selector to override padding/margin
+---
+
+## 2026-03-06 - NL-009
+- **What was implemented**: Link Snippet Block component with rich preview card layout
+- **Files changed**:
+  - `src/components/newsletter/blocks/link-snippet.tsx` - New component with card layout
+  - `src/components/newsletter/blocks/index.ts` - Export LinkSnippetBlockComponent
+  - `src/components/newsletter/newsletter-renderer.tsx` - Import and use LinkSnippetBlockComponent
+- **Implementation details**:
+  - Card-style layout with optional image on left (hidden on mobile)
+  - Displays title, description, favicon, and domain
+  - Hover effects: border highlight, shadow, subtle scale, image zoom
+  - Title changes to blue on hover for click affordance
+  - Uses line-clamp for text overflow control
+  - Responsive: image hidden on small screens for mobile-friendly layout
+- **Learnings for future iterations:**
+  - Use `group` and `group-hover:` for coordinated hover effects across child elements
+  - `line-clamp-2` is useful for limiting text to 2 lines with ellipsis
+  - `hidden sm:block` pattern works well for responsive image display
+  - `flex-shrink-0` prevents image container from collapsing in flex layout
+---
+
+## 2026-03-06 - NL-010
+- **What was implemented**: Expandable Section Block component with smooth CSS transitions
+- **Files changed**:
+  - `src/components/newsletter/blocks/expandable-block.tsx` - New component with expand/collapse
+  - `src/components/newsletter/blocks/index.ts` - Export ExpandableBlockComponent
+  - `src/components/newsletter/newsletter-renderer.tsx` - Use new component in BlockRenderer
+- **Implementation details**:
+  - Uses React state (useState) for expand/collapse toggle
+  - CSS grid transition (`grid-template-rows`) for smooth height animation
+  - Chevron SVG rotates 180 degrees on expand using Tailwind `transition-transform duration-200`
+  - Shows title and optional preview text when collapsed
+  - Preview text hidden when expanded
+  - Button element with proper aria-expanded for accessibility
+  - Component accepts children prop to render nested blocks from parent
+- **Learnings for future iterations:**
+  - CSS grid `grid-rows-[0fr]` to `grid-rows-[1fr]` with `overflow-hidden` creates smooth height transitions
+  - Children pattern allows parent to handle nested block rendering while component manages UI state
+  - Use `min-w-0` on flex children to allow text truncation to work properly
+---
+
+## 2026-03-06 - NL-011
+- **What was implemented**: Callout Block component with four variants (info, warning, tip, important)
+- **Files changed**:
+  - `src/components/newsletter/blocks/callout-block.tsx` - New component with variant styling
+  - `src/components/newsletter/blocks/index.ts` - Export CalloutBlockComponent
+  - `src/components/newsletter/newsletter-renderer.tsx` - Import and use CalloutBlockComponent
+- **Implementation details**:
+  - Four variants with distinct colors: info (cyan), warning (orange), tip (green), important (red/coral)
+  - Each variant has matching icon: info circle, warning triangle, lightbulb, exclamation circle
+  - Left border accent with matching background tint (light in light mode, transparent dark in dark mode)
+  - Icons defined as inline SVG components for easy customization
+  - Fallback styles for "important" since Tailwind doesn't have native coral colors
+- **Learnings for future iterations:**
+  - Tailwind doesn't have coral color by default - use red-400/red-50 tones as fallback
+  - Define variant styles as const object for cleaner switch-free logic
+  - Use `role="note"` and `aria-label` for accessibility on callout containers
+---
+
+## 2026-03-06 - NL-012
+- **What was implemented**: Video and Blockquote block components
+- **Files changed**:
+  - `src/components/newsletter/blocks/video-block.tsx` - New component with YouTube embed
+  - `src/components/newsletter/blocks/blockquote-block.tsx` - New component with styled quote
+  - `src/components/newsletter/blocks/index.ts` - Added exports
+  - `src/components/newsletter/newsletter-renderer.tsx` - Updated to use new components
+- **Implementation details**:
+  - Video uses youtube-nocookie.com for privacy-friendly embeds
+  - Responsive 16:9 aspect ratio container for video
+  - Optional title caption below video
+  - Blockquote has cyan left border accent
+  - Italic text styling with relaxed line height
+  - Optional attribution in footer with "— " prefix
+- **Learnings for future iterations:**
+  - Use `aspect-video` class for 16:9 responsive video containers
+  - youtube-nocookie.com is the privacy-compliant YouTube embed domain
+  - Use `<figure>` and `<figcaption>` for semantic media with captions
+  - Blockquotes should use `<footer>` and `<cite>` for attribution semantics
+---
+
+## 2026-03-06 - NL-013
+- **What was implemented**: Tabs Block component with smooth transitions and active state indicators
+- **Files changed**:
+  - `src/components/newsletter/blocks/tabs-block.tsx` - New component with tab UI
+  - `src/components/newsletter/blocks/index.ts` - Export TabsBlockComponent
+  - `src/components/newsletter/newsletter-renderer.tsx` - Import and use TabsBlockComponent
+- **Implementation details**:
+  - Uses useState for active tab index tracking
+  - Tab headers in horizontal layout with cyan active indicator
+  - Active indicator uses CSS scale transform for smooth animation
+  - Content panels use opacity transition for smooth switching
+  - Accepts renderBlock prop to allow parent to handle nested block rendering
+  - Proper ARIA attributes: role="tablist", role="tab", aria-selected, aria-controls, role="tabpanel"
+  - Inactive panels positioned absolute with pointer-events-none
+- **Learnings for future iterations:**
+  - For components with nested blocks, use renderBlock prop pattern instead of children for flexibility
+  - CSS `scale-x-0` to `scale-x-100` creates smooth underline indicator animation
+  - Use `absolute inset-0 pointer-events-none` to keep inactive panels in DOM but hidden (preserves state)
+---
+
+## 2026-03-06 - NL-014
+- **What was implemented**: Copy Article Button with sticky positioning and plain text conversion
+- **Files changed**:
+  - `src/components/newsletter/copy-article-button.tsx` - New component with text conversion
+  - `src/components/newsletter/newsletter-renderer.tsx` - Added sticky copy button container
+  - `src/components/newsletter/index.ts` - Export CopyArticleButton
+- **Implementation details**:
+  - Sticky button in top-right area using `sticky top-4 z-10 flex justify-end`
+  - `blockToText()` function converts each block type to formatted plain text
+  - Header blocks convert to markdown-style headings (# for h1, ## for h2, etc.)
+  - Paragraph blocks output the raw markdown content
+  - Code blocks wrap in triple backticks with language tag
+  - Expandable/tabs blocks recursively convert nested blocks
+  - "Copied!" confirmation shows for 2 seconds with green checkmark icon
+  - Uses `navigator.clipboard.writeText()` for clipboard access
+- **Learnings for future iterations:**
+  - Schema uses `level: "h1"` not a number - parse with `parseInt(level.replace("h", ""), 10)`
+  - Paragraph content is in `markdown` field, not `text`
+  - Sticky positioning works well with `sticky top-4` in a flex container
+---
+
+## 2026-03-06 - NL-015
+- **What was implemented**: Draft storage directory structure for newsletter workflow
+- **Files changed**:
+  - `content/newsletters/drafts/.gitkeep` - Empty directory placeholder for drafts
+  - `content/newsletters/published/.gitkeep` - Empty directory placeholder for published
+  - `content/newsletters/README.md` - Documentation explaining directory structure and workflow
+- **Implementation details**:
+  - Created drafts/ directory for draft newsletters (git-tracked via .gitkeep)
+  - Created published/ directory for published newsletters (moved from drafts after publish)
+  - README documents the complete workflow: create → preview → approve → publish
+  - Files named {slug}.json as specified in acceptance criteria
+- **Learnings for future iterations:**
+  - Use .gitkeep files to track empty directories in git
+  - Newsletter workflow: drafts/{slug}.json → approved status → publish script → published/{slug}.json
+  - Keep README.md concise but cover the full lifecycle
+---
+
+## 2026-03-06 - NL-016
+- **What was implemented**: Newsletter database model with Prisma 7
+- **Files changed**:
+  - `prisma/schema.prisma` - Created schema with existing tables (User, Session, ExclusiveContent, NewsletterSubscriber) plus new Newsletter model
+  - `prisma.config.ts` - Prisma 7 config file for database connection (uses dotenv for DATABASE_URL)
+  - `package.json` - Added @prisma/adapter-pg, pg, dotenv dependencies
+- **Implementation details**:
+  - Newsletter model: id (cuid), title, slug (unique), template, content (Json), author, status, version (Int), publishedAt, createdAt, updatedAt
+  - Used `npx prisma db pull` first to introspect existing tables, then added Newsletter model
+  - Prisma 7 breaking change: `url` property moved from schema.prisma datasource block to prisma.config.ts
+- **Learnings for future iterations:**
+  - Prisma 7+ requires `prisma.config.ts` at project root (not in prisma/ directory)
+  - Use `npx prisma db pull` before adding new models to preserve existing tables
+  - Config needs `import { config } from "dotenv"` and explicit path to load .env
+  - Remove `earlyAccess` property as it causes TypeScript errors
+---
+
+## 2026-03-06 - NL-017
+- **What was implemented**: Newsletter versioning model for tracking version history
+- **Files changed**:
+  - `prisma/schema.prisma` - Added NewsletterVersion model with relation to Newsletter
+- **Implementation details**:
+  - NewsletterVersion model: id (cuid), newsletterId (relation), version (Int), content (Json), createdAt
+  - One-to-many relation: Newsletter has many NewsletterVersion records
+  - Added @@index([newsletterId]) for efficient querying by newsletter
+  - Cascade delete: versions are deleted when parent newsletter is deleted
+  - Ran `npx prisma db push` to sync schema to database
+- **Learnings for future iterations:**
+  - Use `onDelete: Cascade` on relations to auto-cleanup child records
+  - Add @@index for foreign key fields used in queries
+  - Version content stored as Json to capture full newsletter state at publish time
+---
+
+## 2026-03-06 - NL-018
+- **What was implemented**: Publish Newsletter Script for deploying approved newsletters to database
+- **Files changed**:
+  - `scripts/publish-newsletters.ts` - New script that reads drafts, publishes approved ones
+  - `package.json` - Added `publish:newsletters` npm script, @types/pg dependency
+  - `package-lock.json` - Updated dependencies
+- **Implementation details**:
+  - Script reads all JSON files from `content/newsletters/drafts/`
+  - For newsletters with `status: "approved"`:
+    - Creates or updates Newsletter record in database
+    - Creates NewsletterVersion record with current content
+    - Sets status to "published" and increments version
+    - Moves file from `drafts/` to `published/`
+  - Uses Prisma 7 with pg adapter pattern for database connection
+  - Handles empty drafts directory gracefully
+- **Learnings for future iterations:**
+  - For Prisma Json fields, cast using `as unknown as Prisma.InputJsonValue`
+  - Must run `npm run db:generate` after schema changes to get correct TypeScript types
+  - Add @types/pg for pg module TypeScript support
+---
+
+## 2026-03-06 - NL-019
+- **What was implemented**: Newsletter Preview Route for viewing draft newsletters
+- **Files changed**:
+  - `src/app/preview/[slug]/page.tsx` - Server component that reads draft JSON and renders with preview banner
+- **Implementation details**:
+  - Reads from `content/newsletters/drafts/{slug}.json`
+  - Parses and validates JSON against newsletterSchema
+  - Shows amber "PREVIEW - NOT PUBLISHED" banner at top
+  - Renders using NewsletterRenderer component
+  - Returns 404 if draft file not found
+  - Shows validation errors if JSON doesn't match schema
+- **Learnings for future iterations:**
+  - Zod v4 uses `.issues` property on error objects, not `.errors`
+  - Next.js 16 dynamic routes use `params: Promise<{ slug: string }>` pattern
+  - Use `notFound()` from `next/navigation` for 404 responses in server components
+---
+
+## 2026-03-06 - NL-020
+- **What was implemented**: Newsletter List Page for browsing published newsletters
+- **Files changed**:
+  - `src/lib/db.ts` - Prisma client singleton for app usage with pg adapter
+  - `src/app/newsletters/page.tsx` - Server component listing published newsletters
+- **Implementation details**:
+  - Created reusable Prisma client singleton pattern in src/lib/db.ts
+  - Uses same pg adapter pattern as publish script
+  - Fetches newsletters where status = "published", ordered by publishedAt desc
+  - Displays card layout with title, date, template badge, version number
+  - Links to /newsletters/{slug} for detail view
+  - Empty state message when no newsletters published
+- **Learnings for future iterations:**
+  - Use globalThis pattern for Prisma client singleton to avoid connection issues in dev
+  - Server components can directly query database without API routes
+  - Template badge uses cyan color scheme consistent with site aesthetic
+---
+
+## 2026-03-06 - NL-021
+- **What was implemented**: Newsletter Detail Page for viewing published newsletters
+- **Files changed**:
+  - `src/app/newsletters/[slug]/page.tsx` - Server component fetching newsletter by slug from database
+- **Implementation details**:
+  - Fetches newsletter from database using Prisma where slug matches
+  - Returns 404 if newsletter not found or status is not "published"
+  - Casts database content (Json type) to Newsletter type for NewsletterRenderer
+  - NewsletterRenderer already includes copy button, version, and publish date in header
+- **Learnings for future iterations:**
+  - Database Json fields need casting: `newsletter.content as unknown as Newsletter`
+  - NewsletterRenderer already handles copy button and metadata display from NL-014/NL-007
+  - Detail page is simple since renderer does all the heavy lifting
+---
+
+## 2026-03-06 - NL-022
+- **What was implemented**: /newsletter Skill - Create Flow for interviewing users to create newsletters
+- **Files changed**:
+  - `~/.claude/skills/newsletter/SKILL.md` - New skill file with create flow, approve, list, and preview commands
+- **Implementation details**:
+  - Skill uses YAML frontmatter with name and description
+  - Create flow: 1) template selection, 2) basic info (title, slug, author), 3) template-specific questions, 4) JSON generation
+  - Template choices: weekly-update, deep-dive, news-digest, behind-the-scenes, special-announcement
+  - Subcommands: approve <slug>, list, preview <slug>
+  - Includes full JSON schema reference for block types
+  - Generated newsletters saved to content/newsletters/drafts/{slug}.json with status: draft, version: 1
+- **Learnings for future iterations:**
+  - Claude skills live in ~/.claude/skills/<name>/SKILL.md (user-level, outside repo)
+  - Skills use YAML frontmatter with `name` and `description` fields
+  - AskUserQuestion tool is used for interactive prompts in skills
+  - Skills should include full schema reference for content generation tasks
+---
