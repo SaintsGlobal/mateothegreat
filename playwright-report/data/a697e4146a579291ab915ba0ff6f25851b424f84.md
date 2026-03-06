@@ -1,0 +1,48 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Mateo The Great" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=e5]:
+        - link "Home" [ref=e6] [cursor=pointer]:
+          - /url: /
+        - link "Exclusive" [ref=e7] [cursor=pointer]:
+          - /url: /exclusive
+        - link "Sign In" [ref=e8] [cursor=pointer]:
+          - /url: /signin
+  - main [ref=e9]:
+    - generic [ref=e11]:
+      - heading "Mateo The Great" [level=1] [ref=e12]
+      - paragraph [ref=e13]: AI insights for the curious mind
+      - iframe [ref=e16]:
+        - generic "YouTube Video Player" [ref=f1e3]:
+          - button "Copy link" [ref=f1e7] [cursor=pointer]:
+            - generic [ref=f1e8]:
+              - img
+            - generic [ref=f1e9]: Copy link
+          - button "Play" [ref=f1e12] [cursor=pointer]:
+            - img
+          - link "Watch on YouTube" [ref=f1e13] [cursor=pointer]:
+            - /url: https://www.youtube.com/watch?v=dQw4w9WgXcQ&embeds_referring_euri=http%3A%2F%2Flocalhost%3A7000%2F
+            - generic [ref=f1e14]: Watch on
+            - generic [ref=f1e15]:
+              - img
+      - generic [ref=e17]:
+        - heading "Stay in the loop" [level=2] [ref=e18]
+        - generic [ref=e20]:
+          - textbox "Enter your email" [ref=e23]
+          - button "Subscribe" [ref=e24]
+  - contentinfo [ref=e25]:
+    - generic [ref=e26]:
+      - paragraph [ref=e27]: © 2024 MTG Intellectual Reserve, LLC
+      - link "@_mateothegreat" [ref=e28] [cursor=pointer]:
+        - /url: https://youtube.com/@_mateothegreat
+        - img [ref=e29]
+        - text: "@_mateothegreat"
+  - button "Open Next.js Dev Tools" [ref=e36] [cursor=pointer]:
+    - img [ref=e37]
+  - alert [ref=e40]
+```

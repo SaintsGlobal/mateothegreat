@@ -1,0 +1,274 @@
+{
+  "projectName": "Mateo The Great - Testing Infrastructure",
+  "branchName": "ralph/testing-infrastructure",
+  "description": "Add comprehensive testing infrastructure with Vitest for unit tests, Playwright for E2E and visual regression, and GitHub Actions CI pipeline.",
+  "techStack": {
+    "unitTesting": "Vitest + Testing Library",
+    "e2eTesting": "Playwright",
+    "ci": "GitHub Actions",
+    "deployment": "Railway (after CI passes)"
+  },
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Vitest Setup",
+      "description": "As a developer, I need Vitest configured for unit and integration tests.",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Run: npm install -D vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/jest-dom",
+        "Create vitest.config.ts with jsdom environment, path aliases matching tsconfig (@/* -> src/*)",
+        "Add 'test' script to package.json: vitest",
+        "Add 'test:coverage' script: vitest --coverage",
+        "Create src/__tests__/setup.ts importing @testing-library/jest-dom",
+        "Verify: npm run test runs without errors"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Playwright Setup",
+      "description": "As a developer, I need Playwright configured for E2E and visual regression tests.",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Run: npm install -D @playwright/test",
+        "Run: npx playwright install chromium",
+        "Create playwright.config.ts: baseURL http://localhost:7000, screenshot on failure, single chromium project",
+        "Add 'e2e' script to package.json: playwright test",
+        "Add 'e2e:ui' script: playwright test --ui",
+        "Create e2e/ directory",
+        "Verify: npm run e2e runs (passes with no tests)"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Test Database Setup",
+      "description": "As a developer, I need an isolated test database so tests don't affect development data.",
+      "priority": 3,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create .env.test with TEST_DATABASE_URL pointing to separate database",
+        "For local: use same Railway DB with different schema, or document Docker postgres setup",
+        "Create scripts/setup-test-db.sh that sets DATABASE_URL from .env.test and runs prisma db push",
+        "Update package.json: add 'test:setup' script that runs setup-test-db.sh",
+        "Add .env.test to .gitignore (contains credentials)",
+        "Create .env.test.example with placeholder values",
+        "Verify: scripts/setup-test-db.sh completes without error"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Mock Email Service",
+      "description": "As a developer, I need email sending mocked during tests.",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/lib/__mocks__/email.ts",
+        "Export mock resend object with emails.send that stores to in-memory array",
+        "Export getSentEmails(): returns all sent emails",
+        "Export clearSentEmails(): clears the array",
+        "Export EMAIL_FROM constant (same as real)",
+        "Verify: File exports compile without errors (npm run build)"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Auth Unit Tests",
+      "description": "As a developer, I need unit tests for password hashing and session utilities.",
+      "priority": 5,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create src/lib/__tests__/auth.test.ts",
+        "Test: hashPassword returns string longer than input",
+        "Test: hashPassword returns different hash for same input (salt)",
+        "Test: verifyPassword returns true for correct password",
+        "Test: verifyPassword returns false for wrong password",
+        "Test: generateSessionToken returns 64-character hex string",
+        "Verify: npm run test passes"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "E2E Homepage Test",
+      "description": "As a developer, I need E2E tests verifying the homepage loads correctly.",
+      "priority": 6,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create e2e/homepage.spec.ts",
+        "Test: Page has title containing 'Mateo'",
+        "Test: Heading 'Mateo The Great' is visible",
+        "Test: YouTube iframe exists on page",
+        "Test: Newsletter email input is visible",
+        "Test: Navigation contains Home, Exclusive, Sign In links",
+        "Test: Footer contains 'MTG Intellectual Reserve'",
+        "Verify: npm run e2e passes (start dev server first)"
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "E2E Signup Flow Test",
+      "description": "As a developer, I need E2E tests for the complete signup user journey.",
+      "priority": 7,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create e2e/auth-signup.spec.ts",
+        "Test: Can navigate from homepage to /signup via Sign In link then Sign Up link",
+        "Test: Form shows email, password, confirm password fields",
+        "Test: Submitting mismatched passwords shows error",
+        "Test: Submitting valid form with unique email (use timestamp) redirects to /signin",
+        "Test: Success message displayed after signup",
+        "Verify: npm run e2e passes"
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "E2E Signin Flow Test",
+      "description": "As a developer, I need E2E tests for signin and session flow.",
+      "priority": 8,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create e2e/auth-signin.spec.ts",
+        "Test: /signin page shows demo credentials prefilled",
+        "Test: Submitting demo credentials redirects to /account",
+        "Test: /account page displays user email",
+        "Test: Sign out button exists and clicking redirects to homepage",
+        "Test: After sign out, /account redirects to /signin",
+        "Verify: npm run e2e passes"
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "E2E Protected Routes Test",
+      "description": "As a developer, I need E2E tests verifying auth protection.",
+      "priority": 9,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create e2e/protected-routes.spec.ts",
+        "Test: Unauthenticated GET /account redirects to /signin",
+        "Test: Unauthenticated GET /exclusive shows teaser, not full content",
+        "Test: After signin, /account is accessible",
+        "Test: After signin, /exclusive shows content cards",
+        "Test: Can click through to /exclusive/[slug] and see article content",
+        "Verify: npm run e2e passes"
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "Visual Regression - Homepage",
+      "description": "As a developer, I need visual snapshot tests for homepage.",
+      "priority": 10,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create e2e/visual/homepage.spec.ts",
+        "Set viewport to 1280x720 before tests",
+        "Test: Take full-page screenshot, compare to baseline",
+        "Test: Take screenshot of hero section (first viewport)",
+        "Store baseline in e2e/screenshots/homepage/ directory",
+        "Configure toHaveScreenshot with maxDiffPixelRatio: 0.01",
+        "Verify: npm run e2e passes and creates screenshots",
+        "Commit baseline screenshots to git"
+      ]
+    },
+    {
+      "id": "US-011",
+      "title": "Visual Regression - Auth Pages",
+      "description": "As a developer, I need visual snapshots for auth pages.",
+      "priority": 11,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create e2e/visual/auth.spec.ts",
+        "Set viewport to 1280x720",
+        "Test: Screenshot /signin page",
+        "Test: Screenshot /signup page",
+        "Test: Screenshot /forgot-password page",
+        "Test: Screenshot /account page (after logging in with demo creds)",
+        "Store baselines in e2e/screenshots/auth/",
+        "Verify: npm run e2e passes",
+        "Commit baseline screenshots to git"
+      ]
+    },
+    {
+      "id": "US-012",
+      "title": "GitHub Actions - Test Workflow",
+      "description": "As a developer, I need CI that runs tests on every push and PR.",
+      "priority": 12,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Create .github/workflows/test.yml",
+        "Trigger on: push to main and ralph/* branches, pull_request to main",
+        "Use ubuntu-latest runner",
+        "Setup Node.js 20",
+        "Cache node_modules with actions/cache",
+        "Run: npm ci",
+        "Run: npm run lint",
+        "Run: npm run build",
+        "Run: npm run test (Vitest)",
+        "Setup PostgreSQL service container for E2E tests",
+        "Run: npx playwright install chromium --with-deps",
+        "Run: npm run e2e",
+        "Upload playwright-report as artifact on failure",
+        "Verify: Push triggers workflow in GitHub Actions tab"
+      ]
+    },
+    {
+      "id": "US-013",
+      "title": "Playwright CI Configuration",
+      "description": "As a developer, I need Playwright configured to work in CI environment.",
+      "priority": 13,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Update playwright.config.ts: detect CI via process.env.CI",
+        "In CI: disable retries, use single worker",
+        "In CI: start webServer with 'npm run dev' command, wait for localhost:7000",
+        "Set webServer.reuseExistingServer to !process.env.CI",
+        "Add reporter: CI uses 'github' reporter, local uses 'html'",
+        "Verify: npm run e2e works both locally and in GitHub Actions"
+      ]
+    },
+    {
+      "id": "US-014",
+      "title": "CI Environment Variables",
+      "description": "As a developer, I need environment variables configured for CI tests.",
+      "priority": 14,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Document required GitHub Secrets in README: DATABASE_URL, RESEND_API_KEY, SESSION_SECRET",
+        "Update .github/workflows/test.yml to use secrets as env vars",
+        "For RESEND_API_KEY in tests: use dummy value (emails are mocked)",
+        "For DATABASE_URL: use PostgreSQL service container connection string",
+        "Set NEXT_PUBLIC_SITE_URL to http://localhost:7000",
+        "Verify: CI workflow has access to all required env vars"
+      ]
+    },
+    {
+      "id": "US-015",
+      "title": "Branch Protection Rules",
+      "description": "As a developer, I need main branch protected so only passing CI can merge.",
+      "priority": 15,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Document branch protection setup in README",
+        "Instructions: Go to GitHub repo Settings > Branches > Add rule",
+        "Rule: Require status checks (test workflow) before merging",
+        "Rule: Require branches to be up to date",
+        "Note: Railway auto-deploys from main, so protection ensures only tested code deploys",
+        "Verify: Document is clear and actionable"
+      ]
+    }
+  ],
+  "nonGoals": [
+    "No load/performance testing",
+    "No mobile device testing (desktop Chromium only)",
+    "No accessibility audits in CI",
+    "No test coverage thresholds enforced",
+    "No parallel test sharding"
+  ],
+  "envVariables": [
+    "TEST_DATABASE_URL",
+    "DATABASE_URL",
+    "RESEND_API_KEY",
+    "SESSION_SECRET",
+    "NEXT_PUBLIC_SITE_URL",
+    "CI"
+  ]
+}

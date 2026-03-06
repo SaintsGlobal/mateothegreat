@@ -1,0 +1,32 @@
+{
+  "projectName": "Footer Social Links",
+  "description": "Add social media icon links to the site footer",
+  "branchName": "ralph/footer-social",
+  "userStories": [
+    {
+      "id": "FS-001",
+      "title": "Social Media Icons in Footer",
+      "description": "Add a row of social media icons (YouTube, Twitter/X, Instagram) to the footer component with links to placeholder URLs",
+      "priority": 1,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Footer displays at least 3 social media icons",
+        "Icons use SVG or a consistent icon approach",
+        "Each icon links to a placeholder URL (e.g., https://youtube.com)",
+        "Icons are visually balanced and properly spaced"
+      ]
+    },
+    {
+      "id": "FS-002",
+      "title": "Social Icon Hover Effects",
+      "description": "Add hover animations to social icons for better interactivity - color change or scale effect",
+      "priority": 2,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Icons have visible hover state",
+        "Smooth CSS transition on hover",
+        "Hover effect uses brand colors (coral/cyan)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+# Progress Log - Mateo The Great Contact Page
+
+## Codebase Patterns
+- Use existing UI components from src/components/ui/ (Button, Input, Card)
+- Pages use centered layout with gradient accent div
+- Brand colors: brand-coral, brand-cyan, brand-gray
+- Navigation links in header.tsx use consistent styling
+
+---
+
+## 2026-03-06 - CP-001
+- Created contact page layout at src/app/contact/page.tsx
+- Page uses gradient accent pattern matching homepage
+- Heading "Get in Touch" with brand gradient styling (from-brand-coral to-brand-cyan)
+- Intro paragraph with brand-gray text
+- Files changed: src/app/contact/page.tsx (new)
+- **Learnings for future iterations:**
+  - Branch ralph/contact-page was created from ralph/mateo-the-great (not main) since that's where the Next.js source code lives
+  - Page layout pattern: min-h-[calc(100vh-4rem)] accounts for fixed header height
+  - Use &apos; for apostrophes in JSX to avoid lint errors
+---
+
+## 2026-03-06 - CP-002
+- Created contact form component at src/components/contact-form.tsx
+- Form has Name, Email, and Message fields (all required)
+- Uses existing Button and Input components from src/components/ui/
+- Client-side validation with error messages
+- Success state shows confirmation message after submission
+- Textarea styled to match Input component patterns
+- Integrated ContactForm into contact page
+- Files changed: src/components/contact-form.tsx (new), src/app/contact/page.tsx (modified)
+- **Learnings for future iterations:**
+  - No Textarea component exists - style textarea directly using Input component patterns
+  - Form state pattern: use useState for isSubmitting, isSubmitted, errors
+  - Success state replaces form with confirmation card (border-brand-cyan/30 for positive feedback)
+---
+
+## 2026-03-06 - CP-003
+- Added Contact link to header navigation
+- Link appears after Exclusive and before Sign In as specified
+- Uses same styling as other nav links (text-sm text-brand-gray hover:text-white transition-colors)
+- Files changed: src/components/layout/header.tsx (modified)
+- **Learnings for future iterations:**
+  - Header nav structure is simple array of Links inside a flex nav element
+  - Adding new nav items is just inserting a new Link element in the correct position
+---

@@ -1,0 +1,199 @@
+# Ralph Progress Log
+Started: Fri Mar  6 05:03:00 EST 2026
+
+## Codebase Patterns
+- Use `vitest` for unit tests with jsdom environment
+- Path alias `@/*` resolves to `./src/*` in both tsconfig and vitest.config
+- Test setup file at `src/__tests__/setup.ts` imports @testing-library/jest-dom
+- Run `npm run test -- --run` for single pass, `npm run test` for watch mode
+- Prisma 7: `prisma db push` has no --skip-generate flag (use plain `prisma db push`)
+- Auth utility tests go in `src/lib/__tests__/auth.test.ts`, only pure functions (no db/cookie access)
+- Vitest must exclude `**/e2e/**` to avoid parsing Playwright tests (different test runner)
+- Playwright webServer auto-starts dev server; use reuseExistingServer: !isCI for local dev
+
+---
+
+## 2026-03-06 05:12 - US-001
+- What was implemented: Vitest setup with Testing Library support
+- Files changed:
+  - package.json (added test scripts and dev dependencies)
+  - vitest.config.ts (new - jsdom env, path aliases)
+  - src/__tests__/setup.ts (new - jest-dom matchers)
+  - src/__tests__/setup.test.ts (new - placeholder test)
+- **Learnings for future iterations:**
+  - Vitest exits with code 1 if no test files found - added placeholder test
+  - Path aliases must match tsconfig exactly (@/* -> ./src/*)
+  - The `globals: true` option allows using describe/expect/it without imports
+---
+
+## 2026-03-06 05:15 - US-002
+- What was implemented: Playwright E2E testing framework setup
+- Files changed:
+  - package.json (added e2e and e2e:ui scripts)
+  - package-lock.json (added @playwright/test dependency)
+  - playwright.config.ts (new - chromium only, baseURL localhost:7000, screenshot on failure)
+  - e2e/.gitkeep (new - track empty e2e directory)
+  - .gitignore (added playwright-report/ and test-results/)
+- **Learnings for future iterations:**
+  - Playwright exits with "No tests found" error if e2e directory is empty - this is expected
+  - Use `devices['Desktop Chrome']` from @playwright/test for chromium project config
+  - Dev server runs on port 7000, so baseURL is http://localhost:7000
+---
+
+## 2026-03-06 05:17 - US-003
+- What was implemented: Test database setup with isolated schema
+- Files changed:
+  - .env.test.example (new - template for test environment variables)
+  - scripts/setup-test-db.sh (new - script to push schema to test database)
+  - package.json (added test:setup script)
+  - .gitignore (added .env.test to ignored files)
+- **Learnings for future iterations:**
+  - Prisma 7 removed --skip-generate flag from `prisma db push`
+  - Railway PostgreSQL supports schema isolation via ?schema=test query param
+  - TEST_DATABASE_URL is used in .env.test, script exports as DATABASE_URL for Prisma
+  - Script validates .env.test exists before running
+---
+
+## 2026-03-06 05:19 - US-004
+- What was implemented: Mock email service for testing
+- Files changed:
+  - src/lib/__mocks__/email.ts (new - mock resend service with in-memory storage)
+- **Learnings for future iterations:**
+  - Mock files in `__mocks__` directory follow Jest/Vitest convention
+  - Mock resend.emails.send returns { data: { id }, error: null } to match real API
+  - getSentEmails() returns a copy to prevent mutation of internal array
+  - EMAIL_FROM must match the real value from src/lib/email.ts
+---
+
+## 2026-03-06 05:21 - US-005
+- What was implemented: Unit tests for auth utilities (hashPassword, verifyPassword, generateSessionToken)
+- Files changed:
+  - src/lib/__tests__/auth.test.ts (new - 6 tests covering all auth utilities)
+- **Learnings for future iterations:**
+  - Auth tests can import directly from ../auth without mocking next/headers (as long as tests only call pure functions)
+  - bcrypt hashes are always different for same input due to salting
+  - generateSessionToken creates 32-byte random values converted to 64-char hex string
+  - Tests for hashPassword/verifyPassword are async (bcrypt returns promises)
+---
+
+## 2026-03-06 05:24 - US-006
+- What was implemented: E2E homepage tests with 6 test cases
+- Files changed:
+  - e2e/homepage.spec.ts (new - Playwright homepage tests)
+  - vitest.config.ts (added e2e exclusion)
+- **Learnings for future iterations:**
+  - Vitest will try to parse Playwright test files and fail - must exclude `**/e2e/**` in vitest.config.ts
+  - E2E tests use `page.getByRole()`, `page.getByPlaceholder()`, `page.locator()` for element selection
+  - Use `test.beforeEach` with `page.goto("/")` to avoid repeating navigation in each test
+  - Start dev server before running `npm run e2e` (no webServer in playwright.config.ts yet)
+---
+
+## 2026-03-06 05:26 - US-007
+- What was implemented: E2E signup flow tests with 5 test cases
+- Files changed:
+  - e2e/auth-signup.spec.ts (new - Playwright signup flow tests)
+- **Learnings for future iterations:**
+  - Use `getByLabel("Password", { exact: true })` to distinguish from "Confirm Password"
+  - Signup success redirects to /signin with ?message= query param for success message
+  - Use `Date.now()` in email addresses to ensure unique test users
+  - Forms with labels can use `page.getByLabel()` for cleaner selectors than placeholders
+---
+
+## 2026-03-06 05:29 - US-008
+- What was implemented: E2E signin flow tests with 5 test cases
+- Files changed:
+  - e2e/auth-signin.spec.ts (new - Playwright signin flow and session tests)
+- **Learnings for future iterations:**
+  - Demo credentials are prefilled on /signin: demo@mateothegreat.ai / demo1234
+  - Disabled input fields don't work with `getByLabel()` - use `page.locator('input[type="email"]')` instead
+  - Protected route redirects include query params (e.g., `/signin?redirect=%2Faccount`) - use regex matcher
+  - Sign out button is in the account page's "Sign Out" card section
+---
+
+## 2026-03-06 05:32 - US-009
+- What was implemented: E2E protected routes tests with 5 test cases
+- Files changed:
+  - e2e/protected-routes.spec.ts (new - Playwright auth protection tests)
+- **Learnings for future iterations:**
+  - When checking for elements that appear in both nav and main content, scope with `page.getByRole("main")` to avoid strict mode violations
+  - The /exclusive page shows teaser with "Sign Up Free" and "Sign In" buttons when unauthenticated
+  - Content grid uses `.grid` class when showing content cards (authenticated)
+  - Use `test.skip()` to gracefully skip tests when preconditions aren't met (e.g., no content to click)
+---
+
+## 2026-03-06 05:36 - US-010
+- What was implemented: Visual regression tests for homepage with 2 screenshot tests
+- Files changed:
+  - e2e/visual/homepage.spec.ts (new - visual regression tests)
+  - playwright.config.ts (added snapshotDir and snapshotPathTemplate)
+  - e2e/screenshots/homepage.spec.ts/homepage-full.png (baseline)
+  - e2e/screenshots/homepage.spec.ts/homepage-hero.png (baseline)
+- **Learnings for future iterations:**
+  - Playwright stores visual snapshots at path configured by `snapshotDir` and `snapshotPathTemplate`
+  - Use `--update-snapshots=missing` to generate missing baselines on first run
+  - Generated screenshots go to test-results/ first, then need to be copied to snapshot dir or run with update flag
+  - Use `page.setViewportSize({ width: 1280, height: 720 })` in beforeEach to ensure consistent viewport
+  - Use `maxDiffPixelRatio: 0.01` to allow 1% pixel difference tolerance
+---
+
+## 2026-03-06 05:39 - US-011
+- What was implemented: Visual regression tests for auth pages (signin, signup, forgot-password, account)
+- Files changed:
+  - e2e/visual/auth.spec.ts (new - 4 visual tests for auth pages)
+  - e2e/screenshots/auth.spec.ts/signin.png (baseline)
+  - e2e/screenshots/auth.spec.ts/signup.png (baseline)
+  - e2e/screenshots/auth.spec.ts/forgot-password.png (baseline)
+  - e2e/screenshots/auth.spec.ts/account.png (baseline)
+- **Learnings for future iterations:**
+  - For /account screenshot, need to login first with demo credentials then waitForURL
+  - Demo credentials are prefilled on /signin page, just click "Sign In" button
+  - Parallel test runs with shared auth state can cause flaky tests - consider using test isolation
+  - Screenshots are stored in e2e/screenshots/{testFileName}/ directory per config
+---
+
+## 2026-03-06 05:41 - US-012
+- What was implemented: GitHub Actions CI workflow for running tests on push/PR
+- Files changed:
+  - .github/workflows/test.yml (new - complete CI pipeline)
+- **Learnings for future iterations:**
+  - Use `actions/cache@v4` with `hashFiles('package-lock.json')` for node_modules caching
+  - PostgreSQL service container uses `postgres:16` image with health checks
+  - Set `CI: true` env var for CI-aware tooling (Playwright, Vitest)
+  - Use `--run` flag with vitest in CI to disable watch mode
+  - Upload playwright-report artifact with `if: failure()` condition
+---
+
+## 2026-03-06 05:43 - US-013
+- What was implemented: Playwright CI configuration with webServer and conditional settings
+- Files changed:
+  - playwright.config.ts (added webServer, conditional reporter, CI detection)
+- **Learnings for future iterations:**
+  - Use `const isCI = !!process.env.CI` at top of config for cleaner conditionals
+  - webServer.reuseExistingServer should be `!isCI` - reuse locally, fresh start in CI
+  - Reporter 'github' integrates with GitHub Actions annotations for test failures
+  - webServer timeout of 120000ms (2 min) is needed for Next.js cold start
+  - Retries should be 0 in CI for faster feedback on actual failures
+---
+
+## 2026-03-06 05:45 - US-014
+- What was implemented: CI environment variables documentation in README
+- Files changed:
+  - README.md (new - project documentation with CI env vars section)
+- **Learnings for future iterations:**
+  - CI tests don't need GitHub Secrets for DATABASE_URL - use PostgreSQL service container
+  - RESEND_API_KEY can be a dummy value in CI since email sending is mocked
+  - SESSION_SECRET only needs to be consistent within a test run, not secure
+  - Document both CI test values and production GitHub Secrets setup separately
+  - The workflow already had correct hardcoded values - documentation was the main gap
+---
+
+## 2026-03-06 05:48 - US-015
+- What was implemented: Branch protection rules documentation in README
+- Files changed:
+  - README.md (added Branch Protection section with setup instructions)
+- **Learnings for future iterations:**
+  - Branch protection is configured in GitHub UI, not code - document manual steps clearly
+  - Required status check name must match the job name in workflow file (`test`)
+  - "Require branches to be up to date" prevents merge conflicts in main
+  - Railway auto-deploy from main makes branch protection critical for deployment safety
+---

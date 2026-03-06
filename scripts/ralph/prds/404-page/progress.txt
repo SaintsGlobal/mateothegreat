@@ -1,0 +1,34 @@
+# Progress Log - 404 Not Found Page
+
+## Codebase Patterns
+- Brand gradient text: `bg-gradient-to-r from-brand-coral to-brand-cyan bg-clip-text text-transparent`
+- Gray text color: `text-brand-gray`
+- Full height section: `min-h-[calc(100vh-4rem)]`
+- Background blur accent: `rounded-full bg-gradient-to-r from-brand-coral to-brand-cyan opacity-20 blur-3xl`
+- Button component at `@/components/ui/button` with variants: primary, secondary
+
+---
+
+## 2026-03-06 - NF-001
+- Created custom 404 page at `src/app/not-found.tsx`
+- Large "404" heading with brand gradient text styling
+- Friendly "Page not found" message with description
+- Includes "Go Home" and "Contact Us" navigation buttons
+- Uses same background blur accent as home page
+- Files changed: `src/app/not-found.tsx`
+- **Learnings for future iterations:**
+  - Source code is on `ralph/contact-page` branch, not `main` - branch from there
+  - Next.js app uses `not-found.tsx` at app root for global 404 handling
+  - Reuse existing Button component from `@/components/ui/button`
+---
+
+## 2026-03-06 - NF-002
+- Verified navigation options already implemented in NF-001
+- "Go Home" button links to `/` using primary Button styling
+- "Contact Us" secondary button links to `/contact`
+- No code changes needed - acceptance criteria already satisfied
+- Files changed: none (prd.json updated only)
+- **Learnings for future iterations:**
+  - Check existing implementation before making changes - previous story may have already covered requirements
+  - Both NF-001 and NF-002 were implemented together as a cohesive 404 page
+---

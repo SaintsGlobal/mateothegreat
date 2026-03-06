@@ -1,0 +1,11 @@
+# Runtime files (per-PRD)
+prds/**/ralph.log
+prds/**/activity.log
+prds/**/.state
+prds/**/archive/
+
+# Global activity log
+activity.log
+
+# OS
+.DS_Store

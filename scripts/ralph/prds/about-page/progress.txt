@@ -1,0 +1,40 @@
+# Progress Log - About Page
+
+## Codebase Patterns
+- Brand gradient text: `bg-gradient-to-r from-brand-coral to-brand-cyan bg-clip-text text-transparent`
+- Gradient accent overlay uses blur-3xl with low opacity for subtle glow effects
+- Page content uses `min-h-[calc(100vh-4rem)]` to account for fixed header
+- Use Card component from `@/components/ui/card` with `glow` prop for hover effects
+- Card-like styling without Card component: `rounded-xl border border-white/10 bg-white/5 p-6`
+- Header nav link styling: `text-sm text-brand-gray hover:text-white transition-colors`
+
+---
+
+## 2026-03-06 - AB-001
+- Implemented About page hero section at src/app/about/page.tsx
+- Created hero with Mateo's name in brand gradient, tagline, and bio introduction
+- Files changed: src/app/about/page.tsx (new)
+- **Learnings for future iterations:**
+  - This project has no `typecheck` script - use `npx tsc --noEmit` directly
+  - May need to clear `.next` cache if stale type errors appear from deleted files
+  - Build and lint both pass on the current codebase
+---
+
+## 2026-03-06 - AB-002
+- Added Mission section with heading and mission statement paragraph
+- Added Core Values section with 4 value cards in a responsive 2-column grid
+- Values: Clarity, Honesty, Curiosity, Community
+- Files changed: src/app/about/page.tsx
+- **Learnings for future iterations:**
+  - No Card component exists in this project - use inline card styling
+  - Card pattern: `rounded-xl border border-white/10 bg-white/5 p-6`
+  - Grid responsive pattern: `grid gap-6 md:grid-cols-2`
+---
+
+## 2026-03-06 - AB-003
+- Added About link to header navigation between Home and Exclusive
+- Files changed: src/components/layout/header.tsx
+- **Learnings for future iterations:**
+  - Header navigation is in src/components/layout/header.tsx
+  - Nav links use gap-6 spacing and consistent styling pattern
+---
