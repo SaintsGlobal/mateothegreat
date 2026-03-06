@@ -1,0 +1,165 @@
+{
+  "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+  "title": "Weekly Update Template",
+  "slug": "weekly-update-template",
+  "template": "weekly-update",
+  "status": "draft",
+  "author": "Your Name",
+  "version": 1,
+  "publishedAt": null,
+  "blocks": [
+    {
+      "type": "header",
+      "content": {
+        "text": "Your Weekly Update Title",
+        "level": "h1"
+      },
+      "style": {
+        "align": "center",
+        "emphasis": "highlight"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Welcome to this week's update! Here's a quick overview of what's been happening and what's coming up. Replace this intro with your own engaging opening that sets the tone for the newsletter."
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Highlight #1: Main Feature",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Describe your first and most important highlight here. Use **bold** for emphasis and *italics* for secondary emphasis. Include [links](https://example.com) where relevant."
+      }
+    },
+    {
+      "type": "list",
+      "content": {
+        "items": [
+          "Key point about this highlight",
+          "Another important detail",
+          "Why this matters to your readers"
+        ],
+        "ordered": false
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Highlight #2: Updates & Progress",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Share updates on ongoing projects or initiatives. Keep paragraphs concise and focused on what your audience cares about."
+      }
+    },
+    {
+      "type": "list",
+      "content": {
+        "items": [
+          "Progress update item 1",
+          "Progress update item 2",
+          "Progress update item 3"
+        ],
+        "ordered": true
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Highlight #3: Community Spotlight",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Feature community members, user stories, or notable contributions. This section helps build engagement and connection with your audience."
+      }
+    },
+    {
+      "type": "list",
+      "content": {
+        "items": [
+          "Community member or story spotlight",
+          "Notable contribution or achievement",
+          "Shoutout or recognition"
+        ],
+        "ordered": false
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Highlight #4: Quick Tips",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Share quick, actionable tips that provide immediate value to your readers."
+      }
+    },
+    {
+      "type": "list",
+      "content": {
+        "items": [
+          "Tip 1: Actionable advice",
+          "Tip 2: Quick win your readers can implement",
+          "Tip 3: Useful resource or tool recommendation"
+        ],
+        "ordered": false
+      }
+    },
+    {
+      "type": "header",
+      "content": {
+        "text": "Highlight #5: Looking Ahead",
+        "level": "h2"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "Preview what's coming next week or in upcoming issues. Build anticipation and keep readers engaged."
+      }
+    },
+    {
+      "type": "list",
+      "content": {
+        "items": [
+          "Upcoming feature or announcement",
+          "Event or deadline to note",
+          "Teaser for next week's content"
+        ],
+        "ordered": false
+      }
+    },
+    {
+      "type": "callout",
+      "content": {
+        "text": "Thanks for reading! If you found this valuable, share it with a friend. Have feedback? Reply to this email or reach out on social media.",
+        "variant": "tip"
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": {
+        "markdown": "**[Subscribe for more updates](https://example.com/subscribe)** | **[Visit our website](https://example.com)** | **[Follow us on Twitter](https://twitter.com/example)**"
+      },
+      "style": {
+        "align": "center"
+      }
+    }
+  ]
+}
