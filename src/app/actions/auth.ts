@@ -489,3 +489,41 @@ export async function upgradeSubscription(): Promise<UpgradeResult> {
 
   return { success: true };
 }
+
+type CancelResult =
+  | { success: true; periodEnd: Date }
+  | { error: string };
+
+export async function cancelUserSubscription(): Promise<CancelResult> {
+  const { getSession } = await import("@/lib/auth");
+  const { cancelSubscription } = await import("@/lib/billing/subscription-service");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  if (session.user.tier !== "PREMIUM") {
+    return { error: "No active subscription to cancel" };
+  }
+
+  // Get subscription details before canceling for period end date
+  const subscription = await db.subscription.findFirst({
+    where: {
+      userId: session.user.id,
+      status: "ACTIVE",
+    },
+  });
+
+  if (!subscription) {
+    return { error: "No active subscription found" };
+  }
+
+  const result = await cancelSubscription(session.user.id);
+
+  if (!result.success) {
+    return { error: result.error };
+  }
+
+  return { success: true, periodEnd: subscription.currentPeriodEnd };
+}
