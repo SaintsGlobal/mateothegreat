@@ -350,7 +350,7 @@
       "title": "/newsletter Skill - Preview Command",
       "description": "As a content creator, I want to preview drafts before approving.",
       "priority": 25,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Skill supports /newsletter preview <slug> syntax",
         "Opens http://localhost:7000/preview/{slug} in browser if browser tools available",

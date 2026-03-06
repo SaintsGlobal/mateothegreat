@@ -460,3 +460,19 @@
   - NL-022 implemented more than its scope; create/approve/list/preview subcommands were all documented together
   - Skills are instruction files - once documented, the functionality is "implemented" for Claude to follow
 ---
+
+## 2026-03-06 - NL-025
+- **What was implemented**: /newsletter Skill - Preview Command enhancement
+- **Files changed**:
+  - `~/.claude/skills/newsletter/SKILL.md` - Enhanced preview subcommand instructions (outside repo, user-level skill file)
+- **Implementation details**:
+  - Added explicit error handling: "Draft '{slug}' not found in content/newsletters/drafts/"
+  - Enhanced terminal summary format with clear structure (title, author, template, status, version, block list, preview text)
+  - Added browser URL reference for viewing in browser
+  - No repo files changed (skill file is user-level config)
+  - Verification: npm run build passes
+- **Learnings for future iterations:**
+  - Claude skills are stored in ~/.claude/skills/<name>/SKILL.md (outside project repo)
+  - Skills are instruction files - no code changes needed, Claude follows the instructions using its tools
+  - When acceptance criteria are documentation/instructions only, verify build passes but no git commit needed
+---
