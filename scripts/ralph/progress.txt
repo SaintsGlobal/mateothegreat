@@ -172,3 +172,17 @@ Started: Initial setup
   - signIn action validates credentials and creates session on success
   - Display messages from query params (e.g., from signup redirect) in the form
 ---
+
+## 2026-03-06 - US-012
+- **What was implemented:** Password reset flow with forgot-password and reset-password pages
+- **Files changed:**
+  - src/app/forgot-password/page.tsx (created - email form to request reset)
+  - src/app/reset-password/page.tsx (created - token-based password reset form with Suspense)
+  - src/app/actions/auth.ts (added requestPasswordReset and resetPassword server actions)
+- **Learnings for future iterations:**
+  - Password reset uses resetToken and resetTokenExp fields on User model (already existed)
+  - Always return success for password reset requests to prevent email enumeration
+  - Token expiry set to 1 hour via `setHours(getHours() + 1)`
+  - Clear reset token after successful password change
+  - Use `findFirst` with token (not unique) vs `findUnique` with email
+---

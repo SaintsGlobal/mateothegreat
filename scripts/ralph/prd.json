@@ -206,7 +206,7 @@
       "title": "Password Reset Flow",
       "description": "As a user, I want to reset my password if I forget it.",
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/app/forgot-password/page.tsx: email input form",
         "Add requestPasswordReset server action: generate token, store in user record with expiry (1 hour), send reset email",
