@@ -10,6 +10,7 @@ Started: Initial setup
 - Use Tailwind classes like `bg-brand-coral`, `text-brand-green`, `bg-dark-alt`
 - Prisma 7 uses `prisma.config.ts` for DATABASE_URL (not in schema.prisma)
 - PrismaClient singleton exported from `src/lib/db.ts` as `db`
+- Resend client in `src/lib/email.ts`, templates in `src/lib/email-templates.ts`
 ---
 
 ## 2026-03-06 - US-001
@@ -109,4 +110,20 @@ Started: Initial setup
   - Use `useActionState` hook for form state management with server actions
   - Newsletter server action pattern: validate email format, check duplicates, handle reactivation
   - NewsletterSubscriber table uses email as unique key with ACTIVE/UNSUBSCRIBED status enum
+---
+
+## 2026-03-06 - US-008
+- **What was implemented:** Resend email integration with client setup and email templates
+- **Files changed:**
+  - package.json (added resend dependency)
+  - package-lock.json (updated)
+  - src/lib/email.ts (created - Resend client instance with EMAIL_FROM constant)
+  - src/lib/email-templates.ts (created - welcomeEmail, verificationEmail, passwordResetEmail templates)
+  - src/app/actions/newsletter.ts (updated - sends welcome email after subscription)
+- **Learnings for future iterations:**
+  - Email utilities in `src/lib/email.ts` (client) and `src/lib/email-templates.ts` (templates)
+  - Email templates return `{ subject, html }` objects with inline CSS styles
+  - Use `EMAIL_FROM` constant for consistent sender address
+  - Wrap email sending in try/catch to avoid failing the main operation if email fails
+  - Templates use brand colors and consistent styling defined at top of file
 ---

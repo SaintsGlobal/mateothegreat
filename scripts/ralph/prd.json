@@ -144,7 +144,7 @@
       "title": "Resend Email Setup",
       "description": "As a developer, I need Resend configured to send transactional emails.",
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Run: npm install resend",
         "Create src/lib/email.ts: export resend client instance using RESEND_API_KEY",
