@@ -12,7 +12,7 @@ export function Footer() {
             href="https://youtube.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-gray hover:text-brand-coral transition-colors"
+            className="text-brand-gray hover:text-brand-coral hover:scale-110 transition-all duration-200"
             aria-label="YouTube"
           >
             <svg
@@ -28,7 +28,7 @@ export function Footer() {
             href="https://twitter.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-gray hover:text-brand-cyan transition-colors"
+            className="text-brand-gray hover:text-brand-cyan hover:scale-110 transition-all duration-200"
             aria-label="X (Twitter)"
           >
             <svg
@@ -44,7 +44,7 @@ export function Footer() {
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-gray hover:text-brand-coral transition-colors"
+            className="text-brand-gray hover:text-brand-coral hover:scale-110 transition-all duration-200"
             aria-label="Instagram"
           >
             <svg
