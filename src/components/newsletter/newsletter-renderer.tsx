@@ -7,6 +7,7 @@ import { ListBlockComponent } from "./blocks/list-block";
 import { ImageBlockComponent } from "./blocks/image-block";
 import { CodeBlockComponent } from "./blocks/code-block";
 import { LinkSnippetBlockComponent } from "./blocks/link-snippet";
+import { ExpandableBlockComponent } from "./blocks/expandable-block";
 
 interface NewsletterRendererProps {
   newsletter: Newsletter;
@@ -51,18 +52,12 @@ function BlockRenderer({ block }: { block: Block }) {
         </div>
       );
     case "expandable":
-      // TODO: NL-010 - Expandable block implementation
       return (
-        <details className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-          <summary className="p-4 cursor-pointer font-medium">
-            {block.content.title}
-          </summary>
-          <div className="p-4 pt-0">
-            {block.content.blocks.map((nestedBlock, index) => (
-              <BlockRenderer key={index} block={nestedBlock} />
-            ))}
-          </div>
-        </details>
+        <ExpandableBlockComponent block={block}>
+          {block.content.blocks.map((nestedBlock, index) => (
+            <BlockRenderer key={index} block={nestedBlock} />
+          ))}
+        </ExpandableBlockComponent>
       );
     case "tabs":
       // TODO: NL-013 - Tabs block implementation

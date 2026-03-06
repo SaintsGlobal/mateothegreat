@@ -4,3 +4,4 @@ export { ListBlockComponent } from "./list-block";
 export { ImageBlockComponent } from "./image-block";
 export { CodeBlockComponent } from "./code-block";
 export { LinkSnippetBlockComponent } from "./link-snippet";
+export { ExpandableBlockComponent } from "./expandable-block";
