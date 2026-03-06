@@ -182,3 +182,19 @@
   - setTimeout before refresh allows user to see success message
 ---
 
+## 2026-03-06 - PB-012
+- Implemented Billing Section - Cancel Flow
+- Added cancelUserSubscription Server Action to auth.ts (calls cancelSubscription service)
+- Added "Manage Plan" dropdown for Premium users with "Cancel subscription" option
+- Created cancel confirmation modal showing period end date
+- Status badge changes to "Canceled" (coral color) after cancellation
+- Displays "Your access continues until {periodEnd}" message for canceled subscriptions
+- Dropdown uses fixed overlay to close on outside click
+- Files changed: src/app/actions/auth.ts, src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - Dropdown pattern: use relative parent + absolute child, with fixed inset-0 click-away overlay
+  - Track both subscription status and canceledPeriodEnd state to show correct UI after cancel
+  - Cancel returns periodEnd date from the active subscription before marking it canceled
+  - Conditional badge styling: brand-green for Active, brand-coral for Canceled
+---
+
