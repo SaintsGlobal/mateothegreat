@@ -86,3 +86,49 @@
   - Validate file type/size on both client and server for better UX and security
 ---
 
+## 2026-03-06 - PB-006
+- Implemented Change Password feature in profile page
+- Added ChangePasswordSection component with expand/collapse form
+- Form fields: current password, new password, confirm new password
+- Reuses existing changePassword Server Action from auth.ts
+- Success message shown as green banner after password change
+- Error messages shown in coral for validation failures
+- Loading state during form submission with disabled inputs
+- Files changed: src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - changePassword Server Action already exists in auth.ts - always check existing actions first
+  - Use showForm state pattern for expand/collapse forms
+  - Success state persists after form closes for toast-like feedback
+  - minLength={8} on inputs provides client-side validation hint
+---
+
+## 2026-03-06 - PB-007
+- Implemented Preferences Section - Bio & Display in profile-layout.tsx
+- Added updatePreferences Server Action to auth.ts (handles bio + preferences JSON merge)
+- Bio textarea with character counter (max 500 chars, displays count/max)
+- Toggle switch for "Show email publicly" stored in preferences JSON
+- Form uses useActionState pattern with loading/error/success states
+- Success message shown as green banner after save
+- Files changed: src/app/actions/auth.ts, src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - Preferences JSON needs type casting: `(user.preferences as Record<string, unknown>) || {}`
+  - Toggle switch uses sr-only checkbox + peer CSS classes for custom styling
+  - Merge existing preferences with new values to avoid overwriting other preference fields
+  - Character counter conditionally styled when at max limit (brand-coral vs brand-gray)
+---
+
+## 2026-03-06 - PB-008
+- Implemented Notifications Section with email notification toggles
+- Added updateNotifications Server Action to auth.ts (handles single preference key/value updates)
+- Three notification toggles: Newsletter updates, New content alerts, Account activity
+- Auto-save on toggle change with optimistic UI updates
+- Inline "Saving..." / "Saved" feedback next to each toggle
+- Default all notifications to true for new users
+- Files changed: src/app/actions/auth.ts, src/app/profile/profile-layout.tsx
+- **Learnings for future iterations:**
+  - For dynamic computed keys `[key]: value`, TypeScript infers `{ [x: string]: unknown }` which doesn't match Prisma JSON type
+  - Fix by typing the object explicitly: `const newPreferences: Record<string, boolean> = {...}` and cast to `object` for Prisma
+  - Optimistic UI pattern: update state immediately, revert on error
+  - setTimeout to auto-clear success messages provides toast-like UX without extra dependencies
+---
+

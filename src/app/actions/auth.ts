@@ -387,3 +387,44 @@ export async function updatePreferences(
 
   return { success: true };
 }
+
+type UpdateNotificationsResult = { success: true } | { error: string };
+
+export async function updateNotifications(
+  key: string,
+  value: boolean
+): Promise<UpdateNotificationsResult> {
+  const { getSession } = await import("@/lib/auth");
+  const session = await getSession();
+
+  if (!session) {
+    return { error: "Not authenticated" };
+  }
+
+  // Validate key is an allowed notification setting
+  const allowedKeys = ["emailNewsletter", "emailContentAlerts", "emailAccountActivity"];
+  if (!allowedKeys.includes(key)) {
+    return { error: "Invalid notification setting" };
+  }
+
+  // Get existing preferences and merge
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { preferences: true },
+  });
+
+  const existingPreferences = (user?.preferences as Record<string, boolean>) || {};
+  const newPreferences: Record<string, boolean> = {
+    ...existingPreferences,
+    [key]: value,
+  };
+
+  await db.user.update({
+    where: { id: session.user.id },
+    data: {
+      preferences: newPreferences as object,
+    },
+  });
+
+  return { success: true };
+}

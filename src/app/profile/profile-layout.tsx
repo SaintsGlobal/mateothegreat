@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { updateProfile, uploadAvatar, changePassword, updatePreferences } from "@/app/actions/auth";
+import { updateProfile, uploadAvatar, changePassword, updatePreferences, updateNotifications } from "@/app/actions/auth";
 import type { User } from "@prisma/client";
 import type { SubscriptionTier } from "@prisma/client";
 
@@ -130,7 +130,10 @@ export function ProfileLayout({ user }: ProfileLayoutProps) {
             </>
           )}
           {currentSection === "preferences" && (
-            <PreferencesSection user={user} />
+            <>
+              <PreferencesSection user={user} />
+              <NotificationsSection user={user} />
+            </>
           )}
           {currentSection === "billing" && (
             <BillingSection />
@@ -613,6 +616,117 @@ function PreferencesSection({ user }: { user: User }) {
           </Button>
         </div>
       </form>
+    </Card>
+  );
+}
+
+interface NotificationToggle {
+  key: "emailNewsletter" | "emailContentAlerts" | "emailAccountActivity";
+  label: string;
+  description: string;
+}
+
+const notificationToggles: NotificationToggle[] = [
+  {
+    key: "emailNewsletter",
+    label: "Newsletter updates",
+    description: "Receive our weekly newsletter with latest content",
+  },
+  {
+    key: "emailContentAlerts",
+    label: "New content alerts",
+    description: "Get notified when new content is published",
+  },
+  {
+    key: "emailAccountActivity",
+    label: "Account activity",
+    description: "Security alerts and account-related notifications",
+  },
+];
+
+function NotificationsSection({ user }: { user: User }) {
+  const preferences = (user.preferences as Record<string, unknown>) || {};
+
+  const [values, setValues] = useState<Record<string, boolean>>({
+    emailNewsletter: (preferences.emailNewsletter as boolean) ?? true,
+    emailContentAlerts: (preferences.emailContentAlerts as boolean) ?? true,
+    emailAccountActivity: (preferences.emailAccountActivity as boolean) ?? true,
+  });
+
+  const [saving, setSaving] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleToggle = async (key: string, checked: boolean) => {
+    setSaving(key);
+    setError(null);
+    setSuccess(null);
+
+    // Optimistically update UI
+    setValues((prev) => ({ ...prev, [key]: checked }));
+
+    const result = await updateNotifications(key, checked);
+
+    if ("error" in result) {
+      // Revert on error
+      setValues((prev) => ({ ...prev, [key]: !checked }));
+      setError(result.error);
+    } else {
+      setSuccess(key);
+      // Clear success after 2 seconds
+      setTimeout(() => setSuccess(null), 2000);
+    }
+
+    setSaving(null);
+  };
+
+  return (
+    <Card className="mt-6">
+      <h2 className="text-xl font-semibold mb-6">Email Notifications</h2>
+
+      <div className="space-y-4">
+        {notificationToggles.map((toggle) => (
+          <div
+            key={toggle.key}
+            className="flex items-center justify-between py-2"
+          >
+            <div>
+              <label
+                htmlFor={toggle.key}
+                className="text-sm font-medium text-white"
+              >
+                {toggle.label}
+              </label>
+              <p className="text-xs text-brand-gray mt-0.5">
+                {toggle.description}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {saving === toggle.key && (
+                <span className="text-xs text-brand-gray">Saving...</span>
+              )}
+              {success === toggle.key && (
+                <span className="text-xs text-brand-green">Saved</span>
+              )}
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  id={toggle.key}
+                  checked={values[toggle.key]}
+                  onChange={(e) => handleToggle(toggle.key, e.target.checked)}
+                  disabled={saving !== null}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-brand-gray/30 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-cyan/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-cyan peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+              </label>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {error && (
+        <p className="mt-4 text-sm text-brand-coral">{error}</p>
+      )}
     </Card>
   );
 }
