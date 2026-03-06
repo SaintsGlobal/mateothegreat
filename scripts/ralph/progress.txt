@@ -212,3 +212,15 @@ Started: Initial setup
   - Use Card component with `glow` prop for interactive hover effects
   - Grid layout: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3` for responsive cards
 ---
+
+## 2026-03-06 - US-015
+- **What was implemented:** Exclusive content detail page with auth protection and 404 handling
+- **Files changed:**
+  - src/app/exclusive/[slug]/page.tsx (created - dynamic route for individual content)
+- **Learnings for future iterations:**
+  - Dynamic route params in Next.js 16: `params` is a Promise, use `const { slug } = await params`
+  - Use `notFound()` from next/navigation for 404 responses
+  - Check both content exists AND publishedAt is set before displaying
+  - prose classes from Tailwind typography plugin for rendering HTML content
+  - Same dynamic import pattern for getSession and db in protected routes
+---

@@ -252,7 +252,7 @@
       "title": "Exclusive Content Detail",
       "description": "As a member, I want to read individual exclusive content.",
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Create src/app/exclusive/[slug]/page.tsx (protected route)",
         "Fetch content by slug from database",
