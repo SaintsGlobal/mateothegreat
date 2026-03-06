@@ -1,6 +1,6 @@
+import pg from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
-import pg from "pg";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -8,15 +8,20 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const pool = new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
-  });
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+
+  const pool = new pg.Pool({ connectionString: databaseUrl });
   const adapter = new PrismaPg(pool);
+  globalForPrisma.pool = pool;
+
   return new PrismaClient({ adapter });
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = db;
+  globalForPrisma.prisma = prisma;
 }
