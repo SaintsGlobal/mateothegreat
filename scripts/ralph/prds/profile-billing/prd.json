@@ -183,7 +183,7 @@
       "title": "Billing Section - Cancel Flow",
       "description": "As a Premium user, I want to cancel my subscription.",
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "acceptanceCriteria": [
         "Manage Plan dropdown for Premium users with Cancel subscription option",
         "Cancel shows confirmation modal with end date message",
