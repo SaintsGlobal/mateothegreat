@@ -40,7 +40,7 @@ export function ProfileForm({ initialName, email }: { initialName: string; email
           disabled={isPending}
         />
         {state?.error && (
-          <p className="text-sm text-brand-coral">{state.error}</p>
+          <p className="text-sm text-red-400">{state.error}</p>
         )}
         {state?.success && (
           <p className="text-sm text-brand-green">Profile updated successfully</p>
@@ -94,7 +94,7 @@ export function PasswordForm() {
           disabled={isPending}
         />
         {state?.error && (
-          <p className="text-sm text-brand-coral">{state.error}</p>
+          <p className="text-sm text-red-400">{state.error}</p>
         )}
         {state?.success && (
           <p className="text-sm text-brand-green">Password changed successfully</p>

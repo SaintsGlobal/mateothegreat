@@ -63,7 +63,7 @@ export default function SignUpPage() {
           />
 
           {state?.error && (
-            <p className="text-sm text-brand-coral">{state.error}</p>
+            <p className="text-sm text-red-400">{state.error}</p>
           )}
 
           <Button type="submit" loading={isPending} className="w-full">
@@ -71,9 +71,9 @@ export default function SignUpPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-brand-gray">
+        <p className="mt-6 text-center text-sm text-white/60">
           Already have an account?{" "}
-          <Link href="/signin" className="text-brand-cyan hover:underline">
+          <Link href="/signin" className="text-violet-400 hover:underline">
             Sign in
           </Link>
         </p>

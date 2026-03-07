@@ -1,6 +1,7 @@
 "use client";
 
 import { Accordion, AccordionItem } from "@/components/ui";
+import { GradientMesh } from "@/components/animation/GradientMesh";
 
 const faqs = [
   {
@@ -37,27 +38,24 @@ const faqs = [
 
 export default function FAQPage() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center px-4 py-16">
-      {/* Gradient accent */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 h-80 w-80 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-coral to-brand-cyan opacity-20 blur-3xl" />
-      </div>
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center px-4 py-16 relative">
+      <GradientMesh />
 
       {/* Header */}
       <div className="relative z-10 flex flex-col items-center text-center">
         <h1 className="text-5xl font-bold tracking-tight md:text-7xl">
-          <span className="bg-gradient-to-r from-brand-coral to-brand-cyan bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-cyan-400 to-violet-500 bg-clip-text text-transparent">
             FAQ
           </span>
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-brand-gray md:text-xl">
+        <p className="mt-6 max-w-2xl text-lg text-white/60 md:text-xl">
           Got questions? We&apos;ve got answers. Find everything you need to know about Mateo The Great and our content.
         </p>
       </div>
 
       {/* FAQ Accordion */}
       <div className="relative z-10 mt-16 w-full max-w-3xl">
-        <Accordion className="rounded-xl border border-white/10 bg-white/5 px-6">
+        <Accordion className="rounded-xl border border-white/[0.06] bg-[#111111] px-6">
           {faqs.map((faq) => (
             <AccordionItem key={faq.question} title={faq.question}>
               {faq.answer}

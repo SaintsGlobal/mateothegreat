@@ -69,7 +69,7 @@ function SignInForm() {
         />
 
         {state?.error && (
-          <p className="text-sm text-brand-coral">{state.error}</p>
+          <p className="text-sm text-red-400">{state.error}</p>
         )}
 
         <Button type="submit" loading={isPending} className="w-full">
@@ -77,19 +77,19 @@ function SignInForm() {
         </Button>
       </form>
 
-      <p className="mt-4 text-center text-xs text-brand-gray/60">
+      <p className="mt-4 text-center text-xs text-white/40">
         Demo: {DEMO_EMAIL} / {DEMO_PASSWORD}
       </p>
 
       <div className="mt-6 space-y-2 text-center text-sm">
         <p>
-          <Link href="/forgot-password" className="text-brand-cyan hover:underline">
+          <Link href="/forgot-password" className="text-violet-400 hover:underline">
             Forgot password?
           </Link>
         </p>
-        <p className="text-brand-gray">
+        <p className="text-white/60">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-brand-cyan hover:underline">
+          <Link href="/signup" className="text-violet-400 hover:underline">
             Sign up
           </Link>
         </p>
