@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserDropdown } from "./user-dropdown";
 import { getSession } from "@/lib/auth";
 
@@ -36,7 +35,6 @@ export async function Header() {
               Sign In
             </Link>
           )}
-          <ThemeToggle />
         </nav>
       </div>
     </header>

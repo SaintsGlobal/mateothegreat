@@ -8,14 +8,6 @@
   --border: #27272a;
 }
 
-:root.light {
-  --background: #fafafa;
-  --foreground: #171717;
-  --muted: #71717a;
-  --surface: #ffffff;
-  --border: #e4e4e7;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -35,10 +27,67 @@
   --color-brand-gray: #BCBCBC;
   --color-dark: #0a0a0a;
   --color-dark-alt: #1a1a1a;
+
+  /* FD-001: Accent tokens */
+  --color-accent-violet: #8b5cf6;
+  --color-accent-violet-light: #a78bfa;
+  --color-accent-violet-dark: #6d28d9;
+  --color-accent-cyan: #06b6d4;
+  --color-accent-cyan-light: #22d3ee;
+
+  /* FD-001: Surface tokens */
+  --color-surface-secondary: #111111;
+
+  /* FD-030: Skeleton shimmer animation */
+  --animate-shimmer: shimmer 1.5s infinite;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* FD-030: Skeleton shimmer keyframes */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* FD-022: Hover micro-interaction utility classes */
+.hover-lift {
+  @apply transition-transform duration-200;
+}
+.hover-lift:hover {
+  @apply -translate-y-1;
+}
+
+.hover-scale {
+  @apply transition-transform duration-200;
+}
+.hover-scale:hover {
+  @apply scale-[1.02];
+}
+
+.hover-glow-violet {
+  @apply transition-shadow duration-300;
+}
+.hover-glow-violet:hover {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.link-hover-slide {
+  @apply relative;
+}
+.link-hover-slide::after {
+  content: '';
+  @apply absolute bottom-0 left-0 h-[2px] w-full origin-left scale-x-0 transition-transform duration-300;
+  background-color: #8b5cf6;
+}
+.link-hover-slide:hover::after {
+  @apply scale-x-100;
 }
