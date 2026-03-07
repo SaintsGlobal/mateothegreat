@@ -160,14 +160,18 @@ CACHE_HIT_RATE=0
 SESSION_COUNT=0
 declare -a KNOWN_JSONL_FILES
 
-# Subagent tracking (for nested tree display)
-declare -A ACTIVE_AGENTS           # task_id -> description
-declare -A AGENT_PARENT            # task_id -> parent_tool_use_id
-declare -A AGENT_TOOL_COUNT        # task_id -> tool count
-declare -A AGENT_STATUS            # task_id -> running|complete
-declare -A TOOL_TO_AGENT           # tool_use_id -> task_id (reverse lookup)
+# Subagent tracking (using tool_use events, not system events)
+declare -A ACTIVE_AGENTS           # tool_use_id -> description
+declare -A AGENT_TOOL_COUNT        # tool_use_id -> tool count
+declare -A AGENT_STATUS            # tool_use_id -> running|complete
 ACTIVE_AGENT_COUNT=0               # Currently running agents
 TOTAL_AGENT_SPAWNS=0               # Total agents spawned this session
+CURRENT_PHASE=""                   # Current implementation phase
+
+# Scrolling/pagination state
+SCROLL_OFFSET=0                    # For activity panel scrolling
+STORY_SCROLL_OFFSET=0              # For story list scrolling
+CURRENT_WORKING_STORY=""           # Currently being worked on
 
 # State persistence (for subshell variable sharing)
 STATE_FILE="/tmp/ralph-watch-$$.state"
@@ -345,17 +349,65 @@ refresh_prd() {
     return
   fi
 
-  local idx=0
-  COMPLETED_STORIES=0
-
-  for id in "${USER_STORY_IDS[@]}"; do
-    local passes=$(jq -r ".userStories[]? | select(.id == \"$id\") | .passes" "$PRD_FILE" 2>/dev/null)
-    if [ "$passes" = "true" ]; then
-      USER_STORY_STATUS[$idx]="done"
-      COMPLETED_STORIES=$((COMPLETED_STORIES + 1))
+  # First check IMPLEMENTATION_PLAN.md for completion status (ghuntley workflow)
+  local impl_plan="$PRD_DIR/IMPLEMENTATION_PLAN.md"
+  if [ -f "$impl_plan" ]; then
+    # Parse status line like "Status: 36/36 stories complete"
+    local status_line=$(grep -iE "status.*[0-9]+/[0-9]+|[0-9]+/[0-9]+.*complete" "$impl_plan" 2>/dev/null | head -1)
+    if [ -n "$status_line" ]; then
+      local nums=$(echo "$status_line" | grep -oE '[0-9]+/[0-9]+' | head -1)
+      if [ -n "$nums" ]; then
+        COMPLETED_STORIES=$(echo "$nums" | cut -d'/' -f1)
+      fi
     fi
-    idx=$((idx + 1))
-  done
+
+    # Check for "ALL DONE" marker
+    if grep -qiE "all done|implementation complete|all.*stories.*complete" "$impl_plan" 2>/dev/null; then
+      COMPLETED_STORIES=$TOTAL_STORIES
+      # Mark all as done
+      for ((idx=0; idx<TOTAL_STORIES; idx++)); do
+        USER_STORY_STATUS[$idx]="done"
+      done
+    fi
+
+    # Detect current phase being worked on
+    CURRENT_PHASE=$(grep -oE "Phase [0-9]+" "$impl_plan" 2>/dev/null | tail -1)
+  fi
+
+  # Fallback: check prd.json passes (legacy)
+  if [ "$COMPLETED_STORIES" -eq 0 ]; then
+    local idx=0
+    for id in "${USER_STORY_IDS[@]}"; do
+      local passes=$(jq -r ".userStories[]? | select(.id == \"$id\") | .passes" "$PRD_FILE" 2>/dev/null)
+      if [ "$passes" = "true" ]; then
+        USER_STORY_STATUS[$idx]="done"
+        COMPLETED_STORIES=$((COMPLETED_STORIES + 1))
+      fi
+      idx=$((idx + 1))
+    done
+  fi
+}
+
+# Detect current working story from file path or description
+detect_working_story() {
+  local text="$1"
+  # Look for story ID patterns like FD-001, US-001, etc.
+  local story_id=$(echo "$text" | grep -oE '[A-Z]{2,}-[0-9]{3}' | head -1)
+  if [ -n "$story_id" ]; then
+    CURRENT_WORKING_STORY="$story_id"
+    # Auto-scroll to show the working story
+    for ((i=0; i<TOTAL_STORIES; i++)); do
+      if [ "${USER_STORY_IDS[$i]}" = "$story_id" ]; then
+        # Set scroll offset to show this story in view
+        local visible=$((MAX_ACTIVITY_LINES - 2))
+        if [ $i -ge $visible ]; then
+          STORY_SCROLL_OFFSET=$((i - visible / 2))
+          [ $STORY_SCROLL_OFFSET -lt 0 ] && STORY_SCROLL_OFFSET=0
+        fi
+        break
+      fi
+    done
+  fi
 }
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -366,6 +418,9 @@ add_activity() {
   local tool="$1"
   local detail="$2"
   local type="${3:-tool}"  # tool, sub, agent, status, done
+
+  # Try to detect working story from activity
+  detect_working_story "$detail"
 
   local entry
   case "$type" in
@@ -771,11 +826,30 @@ render_prd_panel() {
   move_to $start_row $TERM_WIDTH
   echo -en "${C_DIM_FG}${BOX_V}${C_RESET}"
 
-  # Stories list
+  # Stories list with smart scrolling
   local row=$((start_row + 1))
   local shown=0
 
-  for ((i=0; i<TOTAL_STORIES && shown<max_stories; i++)); do
+  # For many stories, show summary + scroll to relevant section
+  local start_idx=$STORY_SCROLL_OFFSET
+  if [ $TOTAL_STORIES -gt $max_stories ]; then
+    # Show scroll indicator if not at top
+    if [ $start_idx -gt 0 ]; then
+      move_to $row 1
+      printf "%${TERM_WIDTH}s" ""
+      move_to $row 1
+      echo -en "${C_DIM_FG}${BOX_V}${C_RESET} ${C_MUTED}↑ $start_idx more above${C_RESET}"
+      move_to $row $col
+      echo -en "${C_DIM_FG}${BOX_V}${C_RESET}"
+      move_to $row $TERM_WIDTH
+      echo -en "${C_DIM_FG}${BOX_V}${C_RESET}"
+      row=$((row + 1))
+      shown=$((shown + 1))
+      max_stories=$((max_stories - 1))
+    fi
+  fi
+
+  for ((i=start_idx; i<TOTAL_STORIES && shown<max_stories; i++)); do
     move_to $row 1
     printf "%${TERM_WIDTH}s" ""
     move_to $row 1
@@ -785,6 +859,13 @@ render_prd_panel() {
     local story_status="${USER_STORY_STATUS[$i]}"
     local id="${USER_STORY_IDS[$i]}"
     local title=$(truncate_str "${USER_STORY_TITLES[$i]}" $((LEFT_PANEL_WIDTH - 13)))
+
+    # Check if this story is being worked on (detected from current activity)
+    local is_working=false
+    if [ -n "$CURRENT_WORKING_STORY" ] && [ "$id" = "$CURRENT_WORKING_STORY" ]; then
+      is_working=true
+      story_status="working"
+    fi
 
     case "$story_status" in
       done)
@@ -805,6 +886,23 @@ render_prd_panel() {
     row=$((row + 1))
     shown=$((shown + 1))
   done
+
+  # Show scroll indicator if more below
+  local remaining=$((TOTAL_STORIES - start_idx - shown))
+  if [ $remaining -gt 0 ]; then
+    if [ $shown -lt $((max_stories)) ]; then
+      move_to $row 1
+      printf "%${TERM_WIDTH}s" ""
+      move_to $row 1
+      echo -en "${C_DIM_FG}${BOX_V}${C_RESET} ${C_MUTED}↓ $remaining more below${C_RESET}"
+      move_to $row $col
+      echo -en "${C_DIM_FG}${BOX_V}${C_RESET}"
+      move_to $row $TERM_WIDTH
+      echo -en "${C_DIM_FG}${BOX_V}${C_RESET}"
+      row=$((row + 1))
+      shown=$((shown + 1))
+    fi
+  fi
 
   # Fill remaining rows with explicit clear
   while [ $row -lt $((start_row + max_stories + 1)) ]; do
@@ -911,9 +1009,19 @@ render_footer() {
   move_to $((row + 1)) 1
   printf "%${TERM_WIDTH}s" ""
   move_to $((row + 1)) 1
-  echo -en "  ${C_SUBTLE}Session: ${SESSION_ID:-waiting}${C_RESET}"
-  echo -en "   ${C_DIM_FG}│${C_RESET}   "
-  echo -en "${C_SUBTLE}Ctrl+C to exit${C_RESET}"
+  echo -en "  ${C_SUBTLE}Session: ${SESSION_ID:0:12}${C_RESET}"
+
+  # Show current phase if detected
+  if [ -n "$CURRENT_PHASE" ]; then
+    echo -en "   ${C_DIM_FG}│${C_RESET}   ${C_ACCENT}${CURRENT_PHASE}${C_RESET}"
+  fi
+
+  # Show scroll hint if there are more stories than visible
+  if [ $TOTAL_STORIES -gt $MAX_ACTIVITY_LINES ]; then
+    echo -en "   ${C_DIM_FG}│${C_RESET}   ${C_MUTED}${COMPLETED_STORIES}/${TOTAL_STORIES} stories${C_RESET}"
+  fi
+
+  echo -en "   ${C_DIM_FG}│${C_RESET}   ${C_SUBTLE}Ctrl+C to exit${C_RESET}"
 }
 
 render_dashboard() {
@@ -957,76 +1065,8 @@ process_jsonl_line() {
   local msg_type=$(echo "$line" | jq -r '.type // empty' 2>/dev/null)
   [ -z "$msg_type" ] && return
 
-  # Handle system events (subagent lifecycle)
-  if [ "$msg_type" = "system" ]; then
-    local subtype=$(echo "$line" | jq -r '.subtype // empty' 2>/dev/null)
-
-    case "$subtype" in
-      task_started)
-        local task_id=$(echo "$line" | jq -r '.task_id // empty' 2>/dev/null)
-        local tool_use_id=$(echo "$line" | jq -r '.tool_use_id // empty' 2>/dev/null)
-        local description=$(echo "$line" | jq -r '.description // "Sub-agent"' 2>/dev/null | head -c 45)
-        local task_type=$(echo "$line" | jq -r '.task_type // "agent"' 2>/dev/null)
-
-        if [ -n "$task_id" ]; then
-          ACTIVE_AGENTS["$task_id"]="$description"
-          [ -n "$tool_use_id" ] && TOOL_TO_AGENT["$tool_use_id"]="$task_id"
-          AGENT_STATUS["$task_id"]="running"
-          AGENT_TOOL_COUNT["$task_id"]=0
-          ACTIVE_AGENT_COUNT=$((ACTIVE_AGENT_COUNT + 1))
-          TOTAL_AGENT_SPAWNS=$((TOTAL_AGENT_SPAWNS + 1))
-          AGENT_COUNT=$((AGENT_COUNT + 1))
-
-          add_agent_activity "$task_id" "SPAWN" "$description"
-        fi
-        ;;
-
-      task_progress)
-        local task_id=$(echo "$line" | jq -r '.task_id // empty' 2>/dev/null)
-        local description=$(echo "$line" | jq -r '.description // ""' 2>/dev/null | head -c 50)
-        local tool_name=$(echo "$line" | jq -r '.last_tool_name // empty' 2>/dev/null)
-
-        if [ -n "$task_id" ] && [ -n "$tool_name" ]; then
-          AGENT_TOOL_COUNT["$task_id"]=$((${AGENT_TOOL_COUNT["$task_id"]:-0} + 1))
-          # Shorten description for display
-          local short_desc=$(echo "$description" | sed -E 's|.*/dev/[^/]+/||' | head -c 40)
-          add_agent_activity "$task_id" "$tool_name" "$short_desc"
-        fi
-        ;;
-
-      task_complete|task_stopped)
-        local task_id=$(echo "$line" | jq -r '.task_id // empty' 2>/dev/null)
-        if [ -n "$task_id" ]; then
-          AGENT_STATUS["$task_id"]="complete"
-          ACTIVE_AGENT_COUNT=$((ACTIVE_AGENT_COUNT > 0 ? ACTIVE_AGENT_COUNT - 1 : 0))
-          local tool_count="${AGENT_TOOL_COUNT[$task_id]:-0}"
-          add_agent_activity "$task_id" "DONE" "Complete ($tool_count tools)"
-        fi
-        ;;
-    esac
-    return
-  fi
-
   # Handle assistant messages with tool_use content
   if [ "$msg_type" = "assistant" ]; then
-    # Check if this is a subagent's tool call via parent_tool_use_id
-    local parent_id=$(echo "$line" | jq -r '.parent_tool_use_id // empty' 2>/dev/null)
-
-    if [ -n "$parent_id" ]; then
-      # This is a subagent's tool call - find which agent owns it
-      local task_id="${TOOL_TO_AGENT[$parent_id]:-}"
-      if [ -n "$task_id" ]; then
-        # Process as nested tool call - extract tool info
-        local nested_tools=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use") | "\(.name)|\(.input.file_path // .input.command // .input.pattern // "")"' 2>/dev/null)
-        while IFS='|' read -r tool_name tool_input; do
-          [ -z "$tool_name" ] && continue
-          AGENT_TOOL_COUNT["$task_id"]=$((${AGENT_TOOL_COUNT["$task_id"]:-0} + 1))
-          local display_input=$(echo "$tool_input" | sed -E 's|.*/dev/[^/]+/||' | head -c 40)
-          add_agent_activity "$task_id" "$tool_name" "$display_input"
-        done <<< "$nested_tools"
-        return
-      fi
-    fi
     # Extract tool calls from content array
     local tools=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use") | "\(.name)|\(.input.file_path // .input.command // .input.pattern // .input.query // "")"' 2>/dev/null)
 
@@ -1090,9 +1130,24 @@ process_jsonl_line() {
           [ -n "$query" ] && add_activity "LOAD" "$query"
           ;;
         Agent)
-          AGENT_COUNT=$((AGENT_COUNT + 1))
-          local agent_prompt=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Agent") | .input.prompt // ""' 2>/dev/null | head -1 | head -c 50)
-          add_activity "agent" "${agent_prompt:-Sub-agent}" "agent"
+          # Track agent using tool_use_id
+          local agent_id=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Agent") | .id // ""' 2>/dev/null | head -1)
+          local agent_desc=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Agent") | .input.description // .input.prompt // ""' 2>/dev/null | head -1 | head -c 45)
+
+          if [ -n "$agent_id" ]; then
+            ACTIVE_AGENTS["$agent_id"]="$agent_desc"
+            AGENT_STATUS["$agent_id"]="running"
+            AGENT_TOOL_COUNT["$agent_id"]=0
+            ACTIVE_AGENT_COUNT=$((ACTIVE_AGENT_COUNT + 1))
+            TOTAL_AGENT_SPAWNS=$((TOTAL_AGENT_SPAWNS + 1))
+            AGENT_COUNT=$((AGENT_COUNT + 1))
+
+            local short_id="${agent_id:0:8}"
+            add_agent_activity "$agent_id" "SPAWN" "$agent_desc"
+          else
+            AGENT_COUNT=$((AGENT_COUNT + 1))
+            add_activity "AGENT" "${agent_desc:-Sub-agent}"
+          fi
           ;;
         TeamCreate)
           AGENT_COUNT=$((AGENT_COUNT + 1))
@@ -1108,6 +1163,21 @@ process_jsonl_line() {
           ;;
       esac
     done <<< "$tools"
+  fi
+
+  # Handle user messages (tool_result) - detect agent completion
+  if [ "$msg_type" = "user" ]; then
+    local tool_results=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_result") | .tool_use_id // ""' 2>/dev/null)
+    while read -r result_id; do
+      [ -z "$result_id" ] && continue
+      # Check if this is an agent completing
+      if [ -n "${ACTIVE_AGENTS[$result_id]:-}" ] && [ "${AGENT_STATUS[$result_id]:-}" = "running" ]; then
+        AGENT_STATUS["$result_id"]="complete"
+        ACTIVE_AGENT_COUNT=$((ACTIVE_AGENT_COUNT > 0 ? ACTIVE_AGENT_COUNT - 1 : 0))
+        local agent_desc="${ACTIVE_AGENTS[$result_id]}"
+        add_agent_activity "$result_id" "DONE" "${agent_desc:0:30}"
+      fi
+    done <<< "$tool_results"
   fi
 
   # Handle progress messages
