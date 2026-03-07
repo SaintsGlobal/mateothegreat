@@ -91,3 +91,16 @@ body {
 .link-hover-slide:hover::after {
   @apply scale-x-100;
 }
+
+/* FD-020: Gradient mesh blob drift animation */
+@keyframes blob-drift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(50px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-30px, 20px) scale(0.9);
+  }
+}
