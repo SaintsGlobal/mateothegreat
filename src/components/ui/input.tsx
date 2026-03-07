@@ -36,7 +36,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               w-full px-4 py-2.5
               bg-[#1a1a1a] border rounded-lg
               text-white placeholder-white/40
-              transition-all duration-200
+              transition-all duration-100
+              placeholder:transition-opacity placeholder:duration-100
               focus:outline-none focus:ring-2
               disabled:opacity-50 disabled:cursor-not-allowed
               ${leftIcon ? "pl-10" : ""}
@@ -44,7 +45,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               ${
                 error
                   ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
-                  : "border-white/10 focus:border-[#8b5cf6] focus:ring-violet-500/20"
+                  : "border-white/10 focus:border-[#8b5cf6] focus:ring-violet-500/20 focus:shadow-[0_0_15px_rgba(139,92,246,0.2)]"
               }
               ${className}
             `}

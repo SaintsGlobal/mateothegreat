@@ -28,7 +28,7 @@ export function Tabs({ tabs, activeTab, onChange, children }: TabsProps) {
             className={`
               flex items-center gap-2
               px-4 py-2 text-sm font-medium
-              rounded-md transition-all duration-200
+              rounded-md transition-all duration-50 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]
               ${
                 tab.id === activeTab
                   ? "text-white bg-white/10"

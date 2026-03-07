@@ -1,0 +1,176 @@
+{
+  "projectName": "UI Reactiveness Improvements",
+  "branchName": "ralph/ui-reactiveness",
+  "description": "Improve perceived responsiveness by making all interactions feel instant and snappy. Optimize micro-interactions across all components for sub-100ms feedback.",
+  "techStack": {
+    "framework": "Next.js",
+    "styling": "Tailwind CSS",
+    "language": "TypeScript"
+  },
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Faster Animation Tokens",
+      "description": "As a user, I want interactions to feel instant so the UI doesn't feel sluggish.",
+      "priority": 1,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Add instant: 50 and quick: 100 to duration tokens",
+        "Update default transitions to use faster timings",
+        "Add snappy easing curve for micro-interactions",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Button Micro-interactions",
+      "description": "As a user, I want buttons to respond immediately when I hover or click them.",
+      "priority": 2,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Hover state appears within 50ms",
+        "Click/active state shows instant scale feedback",
+        "Focus ring appears immediately on keyboard navigation",
+        "Add subtle brightness shift on hover",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Input Focus States",
+      "description": "As a user, I want form inputs to clearly indicate when they're focused.",
+      "priority": 3,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Focus state transitions in under 100ms",
+        "Border glow appears smoothly on focus",
+        "Placeholder text fades appropriately",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Card Hover Effects",
+      "description": "As a user, I want cards to subtly respond when I hover over them.",
+      "priority": 4,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Subtle lift/shadow on hover under 100ms",
+        "Border highlight appears instantly",
+        "No layout shift during hover",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Toggle/Switch Animations",
+      "description": "As a user, I want toggles to feel responsive and satisfying.",
+      "priority": 5,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Toggle thumb moves with spring physics",
+        "State change feels immediate",
+        "Color transition is smooth but quick",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Select/Dropdown Transitions",
+      "description": "As a user, I want dropdowns to open and close smoothly but quickly.",
+      "priority": 6,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Dropdown opens within 100ms",
+        "Options highlight instantly on hover",
+        "Close animation doesn't feel slow",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "Modal Transitions",
+      "description": "As a user, I want modals to appear and disappear without delay.",
+      "priority": 7,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Modal fade-in under 150ms",
+        "Backdrop appears simultaneously",
+        "Close feels instant",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "Toast Notifications",
+      "description": "As a user, I want toast notifications to slide in smoothly.",
+      "priority": 8,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Toast enters with quick slide + fade",
+        "Auto-dismiss has smooth exit",
+        "Manual dismiss is instant",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "Skeleton Loading States",
+      "description": "As a user, I want skeleton loaders to feel alive, not frozen.",
+      "priority": 9,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Pulse animation is smooth 60fps",
+        "Transition to real content is seamless",
+        "No jarring flash when content loads",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "Tooltip Appearance",
+      "description": "As a user, I want tooltips to appear quickly without delay.",
+      "priority": 10,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Tooltip appears within 100ms of hover",
+        "Fade-in is quick but not jarring",
+        "Disappears instantly on mouse leave",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-011",
+      "title": "Tab Switching",
+      "description": "As a user, I want tab switching to feel instantaneous.",
+      "priority": 11,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Active indicator moves with spring physics",
+        "Content swap has no perceptible delay",
+        "Hover state on tabs is instant",
+        "Typecheck passes"
+      ]
+    },
+    {
+      "id": "US-012",
+      "title": "Sidebar Transitions",
+      "description": "As a user, I want sidebar expand/collapse to be smooth.",
+      "priority": 12,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Expand/collapse under 200ms",
+        "Icons and text animate together",
+        "No content jump during transition",
+        "Typecheck passes"
+      ]
+    }
+  ],
+  "nonGoals": [
+    "No new visual design changes (colors, spacing)",
+    "No new components or features",
+    "No JavaScript animation libraries",
+    "No changes to component APIs"
+  ],
+  "dependencies": []
+}

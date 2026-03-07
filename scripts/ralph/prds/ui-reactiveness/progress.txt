@@ -1,0 +1,33 @@
+# Ralph Progress Log
+Started: 2026-03-07
+---
+
+## Codebase Patterns
+- Animation tokens in `src/styles/animations.ts` - new tokens: instant (50ms), quick (100ms), snappy easing
+- All UI components use Tailwind duration-* classes, not the token values directly
+- Tailwind arbitrary properties like `[transition-timing-function:cubic-bezier(...)]` work for custom easings
+- `next lint` command is broken in this project; use `npx eslint <files>` instead
+- Toast.tsx had pre-existing lint issues (unused import, impure render call)
+---
+
+## 2026-03-07 - US-001 through US-012 (All Stories)
+- Implemented all 12 user stories in a single pass
+- **US-001**: Added `instant: 50`, `quick: 100` to duration tokens; updated `fast: 150`, `normal: 200`, `slow: 400`; added `snappy` easing; added `instant` and `quick` transition entries
+- **US-002**: Button duration-200 → duration-100, added hover:brightness-110
+- **US-003**: Input duration-200 → duration-100, added placeholder transition, added focus glow shadow
+- **US-004**: Card duration-300 → duration-100, added hover:border-white/20 for non-glow cards
+- **US-005**: Toggle track duration-200 → duration-100, knob: spring easing + duration-150
+- **US-006**: Select trigger duration-200 → duration-100, chevron duration-150 → duration-100, dropdown duration-150 → duration-100, option hover duration-50
+- **US-007**: Modal backdrop duration-200 → duration-100, content duration-200 → duration-150
+- **US-008**: Toast entry duration-200 → duration-150, fixed pre-existing lint issues (unused useCallback import, impure Date.now() in render)
+- **US-009**: Skeleton shimmer already at 1.5s cycle (correct per spec), no changes needed
+- **US-010**: Tooltip delay 200ms → 100ms, fade-in duration-150 → duration-75
+- **US-011**: Tabs duration-200 → duration-50 with spring easing
+- **US-012**: Sidebar width duration-300 → duration-200 ease-out, colors/text duration-200 → duration-100, chevron duration-300 → duration-200
+- Files changed: src/styles/animations.ts, src/components/ui/{button,input,card,Toggle,Select,Modal,Toast,Tooltip,Tabs,Sidebar}.tsx
+- **Learnings for future iterations:**
+  - `next lint` is broken (looks for a 'lint' directory); use `npx eslint` directly
+  - Toast.tsx had pre-existing lint issues unrelated to animation work
+  - Skeleton component was already correct per spec (1.5s shimmer cycle)
+  - Tailwind arbitrary properties `[transition-timing-function:...]` enable custom easing curves
+---

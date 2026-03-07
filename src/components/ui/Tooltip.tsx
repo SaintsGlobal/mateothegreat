@@ -29,7 +29,7 @@ export function Tooltip({
   content,
   position = "top",
   children,
-  delay = 200,
+  delay = 100,
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -62,7 +62,7 @@ export function Tooltip({
             text-sm text-white
             px-3 py-1.5 rounded-md
             max-w-xs whitespace-nowrap
-            animate-in fade-in duration-150
+            animate-in fade-in duration-75
           `}
         >
           {content}
