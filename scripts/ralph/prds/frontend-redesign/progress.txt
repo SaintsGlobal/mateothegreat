@@ -12,6 +12,9 @@ PRD: Frontend Redesign - Leonardo.ai Inspired
 - Gradient accents positioned absolutely with `pointer-events-none`
 - Session handling mixed server/client - check auth on server, pass to client
 - No animation libraries installed - clean slate for framer-motion
+- React 19 requires `useSyncExternalStore` for media query hooks (not useState+useEffect)
+- `npx eslint src/` for linting (not `npm run lint`)
+- New foundation: src/styles/ (tokens), src/hooks/ (custom hooks), src/lib/animations.ts (variants)
 ---
 
 ## 2026-03-06 - Planning Phase Complete
@@ -24,5 +27,26 @@ PRD: Frontend Redesign - Leonardo.ai Inspired
   - Components need: glow effects, glassmorphism, micro-interactions
   - Pages need: ScrollReveal, gradient mesh, particles
 - **Dependencies to install first:** framer-motion, lucide-react, @tsparticles/react
+---
+
+## 2026-03-07 - Phase 1 Foundation (FD-001, FD-002, FD-003, FD-022, FD-030, FD-032)
+- Installed framer-motion and lucide-react
+- Created src/styles/tokens.ts with color palette, borders, glows, glassmorphism tokens
+- Created src/styles/animations.ts with duration/easing presets
+- Updated globals.css: removed light theme, added violet/cyan accent tokens, shimmer keyframes, hover utility classes
+- Removed theme detection script from layout.tsx
+- Removed ThemeToggle from header.tsx, deleted theme-toggle.tsx
+- Created src/lib/animations.ts with Framer Motion variants (fadeIn, fadeUp, slideInLeft, slideInRight, scaleIn, staggerContainer)
+- Created src/hooks/useScrollReveal.ts (Intersection Observer)
+- Created src/hooks/useReducedMotion.ts (useSyncExternalStore pattern)
+- Created src/components/ui/Icon.tsx (lucide-react wrapper with size prop)
+- Created src/components/ui/Skeleton.tsx (shimmer animation)
+- Added hover utility classes to globals.css (hover-lift, hover-scale, hover-glow-violet, link-hover-slide)
+- Updated src/components/ui/index.ts with new exports
+- **Learnings for future iterations:**
+  - `npm run lint` / `next lint` is broken in Next.js v16.1.6 - use `npx eslint src/` directly
+  - React 19 eslint rules disallow setState in useEffect body - use useSyncExternalStore for media queries
+  - Tailwind v4 @theme inline doesn't support `--animate-*` custom animations - use @keyframes directly
+  - All typecheck, lint (our files), and tests pass
 ---
 
