@@ -42,3 +42,4 @@ prisma/*.db-journal
 *.swo
 
 /src/generated/prisma
+scripts/ralph/prds/*/.last-branch
