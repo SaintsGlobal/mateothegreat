@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md p-8">
         <h1 className="mb-2 text-center text-2xl font-bold">Forgot Password</h1>
-        <p className="mb-6 text-center text-sm text-brand-gray">
+        <p className="mb-6 text-center text-sm text-white/60">
           Enter your email and we&apos;ll send you a link to reset your password.
         </p>
 
@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
               Please check your inbox.
             </p>
             <p className="text-center text-sm">
-              <Link href="/signin" className="text-brand-cyan hover:underline">
+              <Link href="/signin" className="text-violet-400 hover:underline">
                 Back to Sign In
               </Link>
             </p>
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
             />
 
             {state?.error && (
-              <p className="text-sm text-brand-coral">{state.error}</p>
+              <p className="text-sm text-red-400">{state.error}</p>
             )}
 
             <Button type="submit" loading={isPending} className="w-full">
@@ -60,9 +60,9 @@ export default function ForgotPasswordPage() {
         )}
 
         {!state?.success && (
-          <p className="mt-6 text-center text-sm text-brand-gray">
+          <p className="mt-6 text-center text-sm text-white/60">
             Remember your password?{" "}
-            <Link href="/signin" className="text-brand-cyan hover:underline">
+            <Link href="/signin" className="text-violet-400 hover:underline">
               Sign in
             </Link>
           </p>

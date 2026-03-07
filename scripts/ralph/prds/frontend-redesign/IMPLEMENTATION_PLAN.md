@@ -2,7 +2,7 @@
 
 ## Audit Summary (2026-03-07)
 
-**Status: 6/36 stories complete.**
+**Status: 11/36 stories complete.**
 
 ### Confirmed Existing State
 - **Tailwind CSS v4.2.1** with @theme inline in globals.css (no tailwind.config.ts)
@@ -78,7 +78,7 @@
 
 ### Phase 2: Core UI Components (FD-004, FD-005, FD-007, FD-008, FD-009, FD-022, FD-030)
 
-- [ ] **FD-004: Button Component Redesign** [DEPENDS: FD-001]
+- [x] **FD-004: Button Component Redesign** [DEPENDS: FD-001]
   - Replace coral with violet gradient (#8b5cf6 to #6366f1) for primary variant
   - Add glow on hover: `box-shadow: 0 0 20px rgba(139,92,246,0.4)`
   - Add scale(0.98) on active/click
@@ -87,7 +87,7 @@
   - *File: src/components/ui/button.tsx (exists, currently uses coral)*
   - *Spec: specs/FD-004-button-component.md*
 
-- [ ] **FD-005: Input Component Redesign** [DEPENDS: FD-001]
+- [x] **FD-005: Input Component Redesign** [DEPENDS: FD-001]
   - Add leftIcon/rightIcon props with absolute positioning
   - Focus: violet border (#8b5cf6) with ring-2 ring-violet-500/20
   - Error: red border (#ef4444) with ring glow
@@ -95,7 +95,7 @@
   - *File: src/components/ui/input.tsx (exists, currently uses cyan focus)*
   - *Spec: specs/FD-005-input-component.md*
 
-- [ ] **FD-007: Card Component with Glassmorphism** [DEPENDS: FD-001]
+- [x] **FD-007: Card Component with Glassmorphism** [DEPENDS: FD-001]
   - Background: `rgba(17,17,17,0.8)` + `backdrop-blur-md` (currently solid #1a1a1a)
   - Border: `rgba(255,255,255,0.1)` (currently brand-gray/20)
   - Hover: translateY(-2px), increased shadow, optional violet glow
@@ -103,14 +103,14 @@
   - *File: src/components/ui/card.tsx (exists, has cyan glow)*
   - *Spec: specs/FD-007-card-glassmorphism.md*
 
-- [ ] **FD-008: Badge/Pill Component** [DEPENDS: FD-001]
+- [x] **FD-008: Badge/Pill Component** [DEPENDS: FD-001]
   - Create `src/components/ui/Badge.tsx`
   - 6 variants: default, success, warning, error, info, accent
   - 2 sizes: sm, md
   - Optional icon prop
   - *Spec: specs/FD-008-badge-component.md*
 
-- [ ] **FD-009: Toggle/Switch Component** [DEPENDS: FD-001]
+- [x] **FD-009: Toggle/Switch Component** [DEPENDS: FD-001]
   - Create `src/components/ui/Toggle.tsx`
   - Off: bg #333, On: bg violet-500
   - Accessible: role=switch, aria-checked, keyboard support

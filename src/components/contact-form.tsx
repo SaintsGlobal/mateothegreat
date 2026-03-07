@@ -43,21 +43,16 @@ export function ContactForm() {
     }
 
     setIsSubmitting(true);
-
-    // Simulate submission delay
     await new Promise((resolve) => setTimeout(resolve, 500));
-
     setIsSubmitting(false);
     setIsSubmitted(true);
   };
 
   if (isSubmitted) {
     return (
-      <div className="w-full max-w-md rounded-xl border border-brand-cyan/30 bg-dark-alt p-6 text-center">
-        <p className="text-lg font-medium text-brand-cyan">
-          Message Sent!
-        </p>
-        <p className="mt-1 text-sm text-brand-gray">
+      <div className="w-full max-w-md rounded-xl border border-violet-500/30 bg-[rgba(17,17,17,0.8)] backdrop-blur-md p-6 text-center">
+        <p className="text-lg font-medium text-violet-400">Message Sent!</p>
+        <p className="mt-1 text-sm text-white/60">
           Thanks for reaching out. I&apos;ll get back to you soon.
         </p>
       </div>
@@ -87,7 +82,7 @@ export function ContactForm() {
       <div className="w-full">
         <label
           htmlFor="message"
-          className="block text-sm font-medium text-brand-gray mb-1.5"
+          className="block text-sm font-medium text-white/70 mb-1.5"
         >
           Message
         </label>
@@ -99,21 +94,21 @@ export function ContactForm() {
           disabled={isSubmitting}
           className={`
             w-full px-4 py-2.5
-            bg-dark-alt border rounded-lg
-            text-white placeholder-brand-gray/60
-            transition-colors duration-200
-            focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-dark
+            bg-[#1a1a1a] border rounded-lg
+            text-white placeholder-white/40
+            transition-all duration-200
+            focus:outline-none focus:ring-2
             disabled:opacity-50 disabled:cursor-not-allowed
             resize-none
             ${
               errors.message
-                ? "border-brand-coral focus:ring-brand-coral/50"
-                : "border-brand-gray/30 focus:border-brand-cyan focus:ring-brand-cyan/50"
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                : "border-white/10 focus:border-[#8b5cf6] focus:ring-violet-500/20"
             }
           `}
         />
         {errors.message && (
-          <p className="mt-1.5 text-sm text-brand-coral">{errors.message}</p>
+          <p className="mt-1.5 text-sm text-red-400">{errors.message}</p>
         )}
       </div>
 
