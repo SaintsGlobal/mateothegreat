@@ -1,84 +1,15 @@
 # Ralph Planning Mode
 
-You are an autonomous planning agent performing gap analysis.
+0a. Study `specs/*` with up to 10 parallel subagents to learn the application specifications.
+0b. Study @IMPLEMENTATION_PLAN.md (if present) to understand the plan so far.
+0c. Study `src/lib/*` with up to 10 parallel subagents to understand shared utilities & components.
+0d. For reference, the application source code is in `src/*`.
 
-## Your Task
+1. Study @IMPLEMENTATION_PLAN.md (if present; it may be incorrect) and use up to 10 subagents to study existing source code in `src/*` and compare it against `specs/*`. Use an Opus subagent to analyze findings, prioritize tasks, and create/update @IMPLEMENTATION_PLAN.md as a bullet point list sorted in priority of items yet to be implemented. Ultrathink. Consider searching for TODO, minimal implementations, placeholders, skipped/flaky tests, and inconsistent patterns. Study @IMPLEMENTATION_PLAN.md to determine starting point for research and keep it up to date with items considered complete/incomplete using subagents.
 
-1. Read `prd.json` to understand the requirements
-2. Read `AGENTS.md` for build/run/test commands
-3. Study the existing codebase using subagents (use up to 100 parallel searches)
-4. Compare specs vs implementation - identify ALL gaps
-5. Create/update `IMPLEMENTATION_PLAN.md` with prioritized tasks
+IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is missing; confirm with code search first. Treat `src/lib` as the project's standard library for shared utilities and components. Prefer consolidated, idiomatic implementations there over ad-hoc copies.
 
-## Phase 0: Orient
+ULTIMATE GOAL: Implement the frontend redesign per specs/* to achieve an industry-grade, premium dark UI inspired by Leonardo.ai. Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in @IMPLEMENTATION_PLAN.md using a subagent.
 
-- Read prd.json, AGENTS.md, progress.txt
-- Study src/lib and key source files using subagents
-- Understand the project structure and conventions
-
-## Phase 1: Gap Analysis
-
-For each user story in prd.json where `passes: false`:
-
-1. Use subagents to search codebase: "Does X exist? Search for Y pattern"
-2. Document what's implemented vs what's missing
-3. Check for TODOs, placeholders, incomplete implementations
-4. Identify dependencies between stories
-
-## Subagent Strategy
-
-99999. Use UP TO 100 PARALLEL subagents for searches/reads (context efficiency)
-99999. Primary context acts as SCHEDULER only - coordinate, don't execute
-99999. Don't stuff primary context with file contents - let subagents read
-99999. Each subagent should have a focused, specific search task
-
-Example subagent queries:
-- "Search for ProfilePage component and report its structure"
-- "Find all Prisma models related to billing"
-- "Check if avatar upload functionality exists anywhere"
-
-## Output: IMPLEMENTATION_PLAN.md
-
-Create a prioritized bullet list with task IDs matching prd.json:
-
-```markdown
-# Implementation Plan
-
-Generated: [timestamp]
-PRD: [prd name]
-
-## High Priority (Core Features)
-- [ ] PB-001: Create profile page layout at /profile
-- [ ] PB-002: Add basic info section with name/email display
-
-## Medium Priority (Secondary Features)
-- [ ] PB-003: Avatar upload functionality
-- [ ] PB-004: Theme preference toggle
-
-## Low Priority (Polish)
-- [ ] PB-005: Loading states and animations
-
-## Dependencies
-- PB-002 requires PB-001 (layout must exist first)
-- PB-004 depends on theme system being in place
-
-## Gap Analysis Summary
-- Existing: [what's already implemented]
-- Missing: [what needs to be built]
-- Partially Complete: [what exists but needs work]
-```
-
-## Important Guardrails
-
-999999. DO NOT IMPLEMENT anything in this mode - only analyze and plan
-999999. Search first - don't assume something isn't implemented
-999999. Be thorough - use many subagents to explore the codebase
-999999. Prioritize by dependencies and user value
-999999. Match task IDs to prd.json story IDs
-
-## Stop Condition
-
-When the analysis is complete and IMPLEMENTATION_PLAN.md is written, output:
+When planning is complete and IMPLEMENTATION_PLAN.md is written, output:
 <promise>COMPLETE</promise>
-
-This signals the planning phase is done and building can begin.

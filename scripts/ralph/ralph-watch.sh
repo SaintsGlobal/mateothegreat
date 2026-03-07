@@ -993,6 +993,65 @@ process_jsonl_line() {
   save_state
 }
 
+# Process stream-json output from ralph.log (from --output-format=stream-json)
+process_stream_json_line() {
+  local line="$1"
+
+  # Skip empty lines
+  [ -z "$line" ] && return
+
+  # Try to parse as JSON
+  local event_type=$(echo "$line" | jq -r '.type // empty' 2>/dev/null)
+  [ -z "$event_type" ] && return
+
+  case "$event_type" in
+    assistant)
+      # Extract tool calls from assistant messages
+      local tool_name=$(echo "$line" | jq -r '.content_block.name // empty' 2>/dev/null)
+      if [ -n "$tool_name" ]; then
+        TOOL_COUNT=$((TOOL_COUNT + 1))
+        LAST_TOOL="$tool_name"
+        add_activity "$tool_name" "executing..."
+        CURRENT_FILE="$tool_name"
+      fi
+      ;;
+    content_block_start)
+      local block_type=$(echo "$line" | jq -r '.content_block.type // empty' 2>/dev/null)
+      if [ "$block_type" = "tool_use" ]; then
+        local tool_name=$(echo "$line" | jq -r '.content_block.name // empty' 2>/dev/null)
+        [ -n "$tool_name" ] && add_activity "$tool_name" "starting..."
+      fi
+      ;;
+    tool_result)
+      # Tool completed
+      add_status "Tool completed"
+      ;;
+    message_stop)
+      # Message finished
+      :
+      ;;
+  esac
+}
+
+# Monitor ralph.log for stream-json output (secondary source)
+monitor_ralph_log() {
+  local last_line_count=0
+
+  while [ ! -f "$COMPLETE_FLAG" ]; do
+    if [ -f "$RALPH_LOG" ]; then
+      local current_lines=$(wc -l < "$RALPH_LOG" 2>/dev/null || echo "0")
+      if [ "$current_lines" -gt "$last_line_count" ]; then
+        # Process new lines
+        tail -n +$((last_line_count + 1)) "$RALPH_LOG" 2>/dev/null | while read -r line; do
+          process_stream_json_line "$line"
+        done
+        last_line_count=$current_lines
+      fi
+    fi
+    sleep 0.5
+  done
+}
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Terminal Resize Handler
 # ═══════════════════════════════════════════════════════════════════════════

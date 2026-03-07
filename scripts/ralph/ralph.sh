@@ -1,7 +1,14 @@
 #!/bin/bash
 # Ralph Wiggum - Long-running AI agent loop
-# Usage: ./ralph.sh --prd <name> [--mode plan|build] [max_iterations]
+# Usage: ./ralph.sh --prd <name> [--mode plan|build] [--no-watch] [max_iterations]
 # Usage: ./ralph.sh [--tool claude|amp] [max_iterations]  (legacy)
+#
+# Options:
+#   --prd <name>      PRD directory name (required for most use cases)
+#   --mode plan|build Plan mode (analyze) or build mode (implement)
+#   --no-watch        Don't auto-launch the watcher in a new terminal
+#   --tool claude|amp Which AI tool to use (default: claude)
+#   [number]          Max iterations (default: 10)
 
 set -e
 
@@ -12,6 +19,7 @@ TOOL="claude"  # Default to claude CLI
 MAX_ITERATIONS=10
 PRD_NAME=""
 MODE="build"  # Default mode: plan or build
+NO_WATCH=false  # Auto-launch watcher by default
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -37,6 +45,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --tool=*)
       TOOL="${1#*=}"
+      shift
+      ;;
+    --no-watch)
+      NO_WATCH=true
       shift
       ;;
     *)
@@ -144,6 +156,39 @@ fi
 echo "PRD: ${PRD_NAME:-default} | Tool: $TOOL | Max iterations: $MAX_ITERATIONS"
 echo "Working directory: $WORKING_DIR"
 
+# Auto-launch watcher in a new terminal
+WATCHER_PID=""
+launch_watcher() {
+  if [ "$NO_WATCH" = true ]; then
+    echo "Watcher disabled (--no-watch)"
+    return
+  fi
+
+  if [ -n "$PRD_NAME" ]; then
+    # Try to launch in a new terminal window (macOS)
+    if command -v osascript &> /dev/null; then
+      osascript -e "tell application \"Terminal\" to do script \"cd '$SCRIPT_DIR' && ./ralph-watch.sh '$PRD_NAME'\"" &> /dev/null &
+      echo "Watcher launched in new Terminal window"
+    # Fallback: launch in background with output to file
+    else
+      "$SCRIPT_DIR/ralph-watch.sh" "$PRD_NAME" &> "$PRD_DIR/watcher.log" &
+      WATCHER_PID=$!
+      echo "Watcher running in background (PID: $WATCHER_PID)"
+    fi
+  fi
+}
+
+# Cleanup watcher on exit
+cleanup_watcher() {
+  if [ -n "$WATCHER_PID" ]; then
+    kill "$WATCHER_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup_watcher EXIT
+
+# Launch the watcher
+launch_watcher
+
 # Initialize ralph log
 echo "# Ralph Run Log - $(date)" > "$RALPH_LOG"
 echo "PRD: ${PRD_NAME:-default}" >> "$RALPH_LOG"
@@ -167,7 +212,13 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     # Claude Code: use --dangerously-skip-permissions for autonomous operation
     # Run from PRD directory so it finds the local prd.json and progress.txt
     # Use mode-specific prompt file
-    OUTPUT=$(claude --dangerously-skip-permissions --print < "$PROMPT_FILE" 2>&1 | tee /dev/stderr) || true
+    # Flags: stream-json for structured output, opus model, verbose logging
+    OUTPUT=$(cat "$PROMPT_FILE" | claude -p \
+      --dangerously-skip-permissions \
+      --output-format=stream-json \
+      --model opus \
+      --verbose \
+      2>&1 | tee "$RALPH_LOG" | tee /dev/stderr) || true
   fi
 
   # Check for completion signal

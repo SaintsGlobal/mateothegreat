@@ -1,112 +1,25 @@
 # Ralph Building Mode
 
-You are an autonomous coding agent implementing from a plan.
+0a. Study `specs/*` with up to 10 parallel subagents to learn the application specifications.
+0b. Study @IMPLEMENTATION_PLAN.md.
+0c. For reference, the application source code is in `src/*`.
 
-## Your Task
+1. Your task is to implement functionality per the specifications using parallel subagents. Follow @IMPLEMENTATION_PLAN.md and choose the most important item to address. Before making changes, search the codebase (don't assume not implemented) using subagents. You may use up to 10 parallel subagents for searches/reads and only 1 subagent for build/tests. Use Opus subagents when complex reasoning is needed (debugging, architectural decisions).
+2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved. If functionality is missing then it's your job to add it as per the application specifications. Ultrathink.
+3. When you discover issues, immediately update @IMPLEMENTATION_PLAN.md with your findings using a subagent. When resolved, update and remove the item.
+4. When the tests pass, update @IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes. After the commit, `git push`.
 
-1. Read `IMPLEMENTATION_PLAN.md` - pick the HIGHEST priority unchecked item
-2. Read `AGENTS.md` for build/run/test commands
-3. Read `progress.txt` Codebase Patterns section
-4. Implement that ONE task completely
-5. Run validation (test, typecheck, lint)
-6. Commit, push, update plan, update progress
+99999. Important: When authoring documentation, capture the why — tests and implementation importance.
+999999. Important: Single sources of truth, no migrations/adapters. If tests unrelated to your work fail, resolve them as part of the increment.
+9999999. As soon as there are no build or test errors create a git tag. If there are no git tags start at 0.0.0 and increment patch by 1 for example 0.0.1 if 0.0.0 does not exist.
+99999999. You may add extra logging if required to debug issues.
+999999999. Keep @IMPLEMENTATION_PLAN.md current with learnings using a subagent — future work depends on this to avoid duplicating efforts. Update especially after finishing your turn.
+9999999999. When you learn something new about how to run the application, update @AGENTS.md using a subagent but keep it brief. For example if you run commands multiple times before learning the correct command then that file should be updated.
+99999999999. For any bugs you notice, resolve them or document them in @IMPLEMENTATION_PLAN.md using a subagent even if it is unrelated to the current piece of work.
+999999999999. Implement functionality completely. Placeholders and stubs waste efforts and time redoing the same work.
+9999999999999. When @IMPLEMENTATION_PLAN.md becomes large periodically clean out the items that are completed from the file using a subagent.
+99999999999999. If you find inconsistencies in the specs/* then use an Opus subagent with 'ultrathink' requested to update the specs.
+999999999999999. IMPORTANT: Keep @AGENTS.md operational only — status updates and progress notes belong in `IMPLEMENTATION_PLAN.md`. A bloated AGENTS.md pollutes every future loop's context.
 
-## Phase 0: Study
-
-- Read IMPLEMENTATION_PLAN.md, AGENTS.md, prd.json, progress.txt
-- Identify the single most important unchecked task
-- If no IMPLEMENTATION_PLAN.md exists, fall back to picking from prd.json directly
-
-## Phase 1: Search Before Implementing
-
-99999. BEFORE writing code, use subagents to search:
-   - Does similar functionality exist?
-   - What patterns does the codebase use?
-   - Are there utilities I should reuse?
-   - How do similar components/features work?
-
-Use 1-3 focused subagent searches to understand existing patterns.
-
-## Phase 2: Implement
-
-- Write complete, production-ready code
-- Follow existing patterns from the codebase
-- Use existing utilities and components
-
-999999. DO NOT write placeholder/stub implementations
-999999. DO NOT leave TODOs for "later"
-999999. IMPLEMENT FULLY or don't implement at all
-
-If a feature is too large for one iteration, break it into smaller complete pieces.
-
-## Phase 3: Validate (Backpressure)
-
-Use ONE subagent with backpressure to run tests:
-
-```
-Run these validation commands and report results:
-- npm run typecheck
-- npm run lint
-- npm run test (if applicable tests exist)
-```
-
-9999999. ALL commits must pass typecheck/lint/test
-9999999. If validation fails, fix the issues before proceeding
-9999999. Do not commit broken code
-
-## Phase 4: Commit & Update
-
-After validation passes:
-
-1. Stage changes: `git add -A`
-2. Commit with format: `feat: [Story ID] - [Title]`
-3. Push to remote: `git push`
-4. Mark task complete in IMPLEMENTATION_PLAN.md: `- [x]`
-5. Update prd.json: set `passes: true` for completed story
-6. Append to progress.txt with learnings
-
-99999999. Push after every successful commit
-
-## Phase 5: Self-Improvement
-
-- If you learned something about build/run/test, update AGENTS.md
-- Keep AGENTS.md brief and operational (not a changelog)
-- Add patterns to progress.txt Codebase Patterns section
-
-## Progress Report Format
-
-APPEND to progress.txt (never replace):
-```
-## [Date/Time] - [Story ID]
-- What was implemented
-- Files changed
-- **Learnings for future iterations:**
-  - Patterns discovered
-  - Gotchas encountered
----
-```
-
-## Guardrails (Higher Number = Higher Priority)
-
-99999. Search codebase before implementing (don't duplicate)
-999999. No placeholders, stubs, or minimal implementations
-9999999. Update AGENTS.md when you learn operational details
-99999999. All commits must pass typecheck/lint/test
-999999999. Push after every successful commit
-
-## Stop Condition
-
-After completing a task, check if ALL items in IMPLEMENTATION_PLAN.md are checked `[x]`.
-
-If ALL tasks are complete, verify all prd.json stories have `passes: true`, then output:
+When ALL items in IMPLEMENTATION_PLAN.md are complete and all specs are implemented, output:
 <promise>COMPLETE</promise>
-
-If there are still unchecked tasks, end your response normally (another iteration will pick up the next task).
-
-## Important
-
-- Work on ONE task per iteration
-- Commit frequently
-- Keep CI green
-- Read the Codebase Patterns section before starting
-- Push after every commit
