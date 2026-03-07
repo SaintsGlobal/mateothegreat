@@ -11,3 +11,4 @@ export { Modal } from "./Modal";
 export { Tabs } from "./Tabs";
 export { Tooltip } from "./Tooltip";
 export { ToastContainer } from "./Toast";
+export { Sidebar } from "./Sidebar";

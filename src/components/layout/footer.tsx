@@ -2,9 +2,12 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/10 bg-dark-alt">
+    <footer className="bg-dark-alt">
+      {/* Gradient top border */}
+      <div className="h-px bg-gradient-to-r from-transparent via-violet-500/50 to-transparent" />
+
       <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-sm text-brand-gray">
+        <p className="text-sm text-white/30">
           &copy; 2024 MTG Intellectual Reserve, LLC
         </p>
         <div className="flex items-center gap-6">
@@ -12,7 +15,7 @@ export function Footer() {
             href="https://youtube.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-gray hover:text-brand-coral hover:scale-110 transition-all duration-200"
+            className="text-white/40 hover:text-white hover:scale-110 hover:shadow-[0_0_12px_rgba(139,92,246,0.3)] transition-all duration-300"
             aria-label="YouTube"
           >
             <svg
@@ -28,7 +31,7 @@ export function Footer() {
             href="https://twitter.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-gray hover:text-brand-cyan hover:scale-110 transition-all duration-200"
+            className="text-white/40 hover:text-white hover:scale-110 hover:shadow-[0_0_12px_rgba(139,92,246,0.3)] transition-all duration-300"
             aria-label="X (Twitter)"
           >
             <svg
@@ -44,7 +47,7 @@ export function Footer() {
             href="https://instagram.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-gray hover:text-brand-coral hover:scale-110 transition-all duration-200"
+            className="text-white/40 hover:text-white hover:scale-110 hover:shadow-[0_0_12px_rgba(139,92,246,0.3)] transition-all duration-300"
             aria-label="Instagram"
           >
             <svg
