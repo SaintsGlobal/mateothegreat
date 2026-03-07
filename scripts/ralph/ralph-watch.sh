@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 # ┌───────────────────────────────────────────────────────────────────────────┐
 # │  Ralph Activity Dashboard - Real-time monitoring for autonomous agents    │
 # │  Usage: ./ralph-watch.sh [prd-name]                                       │
@@ -782,11 +782,11 @@ render_prd_panel() {
 
     echo -en "${C_DIM_FG}${BOX_V}${C_RESET} "
 
-    local status="${USER_STORY_STATUS[$i]}"
+    local story_status="${USER_STORY_STATUS[$i]}"
     local id="${USER_STORY_IDS[$i]}"
     local title=$(truncate_str "${USER_STORY_TITLES[$i]}" $((LEFT_PANEL_WIDTH - 13)))
 
-    case "$status" in
+    case "$story_status" in
       done)
         echo -en "${C_SUCCESS}${SYM_CHECK}${C_RESET} ${C_SUBTLE}${id}${C_RESET} ${C_MUTED}${title}${C_RESET}"
         ;;
