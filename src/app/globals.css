@@ -104,3 +104,18 @@ body {
     transform: translate(-30px, 20px) scale(0.9);
   }
 }
+
+/* FD-033: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .hover-lift:hover,
+  .hover-scale:hover {
+    transform: none !important;
+  }
+}
