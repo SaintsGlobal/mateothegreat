@@ -212,12 +212,10 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     # Claude Code: use --dangerously-skip-permissions for autonomous operation
     # Run from PRD directory so it finds the local prd.json and progress.txt
     # Use mode-specific prompt file
-    # Flags: stream-json for structured output, opus model, verbose logging
+    # Note: Watcher monitors ~/.claude/projects/ JSONL files for live updates
     OUTPUT=$(cat "$PROMPT_FILE" | claude -p \
       --dangerously-skip-permissions \
-      --output-format=stream-json \
-      --model opus \
-      --verbose \
+      --model claude-opus-4-5-20251101 \
       2>&1 | tee "$RALPH_LOG" | tee /dev/stderr) || true
   fi
 
