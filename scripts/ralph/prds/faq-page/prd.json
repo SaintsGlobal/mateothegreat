@@ -40,6 +40,71 @@
         "Link navigates to /faq",
         "Properly positioned in nav"
       ]
+    },
+    {
+      "id": "FAQ-004",
+      "title": "Restore FAQ Link in Header (Regression Fix)",
+      "description": "The FAQ link was removed from header during FD-013 redesign. Restore it in the navLinks array in src/components/layout/header.tsx between Exclusive and Contact.",
+      "priority": 4,
+      "passes": true,
+      "acceptanceCriteria": [
+        "FAQ link appears in header navigation (desktop and mobile)",
+        "Link navigates to /faq",
+        "Positioned between Exclusive and Contact in navLinks array",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FAQ-005",
+      "title": "ScrollReveal Stagger Animations on FAQ Page",
+      "description": "Wrap FAQ page heading and accordion items in ScrollReveal/ScrollRevealContainer from src/components/animation/ScrollReveal.tsx for staggered entrance animations per FD-026 spec.",
+      "priority": 5,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Accordion items animate in with staggered fadeUp on scroll",
+        "Page heading animates in on load",
+        "Animations respect prefers-reduced-motion",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FAQ-006",
+      "title": "FAQ Category Groupings with Section Headings",
+      "description": "Organize FAQ items into 2-3 logical categories (About Mateo, Getting Started, Community) with section headings per FD-026 spec.",
+      "priority": 6,
+      "passes": true,
+      "acceptanceCriteria": [
+        "FAQs organized into at least 2 categories",
+        "Each category has a visible section heading",
+        "Dark styling consistent across all category accordions",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FAQ-007",
+      "title": "Use PageLayout Wrapper on FAQ Page",
+      "description": "Replace raw div layout with PageLayout component from src/components/layout/PageLayout.tsx for consistency with other pages. Remove direct GradientMesh import.",
+      "priority": 7,
+      "passes": true,
+      "acceptanceCriteria": [
+        "FAQ page uses PageLayout wrapper",
+        "GradientMesh background renders via PageLayout",
+        "Scroll-to-top button appears when scrolling",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FAQ-008",
+      "title": "Accordion Accessibility Improvements",
+      "description": "Add ARIA attributes to accordion component: aria-controls, role=region, aria-labelledby, and unique ids via React useId().",
+      "priority": 8,
+      "passes": true,
+      "acceptanceCriteria": [
+        "Buttons have aria-controls pointing to content panel id",
+        "Content panels have role=region and aria-labelledby",
+        "Unique ids generated via useId()",
+        "npm run typecheck passes"
+      ]
     }
   ]
 }

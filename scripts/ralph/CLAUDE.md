@@ -12,7 +12,11 @@ You are an autonomous coding agent working on a software project.
 6. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
 7. Update CLAUDE.md files if you discover reusable patterns (see below)
 8. If checks pass, commit ALL changes with message: `feat: [Story ID] - [Story Title]`
-9. Update the PRD to set `passes: true` for the completed story
+9. **CRITICAL: Update the PRD** to set `passes: true` for the completed story using this exact command:
+   ```bash
+   jq '(.userStories[] | select(.id == "STORY-ID")) .passes = true' prd.json > prd.tmp && mv prd.tmp prd.json
+   ```
+   Replace `STORY-ID` with the actual story ID (e.g., `FAQ-004`). **This step is MANDATORY before finishing.**
 10. Append your progress to `progress.txt`
 
 ## Progress Report Format
@@ -98,7 +102,8 @@ If there are still stories with `passes: false`, end your response normally (ano
 
 ## Important
 
-- Work on ONE story per iteration
+- **Work on ONE story per iteration** - Do NOT batch multiple stories. Complete one, update PRD, then stop.
+- **ALWAYS update prd.json** - Every iteration MUST end with the jq command to set `passes: true`
 - Commit frequently
 - Keep CI green
 - Read the Codebase Patterns section in progress.txt before starting

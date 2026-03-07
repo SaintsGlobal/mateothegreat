@@ -72,6 +72,7 @@ c_fg() { echo "${CSI}38;5;${1}m"; }
 
 C_ACCENT=$(c_fg 208)    # Orange - primary accent (#FF5A2D)
 C_SUCCESS=$(c_fg 43)    # Teal green - success (#2FBF71)
+C_WARNING=$(c_fg 220)   # Yellow - warning (#FFD700)
 C_ERROR=$(c_fg 160)     # Red - errors (#E23D2D)
 C_MUTED=$(c_fg 101)     # Warm gray - secondary (#8B7F77)
 C_DIM_FG=$(c_fg 239)    # Dark gray - borders (#4A4A4A)
@@ -127,7 +128,8 @@ AGENT_COUNT=0
 ERROR_COUNT=0
 COST_ESTIMATE="0.00"
 ACTIVITY_LINES=()
-MAX_ACTIVITY_LINES=12
+MAX_ACTIVITY_LINES=20
+MAX_ACTIVITY_BUFFER=100  # Keep more history for scrolling
 TERM_WIDTH=$(tput cols)
 TERM_HEIGHT=$(tput lines)
 SESSION_ID=""
@@ -171,6 +173,8 @@ CURRENT_PHASE=""                   # Current implementation phase
 # Scrolling/pagination state
 SCROLL_OFFSET=0                    # For activity panel scrolling
 STORY_SCROLL_OFFSET=0              # For story list scrolling
+ACTIVITY_SCROLL_OFFSET=0           # For activity feed scrolling (auto-scrolls to bottom)
+MANUAL_SCROLL="false"              # When true, disable auto-scroll to bottom (quoted for string comparison)
 CURRENT_WORKING_STORY=""           # Currently being worked on
 
 # State persistence (for subshell variable sharing)
@@ -322,7 +326,8 @@ load_prd() {
     return
   fi
 
-  local stories=$(jq -r '.userStories[]? | "\(.id)|\(.title)|\(.passes)"' "$PRD_FILE" 2>/dev/null)
+  # Use select to filter out null/empty entries
+  local stories=$(jq -r '.userStories[]? | select(.id != null and .id != "") | "\(.id)|\(.title // "")|\(.passes // false)"' "$PRD_FILE" 2>/dev/null)
 
   TOTAL_STORIES=0
   COMPLETED_STORIES=0
@@ -331,7 +336,10 @@ load_prd() {
   USER_STORY_STATUS=()
 
   while IFS='|' read -r id title passes; do
+    # Skip empty lines and empty IDs
     [ -z "$id" ] && continue
+    [[ "$id" =~ ^[[:space:]]*$ ]] && continue
+
     USER_STORY_IDS+=("$id")
     USER_STORY_TITLES+=("$title")
     if [ "$passes" = "true" ]; then
@@ -349,7 +357,19 @@ refresh_prd() {
     return
   fi
 
-  # First check IMPLEMENTATION_PLAN.md for completion status (ghuntley workflow)
+  # Always re-count completed stories from prd.json
+  local new_completed=0
+  local idx=1  # zsh arrays are 1-indexed
+  for id in "${USER_STORY_IDS[@]}"; do
+    local passes=$(jq -r ".userStories[]? | select(.id == \"$id\") | .passes" "$PRD_FILE" 2>/dev/null)
+    if [ "$passes" = "true" ]; then
+      USER_STORY_STATUS[$idx]="done"
+      new_completed=$((new_completed + 1))
+    fi
+    idx=$((idx + 1))
+  done
+
+  # Also check IMPLEMENTATION_PLAN.md for completion status (ghuntley workflow)
   local impl_plan="$PRD_DIR/IMPLEMENTATION_PLAN.md"
   if [ -f "$impl_plan" ]; then
     # Parse status line like "Status: 36/36 stories complete"
@@ -357,15 +377,17 @@ refresh_prd() {
     if [ -n "$status_line" ]; then
       local nums=$(echo "$status_line" | grep -oE '[0-9]+/[0-9]+' | head -1)
       if [ -n "$nums" ]; then
-        COMPLETED_STORIES=$(echo "$nums" | cut -d'/' -f1)
+        local plan_completed=$(echo "$nums" | cut -d'/' -f1)
+        # Use the higher of prd.json count or IMPLEMENTATION_PLAN count
+        [ "$plan_completed" -gt "$new_completed" ] && new_completed=$plan_completed
       fi
     fi
 
     # Check for "ALL DONE" marker
     if grep -qiE "all done|implementation complete|all.*stories.*complete" "$impl_plan" 2>/dev/null; then
-      COMPLETED_STORIES=$TOTAL_STORIES
-      # Mark all as done
-      for ((idx=0; idx<TOTAL_STORIES; idx++)); do
+      new_completed=$TOTAL_STORIES
+      # Mark all as done (zsh 1-indexed)
+      for ((idx=1; idx<=TOTAL_STORIES; idx++)); do
         USER_STORY_STATUS[$idx]="done"
       done
     fi
@@ -374,30 +396,47 @@ refresh_prd() {
     CURRENT_PHASE=$(grep -oE "Phase [0-9]+" "$impl_plan" 2>/dev/null | tail -1)
   fi
 
-  # Fallback: check prd.json passes (legacy)
-  if [ "$COMPLETED_STORIES" -eq 0 ]; then
-    local idx=0
-    for id in "${USER_STORY_IDS[@]}"; do
-      local passes=$(jq -r ".userStories[]? | select(.id == \"$id\") | .passes" "$PRD_FILE" 2>/dev/null)
-      if [ "$passes" = "true" ]; then
-        USER_STORY_STATUS[$idx]="done"
-        COMPLETED_STORIES=$((COMPLETED_STORIES + 1))
-      fi
-      idx=$((idx + 1))
-    done
-  fi
+  COMPLETED_STORIES=$new_completed
 }
 
 # Detect current working story from file path or description
 detect_working_story() {
   local text="$1"
   # Look for story ID patterns like FD-001, US-001, etc.
-  local story_id=$(echo "$text" | grep -oE '[A-Z]{2,}-[0-9]{3}' | head -1)
+  # Also match spec filenames like US-001-animation-tokens.md
+  local story_id=""
+
+  # Try direct pattern first (e.g., "US-001" in text)
+  story_id=$(echo "$text" | grep -oE '[A-Z]{2,}-[0-9]{3}' | head -1)
+
+  # If not found, try extracting from spec filename pattern (US-001-something.md)
+  if [ -z "$story_id" ]; then
+    story_id=$(echo "$text" | grep -oE '[A-Z]{2,}-[0-9]{3}-[a-z]' | sed 's/-[a-z]$//' | head -1)
+  fi
+
+  # Try component filename to story mapping (common UI components)
+  if [ -z "$story_id" ]; then
+    case "$text" in
+      *[Bb]utton.tsx*|*[Bb]utton.ts*) story_id="US-002" ;;
+      *[Ii]nput.tsx*|*[Ii]nput.ts*) story_id="US-003" ;;
+      *[Cc]ard.tsx*|*[Cc]ard.ts*) story_id="US-004" ;;
+      *[Tt]oggle.tsx*|*[Tt]oggle.ts*) story_id="US-005" ;;
+      *[Ss]elect.tsx*|*[Ss]elect.ts*) story_id="US-006" ;;
+      *[Mm]odal.tsx*|*[Mm]odal.ts*|*[Dd]ialog.tsx*) story_id="US-007" ;;
+      *[Tt]oast.tsx*|*[Tt]oast.ts*) story_id="US-008" ;;
+      *[Ss]keleton.tsx*|*[Ss]keleton.ts*) story_id="US-009" ;;
+      *[Tt]ooltip.tsx*|*[Tt]ooltip.ts*) story_id="US-010" ;;
+      *[Tt]abs.tsx*|*[Tt]abs.ts*) story_id="US-011" ;;
+      *[Ss]idebar.tsx*|*[Ss]idebar.ts*) story_id="US-012" ;;
+    esac
+  fi
+
   if [ -n "$story_id" ]; then
     CURRENT_WORKING_STORY="$story_id"
     # Auto-scroll to show the working story
     for ((i=0; i<TOTAL_STORIES; i++)); do
-      if [ "${USER_STORY_IDS[$i]}" = "$story_id" ]; then
+      local arr_idx=$((i + 1))  # zsh arrays are 1-indexed
+      if [ "${USER_STORY_IDS[$arr_idx]}" = "$story_id" ]; then
         # Set scroll offset to show this story in view
         local visible=$((MAX_ACTIVITY_LINES - 2))
         if [ $i -ge $visible ]; then
@@ -464,7 +503,7 @@ add_activity() {
   ACTIVITY_LINES+=("$entry")
 
   # Keep only last N lines
-  if [ ${#ACTIVITY_LINES[@]} -gt $MAX_ACTIVITY_LINES ]; then
+  if [ ${#ACTIVITY_LINES[@]} -gt $MAX_ACTIVITY_BUFFER ]; then
     ACTIVITY_LINES=("${ACTIVITY_LINES[@]:1}")
   fi
 
@@ -529,7 +568,7 @@ add_agent_activity() {
 
   ACTIVITY_LINES+=("$entry")
   # Keep last N lines
-  [ ${#ACTIVITY_LINES[@]} -gt $MAX_ACTIVITY_LINES ] && ACTIVITY_LINES=("${ACTIVITY_LINES[@]:1}")
+  [ ${#ACTIVITY_LINES[@]} -gt $MAX_ACTIVITY_BUFFER ] && ACTIVITY_LINES=("${ACTIVITY_LINES[@]:1}")
 
   # Write to log file (plain text)
   local timestamp=$(date '+%H:%M:%S')
@@ -557,13 +596,26 @@ aggregate_all_sessions() {
   TOTAL_CACHE_WRITE_TOKENS=0
   TOTAL_CACHE_READ_TOKENS=0
 
-  [ -z "$RALPH_START_TIME" ] && RALPH_START_TIME=$(get_ralph_start_time)
+  # Use START_TIME (watcher start) instead of RALPH_START_TIME (ralph.log mtime)
+  # This ensures we catch sessions even if ralph.log doesn't exist yet
+  local ref_time="${RALPH_START_TIME:-$START_TIME}"
+  [ -z "$ref_time" ] && ref_time=$START_TIME
 
-  # Find all JSONL files created after ralph started
+  # Find all JSONL files - include those from known session list OR recent ones
   for jsonl in "$CLAUDE_PROJECT_DIR"/*.jsonl; do
     [ -f "$jsonl" ] || continue
     local file_mtime=$(stat -f %m "$jsonl" 2>/dev/null || echo "0")
-    [ "$file_mtime" -lt "$((RALPH_START_TIME - 10))" ] && continue
+
+    # Include file if: recently modified OR in our known session list
+    local include_file=false
+    [ "$file_mtime" -ge "$((ref_time - 60))" ] && include_file=true
+
+    # Always include known session files
+    for known in "${KNOWN_JSONL_FILES[@]}"; do
+      [ "$jsonl" = "$known" ] && include_file=true && break
+    done
+
+    [ "$include_file" = false ] && continue
 
     # Parse usage from this session using jq
     local usage=$(jq -s '
@@ -785,7 +837,10 @@ render_header() {
   stats_content+="  ${C_DIM_FG}│${C_RESET}  ${C_MUTED}Agents:${C_RESET} ${C_HIGHLIGHT}${ACTIVE_AGENT_COUNT}${C_MUTED}/${C_TEXT}${TOTAL_AGENT_SPAWNS}${C_RESET}"
   stats_content+="  ${C_DIM_FG}│${C_RESET}  ${C_MUTED}In:${C_RESET} ${C_TEXT}${formatted_in}${C_RESET}"
   stats_content+="  ${C_MUTED}Out:${C_RESET} ${C_TEXT}${formatted_out}${C_RESET}"
-  stats_content+="  ${C_DIM_FG}│${C_RESET}  ${C_MUTED}Cache:${C_RESET} ${C_SUCCESS}${CACHE_HIT_RATE}%${C_RESET}"
+  # Cache hit rate with color coding (green > 50%, warning otherwise)
+  local cache_color="$C_SUCCESS"
+  [ $CACHE_HIT_RATE -lt 50 ] && cache_color="$C_WARNING"
+  stats_content+="  ${C_DIM_FG}│${C_RESET}  ${C_MUTED}Cache:${C_RESET} ${cache_color}${CACHE_HIT_RATE}%${C_RESET}"
   stats_content+="  ${C_DIM_FG}│${C_RESET}  ${C_SUCCESS}\$${COST_ESTIMATE}${C_RESET}"
   if [ "$CACHE_SAVINGS" != "0.00" ] && [ -n "$CACHE_SAVINGS" ]; then
     stats_content+=" ${C_MUTED}(saved \$${CACHE_SAVINGS})${C_RESET}"
@@ -850,26 +905,52 @@ render_prd_panel() {
   fi
 
   for ((i=start_idx; i<TOTAL_STORIES && shown<max_stories; i++)); do
+    # zsh arrays are 1-indexed, so add 1 to loop counter
+    local arr_idx=$((i + 1))
+    local id="${USER_STORY_IDS[$arr_idx]}"
+    # Skip empty story entries
+    [ -z "$id" ] && continue
+
     move_to $row 1
     printf "%${TERM_WIDTH}s" ""
     move_to $row 1
 
     echo -en "${C_DIM_FG}${BOX_V}${C_RESET} "
 
-    local story_status="${USER_STORY_STATUS[$i]}"
-    local id="${USER_STORY_IDS[$i]}"
-    local title=$(truncate_str "${USER_STORY_TITLES[$i]}" $((LEFT_PANEL_WIDTH - 13)))
+    local story_status="${USER_STORY_STATUS[$arr_idx]}"
+    local title=$(truncate_str "${USER_STORY_TITLES[$arr_idx]}" $((LEFT_PANEL_WIDTH - 13)))
 
     # Check if this story is being worked on (detected from current activity)
     local is_working=false
-    if [ -n "$CURRENT_WORKING_STORY" ] && [ "$id" = "$CURRENT_WORKING_STORY" ]; then
-      is_working=true
-      story_status="working"
+    local is_before_current=false
+    if [ -n "$CURRENT_WORKING_STORY" ]; then
+      if [ "$id" = "$CURRENT_WORKING_STORY" ]; then
+        is_working=true
+        story_status="working"
+      else
+        # Check if this story comes BEFORE the current working story
+        # If so, mark it as implicitly done (agent works sequentially)
+        for ((check_idx=0; check_idx<TOTAL_STORIES; check_idx++)); do
+          local check_arr_idx=$((check_idx + 1))
+          if [ "${USER_STORY_IDS[$check_arr_idx]}" = "$CURRENT_WORKING_STORY" ]; then
+            # Found current working story - if i < check_idx, this story is before it
+            [ $i -lt $check_idx ] && is_before_current=true
+            break
+          fi
+        done
+      fi
     fi
+
+    # Stories before current working story are implicitly done
+    [ "$is_before_current" = true ] && [ "$story_status" != "done" ] && story_status="implicit_done"
 
     case "$story_status" in
       done)
         echo -en "${C_SUCCESS}${SYM_CHECK}${C_RESET} ${C_SUBTLE}${id}${C_RESET} ${C_MUTED}${title}${C_RESET}"
+        ;;
+      implicit_done)
+        # Checkmark but slightly dimmer since not confirmed in PRD
+        echo -en "${C_SUCCESS}${SYM_CHECK}${C_RESET} ${C_MUTED}${id}${C_RESET} ${C_DIM}${title}${C_RESET}"
         ;;
       working)
         echo -en "${C_ACCENT}${SYM_DOT}${C_RESET} ${C_ACCENT}${id}${C_RESET} ${C_TEXT}${title}${C_RESET}"
@@ -924,13 +1005,37 @@ render_activity_panel() {
   local panel_width=$((TERM_WIDTH - start_col - 1))
   local max_lines=$((MAX_ACTIVITY_LINES))
 
-  # Activity header (rendered via render_prd_panel row, just fill right side)
+  # Activity header with scroll indicator
   move_to $start_row $start_col
-  echo -en " ${C_BOLD}${C_TEXT}Live Activity${C_RESET}"
-
-  # Activity lines
-  local row=$((start_row + 1))
   local activity_count=${#ACTIVITY_LINES[@]}
+  local max_offset=$((activity_count > max_lines ? activity_count - max_lines : 0))
+
+  # Auto-scroll to bottom unless manual scroll active
+  if [ "$MANUAL_SCROLL" = "false" ]; then
+    ACTIVITY_SCROLL_OFFSET=$max_offset
+  fi
+
+  # Bounds check
+  [ $ACTIVITY_SCROLL_OFFSET -lt 0 ] && ACTIVITY_SCROLL_OFFSET=0
+  [ $ACTIVITY_SCROLL_OFFSET -gt $max_offset ] && ACTIVITY_SCROLL_OFFSET=$max_offset
+
+  local hidden_above=$ACTIVITY_SCROLL_OFFSET
+  local hidden_below=$((max_offset - ACTIVITY_SCROLL_OFFSET))
+
+  # Show scroll indicators
+  if [ $hidden_above -gt 0 ] && [ $hidden_below -gt 0 ]; then
+    echo -en " ${C_BOLD}${C_TEXT}Live Activity${C_RESET}  ${C_MUTED}↑${hidden_above} ↓${hidden_below}${C_RESET}"
+  elif [ $hidden_above -gt 0 ]; then
+    echo -en " ${C_BOLD}${C_TEXT}Live Activity${C_RESET}  ${C_MUTED}↑${hidden_above} above${C_RESET}"
+  elif [ $hidden_below -gt 0 ]; then
+    echo -en " ${C_BOLD}${C_TEXT}Live Activity${C_RESET}  ${C_MUTED}↓${hidden_below} below${C_RESET}"
+  else
+    echo -en " ${C_BOLD}${C_TEXT}Live Activity${C_RESET}"
+  fi
+
+  # Activity lines - use scroll offset
+  local row=$((start_row + 1))
+  local start_idx=$ACTIVITY_SCROLL_OFFSET
 
   for ((i=0; i<max_lines; i++)); do
     move_to $row $start_col
@@ -938,9 +1043,12 @@ render_activity_panel() {
     printf "%$((TERM_WIDTH - start_col))s" ""
     move_to $row $start_col
 
-    if [ $i -lt $activity_count ]; then
-      local line="${ACTIVITY_LINES[$i]}"
-      echo -en " $line"
+    local line_idx=$((start_idx + i))
+    local arr_idx=$((line_idx + 1))  # zsh arrays are 1-indexed
+    if [ $line_idx -lt $activity_count ]; then
+      local line="${ACTIVITY_LINES[$arr_idx]}"
+      # Truncate to fit panel width
+      echo -en " ${line:0:$((panel_width - 2))}"
     fi
 
     move_to $row $TERM_WIDTH
@@ -1021,7 +1129,7 @@ render_footer() {
     echo -en "   ${C_DIM_FG}│${C_RESET}   ${C_MUTED}${COMPLETED_STORIES}/${TOTAL_STORIES} stories${C_RESET}"
   fi
 
-  echo -en "   ${C_DIM_FG}│${C_RESET}   ${C_SUBTLE}Ctrl+C to exit${C_RESET}"
+  echo -en "   ${C_DIM_FG}│${C_RESET}   ${C_SUBTLE}j/k scroll, g=bottom, Ctrl+C exit${C_RESET}"
 }
 
 render_dashboard() {
@@ -1062,13 +1170,13 @@ process_jsonl_line() {
   [ -z "$line" ] && return
 
   # Parse JSON - extract tool_use entries
-  local msg_type=$(echo "$line" | jq -r '.type // empty' 2>/dev/null)
+  local msg_type=$(printf '%s' "$line" | jq -r '.type // empty' 2>/dev/null)
   [ -z "$msg_type" ] && return
 
   # Handle assistant messages with tool_use content
   if [ "$msg_type" = "assistant" ]; then
     # Extract tool calls from content array
-    local tools=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use") | "\(.name)|\(.input.file_path // .input.command // .input.pattern // .input.query // "")"' 2>/dev/null)
+    local tools=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_use") | "\(.name)|\(.input.file_path // .input.command // .input.pattern // .input.query // "")"' 2>/dev/null)
 
     while IFS='|' read -r tool_name tool_input; do
       [ -z "$tool_name" ] && continue
@@ -1097,7 +1205,7 @@ process_jsonl_line() {
         Edit)
           WRITE_COUNT=$((WRITE_COUNT + 1))
           # Get file path specifically for Edit
-          local edit_file=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Edit") | .input.file_path // ""' 2>/dev/null | head -1)
+          local edit_file=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Edit") | .input.file_path // ""' 2>/dev/null | head -1)
           if [ -n "$edit_file" ]; then
             local rel_edit=$(echo "$edit_file" | sed -E 's|.*/dev/[^/]+/||')
             add_activity "EDIT" "$rel_edit"
@@ -1107,8 +1215,8 @@ process_jsonl_line() {
         Bash)
           BASH_COUNT=$((BASH_COUNT + 1))
           # Get command with description if available
-          local bash_cmd=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Bash") | .input.command // ""' 2>/dev/null | head -1 | head -c 60)
-          local bash_desc=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Bash") | .input.description // ""' 2>/dev/null | head -1 | head -c 50)
+          local bash_cmd=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Bash") | .input.command // ""' 2>/dev/null | head -1 | head -c 60)
+          local bash_desc=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Bash") | .input.description // ""' 2>/dev/null | head -1 | head -c 50)
           if [ -n "$bash_desc" ]; then
             add_activity "BASH" "$bash_desc"
           elif [ -n "$bash_cmd" ]; then
@@ -1122,19 +1230,21 @@ process_jsonl_line() {
           ;;
         Grep)
           READ_COUNT=$((READ_COUNT + 1))
-          local grep_pattern=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Grep") | .input.pattern // ""' 2>/dev/null | head -1 | head -c 40)
+          local grep_pattern=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Grep") | .input.pattern // ""' 2>/dev/null | head -1 | head -c 40)
           [ -n "$grep_pattern" ] && add_activity "GREP" "/$grep_pattern/"
           ;;
         ToolSearch)
-          local query=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "ToolSearch") | .input.query // ""' 2>/dev/null | head -1)
+          local query=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "ToolSearch") | .input.query // ""' 2>/dev/null | head -1)
           [ -n "$query" ] && add_activity "LOAD" "$query"
           ;;
         Agent)
-          # Track agent using tool_use_id
-          local agent_id=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Agent") | .id // ""' 2>/dev/null | head -1)
-          local agent_desc=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Agent") | .input.description // .input.prompt // ""' 2>/dev/null | head -1 | head -c 45)
+          # Handle multiple agents in single message
+          local agent_data=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_use" and .name == "Agent") | "\(.id // "")|\(.input.description // .input.prompt // "")"' 2>/dev/null)
 
-          if [ -n "$agent_id" ]; then
+          while IFS='|' read -r agent_id agent_desc; do
+            [ -z "$agent_id" ] && continue
+            agent_desc="${agent_desc:0:45}"
+
             ACTIVE_AGENTS["$agent_id"]="$agent_desc"
             AGENT_STATUS["$agent_id"]="running"
             AGENT_TOOL_COUNT["$agent_id"]=0
@@ -1142,11 +1252,14 @@ process_jsonl_line() {
             TOTAL_AGENT_SPAWNS=$((TOTAL_AGENT_SPAWNS + 1))
             AGENT_COUNT=$((AGENT_COUNT + 1))
 
-            local short_id="${agent_id:0:8}"
             add_agent_activity "$agent_id" "SPAWN" "$agent_desc"
-          else
+            detect_working_story "$agent_desc"  # Try to detect story from agent description
+          done <<< "$agent_data"
+
+          # Fallback if no agent IDs found
+          if [ -z "$agent_data" ]; then
             AGENT_COUNT=$((AGENT_COUNT + 1))
-            add_activity "AGENT" "${agent_desc:-Sub-agent}"
+            add_activity "AGENT" "Sub-agent"
           fi
           ;;
         TeamCreate)
@@ -1154,7 +1267,7 @@ process_jsonl_line() {
           add_activity "team" "Creating team..." "agent"
           ;;
         WebFetch|WebSearch)
-          local url=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use") | .input.url // .input.query // ""' 2>/dev/null | head -1 | head -c 50)
+          local url=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_use") | .input.url // .input.query // ""' 2>/dev/null | head -1 | head -c 50)
           add_activity "WEB" "$url"
           ;;
         *)
@@ -1167,7 +1280,7 @@ process_jsonl_line() {
 
   # Handle user messages (tool_result) - detect agent completion
   if [ "$msg_type" = "user" ]; then
-    local tool_results=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_result") | .tool_use_id // ""' 2>/dev/null)
+    local tool_results=$(printf '%s' "$line" | jq -r '.message.content[]? | select(.type == "tool_result") | .tool_use_id // ""' 2>/dev/null)
     while read -r result_id; do
       [ -z "$result_id" ] && continue
       # Check if this is an agent completing
@@ -1182,12 +1295,12 @@ process_jsonl_line() {
 
   # Handle progress messages
   if [ "$msg_type" = "progress" ]; then
-    local progress_msg=$(echo "$line" | jq -r '.message // ""' 2>/dev/null | head -c 60)
+    local progress_msg=$(printf '%s' "$line" | jq -r '.message // ""' 2>/dev/null | head -c 60)
     [ -n "$progress_msg" ] && add_status "$progress_msg"
   fi
 
   # Check for session completion in the message
-  if echo "$line" | jq -e '.message.stop_reason == "end_turn"' &>/dev/null; then
+  if printf '%s' "$line" | jq -e '.message.stop_reason == "end_turn"' &>/dev/null; then
     # Could indicate completion, but wait for ralph.log COMPLETE signal
     :
   fi
@@ -1204,13 +1317,13 @@ process_stream_json_line() {
   [ -z "$line" ] && return
 
   # Try to parse as JSON
-  local event_type=$(echo "$line" | jq -r '.type // empty' 2>/dev/null)
+  local event_type=$(printf '%s' "$line" | jq -r '.type // empty' 2>/dev/null)
   [ -z "$event_type" ] && return
 
   case "$event_type" in
     assistant)
       # Extract tool calls from assistant messages
-      local tool_name=$(echo "$line" | jq -r '.content_block.name // empty' 2>/dev/null)
+      local tool_name=$(printf '%s' "$line" | jq -r '.content_block.name // empty' 2>/dev/null)
       if [ -n "$tool_name" ]; then
         TOOL_COUNT=$((TOOL_COUNT + 1))
         LAST_TOOL="$tool_name"
@@ -1219,9 +1332,9 @@ process_stream_json_line() {
       fi
       ;;
     content_block_start)
-      local block_type=$(echo "$line" | jq -r '.content_block.type // empty' 2>/dev/null)
+      local block_type=$(printf '%s' "$line" | jq -r '.content_block.type // empty' 2>/dev/null)
       if [ "$block_type" = "tool_use" ]; then
-        local tool_name=$(echo "$line" | jq -r '.content_block.name // empty' 2>/dev/null)
+        local tool_name=$(printf '%s' "$line" | jq -r '.content_block.name // empty' 2>/dev/null)
         [ -n "$tool_name" ] && add_activity "$tool_name" "starting..."
       fi
       ;;
@@ -1274,8 +1387,8 @@ handle_resize() {
   [ $LEFT_PANEL_WIDTH -gt 50 ] && LEFT_PANEL_WIDTH=50
 
   MAX_ACTIVITY_LINES=$((TERM_HEIGHT - 10))
-  [ $MAX_ACTIVITY_LINES -lt 4 ] && MAX_ACTIVITY_LINES=4
-  [ $MAX_ACTIVITY_LINES -gt 15 ] && MAX_ACTIVITY_LINES=15
+  [ $MAX_ACTIVITY_LINES -lt 6 ] && MAX_ACTIVITY_LINES=6
+  [ $MAX_ACTIVITY_LINES -gt 30 ] && MAX_ACTIVITY_LINES=30
 
   # Full screen clear - move cursor home, clear entire screen, then clear scrollback
   echo -en "${CSI}H${CSI}2J${CSI}3J"
@@ -1302,6 +1415,9 @@ cleanup() {
 
   # Clean up temp files
   rm -f "$STATE_FILE" "$COMPLETE_FLAG"
+
+  # Restore terminal settings (in case raw mode was used)
+  stty sane < /dev/tty 2>/dev/null || true
 
   echo -en "$SHOW_CURSOR"
   clear
@@ -1374,7 +1490,29 @@ LEFT_PANEL_WIDTH=$((TERM_WIDTH * 35 / 100))
 [ $LEFT_PANEL_WIDTH -gt 50 ] && LEFT_PANEL_WIDTH=50
 MAX_ACTIVITY_LINES=$((TERM_HEIGHT - 10))
 [ $MAX_ACTIVITY_LINES -lt 6 ] && MAX_ACTIVITY_LINES=6
-[ $MAX_ACTIVITY_LINES -gt 15 ] && MAX_ACTIVITY_LINES=15
+[ $MAX_ACTIVITY_LINES -gt 30 ] && MAX_ACTIVITY_LINES=30
+
+# Keyboard handler for scrolling (reads from /dev/tty to bypass stdin pipe)
+handle_keyboard() {
+  local key
+  if read -t 0.01 -r -s -n 1 key < /dev/tty 2>/dev/null; then
+    case "$key" in
+      j|J) # Scroll down (show newer)
+        if [ "$MANUAL_SCROLL" = "true" ]; then
+          ACTIVITY_SCROLL_OFFSET=$((ACTIVITY_SCROLL_OFFSET + 1))
+        fi
+        MANUAL_SCROLL="true"
+        ;;
+      k|K) # Scroll up (show older)
+        ACTIVITY_SCROLL_OFFSET=$((ACTIVITY_SCROLL_OFFSET - 1))
+        MANUAL_SCROLL="true"
+        ;;
+      g|G) # Jump to bottom (auto-scroll mode)
+        MANUAL_SCROLL="false"
+        ;;
+    esac
+  fi
+}
 
 # Hide cursor and clear screen
 echo -en "$HIDE_CURSOR"
@@ -1459,6 +1597,9 @@ tail -n +1 -F "$CURRENT_JSONL" 2>/dev/null | while true; do
     done
     KNOWN_TEAMS="$current_teams"
   fi
+
+  # Handle keyboard input for scrolling
+  handle_keyboard
 
   # Always render (timer updates smoothly even without new log lines)
   render_dashboard
