@@ -2,7 +2,7 @@
 
 ## Audit Summary (2026-03-07)
 
-**Status: 0/36 stories complete. All have `passes: false`.**
+**Status: 6/36 stories complete.**
 
 ### Confirmed Existing State
 - **Tailwind CSS v4.2.1** with @theme inline in globals.css (no tailwind.config.ts)
@@ -35,6 +35,8 @@
 8. **Light theme CSS block** and theme detection script still present in globals.css and layout.tsx
 9. **ThemeToggle** still imported in header.tsx
 10. **profile-layout.tsx** has inline modals, custom toggles, and tab navigation that should eventually use the new UI components (Modal, Toggle, Tabs)
+11. **`next lint` command is broken in Next.js v16.1.6** - use `npx eslint src/` directly instead
+12. **React 19 lint rules disallow setState in useEffect body** - use useSyncExternalStore pattern for media queries
 
 ---
 
@@ -42,7 +44,7 @@
 
 ### Phase 1: Foundation (FD-001, FD-002, FD-003, FD-032)
 
-- [ ] **FD-001: Design Tokens Configuration** [NO DEPENDENCIES]
+- [x] **FD-001: Design Tokens Configuration** [NO DEPENDENCIES]
   - Create `src/styles/tokens.ts` with color palette, border opacity tokens, glow values
   - Create `src/styles/animations.ts` with duration/easing presets
   - Add violet (#8b5cf6), cyan (#06b6d4) accent tokens to globals.css @theme block
@@ -50,7 +52,7 @@
   - `npm run typecheck` must pass
   - *Spec: specs/FD-001-design-tokens.md*
 
-- [ ] **FD-002: Global Dark Theme Styles** [DEPENDS: FD-001]
+- [x] **FD-002: Global Dark Theme Styles** [DEPENDS: FD-001]
   - Remove `:root.light` CSS block from globals.css
   - Remove theme detection script from layout.tsx `<head>`
   - Delete `src/components/ui/theme-toggle.tsx`
@@ -59,7 +61,7 @@
   - `npm run typecheck` must pass
   - *Spec: specs/FD-002-dark-theme.md*
 
-- [ ] **FD-003: Animation Utilities** [NO DEPENDENCIES]
+- [x] **FD-003: Animation Utilities** [NO DEPENDENCIES]
   - Run: `npm install framer-motion`
   - Create `src/lib/animations.ts` with variants (fadeIn, fadeUp, slideInLeft, slideInRight, scaleIn, staggerContainer)
   - Create `src/hooks/useScrollReveal.ts` (Intersection Observer, returns ref + isVisible)
@@ -67,7 +69,7 @@
   - `npm run typecheck` must pass
   - *Spec: specs/FD-003-animation-utilities.md*
 
-- [ ] **FD-032: Icon System Setup** [NO DEPENDENCIES]
+- [x] **FD-032: Icon System Setup** [NO DEPENDENCIES]
   - Run: `npm install lucide-react`
   - Create `src/components/ui/Icon.tsx` wrapper with size prop (sm=16, md=20, lg=24, xl=32)
   - Re-export commonly used icons
@@ -114,12 +116,12 @@
   - Accessible: role=switch, aria-checked, keyboard support
   - *Spec: specs/FD-009-toggle-component.md*
 
-- [ ] **FD-022: Hover Micro-interactions** [DEPENDS: FD-001]
+- [x] **FD-022: Hover Micro-interactions** [DEPENDS: FD-001]
   - Add CSS utility classes to globals.css: hover-lift, hover-scale, hover-glow-violet, link-hover-slide
   - These are used by multiple components and pages later
   - *Spec: specs/FD-022-hover-microinteractions.md*
 
-- [ ] **FD-030: Skeleton Loading Component** [NO DEPENDENCIES, CSS only]
+- [x] **FD-030: Skeleton Loading Component** [NO DEPENDENCIES, CSS only]
   - Create `src/components/ui/Skeleton.tsx`
   - Shimmer animation with gradient sweep
   - Variants: text, card, avatar, button
