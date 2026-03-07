@@ -1,0 +1,659 @@
+{
+  "projectName": "Frontend Redesign - Leonardo.ai Inspired",
+  "branchName": "ralph/frontend-redesign",
+  "description": "Complete frontend overhaul to achieve an industry-grade, premium dark UI inspired by Leonardo.ai. Dark-only theme, rich animations (parallax, particles, scroll reveals), glassmorphism effects, and a comprehensive component library with design tokens.",
+  "techStack": {
+    "frontend": "React + Tailwind CSS + Framer Motion",
+    "animations": "Framer Motion + CSS transitions",
+    "particles": "@tsparticles/react",
+    "icons": "Lucide React",
+    "fonts": "Inter (Google Fonts)"
+  },
+  "userStories": [
+    {
+      "id": "FD-001",
+      "title": "Design Tokens Configuration",
+      "description": "As a developer, I need centralized design tokens so all components use consistent values.",
+      "priority": 1,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/styles/tokens.ts with color palette: bg (#0a0a0a, #111, #1a1a1a), text (white hierarchy), accents (violet-500 #8b5cf6, cyan-500 #06b6d4)",
+        "Add border tokens: subtle (rgba 0.06), default (0.1), strong (0.15)",
+        "Add glow effects: glow-primary, glow-cyan with rgba values",
+        "Create src/styles/animations.ts with duration (fast 200ms, normal 300ms, slow 500ms) and easing presets",
+        "Update tailwind.config.ts to extend theme with custom tokens",
+        "Create CSS custom properties in globals.css for all tokens",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FD-002",
+      "title": "Global Dark Theme Styles",
+      "description": "As a user, I want the entire app to use the new dark theme consistently.",
+      "priority": 2,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Update globals.css with dark color scheme from tokens",
+        "Set html/body background to #0a0a0a",
+        "Remove all light mode styles and theme toggle logic",
+        "Update default text color to white with secondary gray hierarchy",
+        "Add Inter font family via Google Fonts or next/font",
+        "Remove ThemeProvider or set to dark-only",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-003",
+      "title": "Animation Utilities",
+      "description": "As a developer, I need reusable animation utilities for consistent motion.",
+      "priority": 3,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/lib/animations.ts with Framer Motion variants",
+        "Add variants: fadeIn, fadeUp, slideInLeft, slideInRight, scaleIn",
+        "Add staggerContainer variant for staggered children",
+        "Create useScrollReveal hook using Intersection Observer",
+        "Hook returns ref and isVisible boolean",
+        "Add useReducedMotion hook to check prefers-reduced-motion",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FD-004",
+      "title": "Button Component Redesign",
+      "description": "As a user, I want buttons with gradient backgrounds, glow effects, and smooth hover animations.",
+      "priority": 4,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create/update src/components/ui/Button.tsx",
+        "Variants: primary (violet gradient #8b5cf6 to #6366f1), secondary (ghost), outline, danger",
+        "Primary button has box-shadow glow on hover (0 0 20px rgba(139,92,246,0.4))",
+        "Add scale(0.98) transform on click/active state",
+        "Add loading prop with spinner icon",
+        "Add disabled state with reduced opacity",
+        "Smooth transitions (200ms ease-out)",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-005",
+      "title": "Input Component Redesign",
+      "description": "As a user, I want dark-styled inputs with subtle borders and focus glow.",
+      "priority": 5,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create/update src/components/ui/Input.tsx",
+        "Background #1a1a1a with border rgba(255,255,255,0.1)",
+        "Focus state: violet border (#8b5cf6) with subtle glow",
+        "Error state: red border (#ef4444) with error message below",
+        "Support leftIcon and rightIcon props",
+        "Placeholder text in muted color (rgba 0.5)",
+        "Transition on border-color and box-shadow (200ms)",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-006",
+      "title": "Select/Dropdown Component",
+      "description": "As a user, I want dropdown menus matching the dark theme with smooth animations.",
+      "priority": 6,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create/update src/components/ui/Select.tsx",
+        "Trigger styled like Input (dark bg, subtle border)",
+        "Dropdown menu: bg #1a1a1a, border rgba(255,255,255,0.1), rounded-lg",
+        "Option hover: bg #222222",
+        "Selected option: violet accent indicator",
+        "Open/close animation: scale from 0.95 + fade (150ms)",
+        "Support for icon prefix in options",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-007",
+      "title": "Card Component with Glassmorphism",
+      "description": "As a user, I want content cards with glassmorphism effect and hover animations.",
+      "priority": 7,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Card.tsx",
+        "Background: rgba(17,17,17,0.8) with backdrop-blur-md",
+        "Border: 1px solid rgba(255,255,255,0.1)",
+        "Border radius: rounded-xl (1rem)",
+        "Hover: translateY(-2px) with increased shadow",
+        "Hover: border glow effect (optional violet tint)",
+        "Support header, body, footer slots via children or props",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-008",
+      "title": "Badge/Pill Component",
+      "description": "As a user, I want status badges and pills for tags and labels.",
+      "priority": 8,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Badge.tsx",
+        "Variants: default (gray), success (green), warning (amber), error (red), info (blue), accent (violet)",
+        "Sizes: sm (text-xs px-2 py-0.5), md (text-sm px-2.5 py-1)",
+        "Dark background tints with colored text (e.g., bg-violet-500/20 text-violet-400)",
+        "Optional icon prop (renders before text)",
+        "Rounded-full pill shape",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-009",
+      "title": "Toggle/Switch Component",
+      "description": "As a user, I want toggle switches with violet accent color.",
+      "priority": 9,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Toggle.tsx",
+        "Off state: bg #333333",
+        "On state: bg violet-500 (#8b5cf6)",
+        "Knob: white circle with smooth slide transition (200ms)",
+        "Disabled state: opacity-50 cursor-not-allowed",
+        "Support label prop with left or right position",
+        "Accessible: role=switch, aria-checked",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-010",
+      "title": "Modal/Dialog Component",
+      "description": "As a user, I want modals with dark overlay, glassmorphism, and smooth animations.",
+      "priority": 10,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Modal.tsx",
+        "Overlay: bg-black/60 with backdrop-blur-sm",
+        "Modal body: glassmorphism (rgba bg, blur, border)",
+        "Entrance: scale from 0.95 + fade (200ms ease-out)",
+        "Exit: scale to 0.95 + fade out",
+        "Close X button in top-right with hover opacity change",
+        "Click overlay to close (optional prop)",
+        "Escape key closes modal",
+        "Focus trap inside modal",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-011",
+      "title": "Tabs Component",
+      "description": "As a user, I want tab navigation matching Leonardo.ai's style.",
+      "priority": 11,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Tabs.tsx",
+        "Tab bar: subtle bg #111, rounded-lg, p-1",
+        "Tab button: transparent, text-secondary",
+        "Active tab: bg #1a1a1a, text-white, subtle shadow",
+        "Active indicator animates between tabs (layoutId or CSS)",
+        "Support icon + label tabs",
+        "Support badge on tabs (e.g., 'New' badge)",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-012",
+      "title": "Tooltip Component",
+      "description": "As a user, I want informative tooltips with dark styling.",
+      "priority": 12,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Tooltip.tsx",
+        "Background: #222 with border rgba(255,255,255,0.1)",
+        "Text: text-sm text-white",
+        "Arrow pointing to trigger element",
+        "Positions: top, bottom, left, right (default top)",
+        "Fade in animation (150ms) with slight translateY",
+        "Delay before showing: 200ms (configurable)",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-013",
+      "title": "Navigation Header Redesign",
+      "description": "As a user, I want a sleek navigation header with glassmorphism.",
+      "priority": 13,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Update src/components/Header.tsx or create new",
+        "Glassmorphism: bg rgba(10,10,10,0.8) backdrop-blur-md",
+        "Sticky top-0 with z-50",
+        "Border-bottom: rgba(255,255,255,0.06)",
+        "Logo with subtle scale hover effect",
+        "Nav links: text-secondary, hover:text-white with underline slide animation",
+        "User dropdown on right (avatar + name)",
+        "Mobile: hamburger menu with slide-in drawer",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-014",
+      "title": "Footer Redesign",
+      "description": "As a user, I want a dark footer consistent with the design system.",
+      "priority": 14,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Update src/components/Footer.tsx",
+        "Background: #0a0a0a with top border rgba(255,255,255,0.06)",
+        "Optional gradient accent line at top (1px violet gradient)",
+        "Link columns with proper spacing",
+        "Links: text-muted hover:text-white transition",
+        "Social icons with hover scale/glow effect",
+        "Copyright text in text-muted",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-015",
+      "title": "Sidebar Component",
+      "description": "As a user, I want a collapsible sidebar for dashboard layouts.",
+      "priority": 15,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Sidebar.tsx",
+        "Background: #111 with right border",
+        "Width: 240px expanded, 64px collapsed",
+        "Collapse animation: width transition 200ms",
+        "Nav items: icon + label, label hides when collapsed",
+        "Active item: bg violet-500/10 text-violet-400 with left border accent",
+        "Hover: bg #1a1a1a",
+        "Section dividers with muted labels",
+        "Collapse toggle button at bottom",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-016",
+      "title": "Page Layout Wrapper",
+      "description": "As a developer, I need a consistent page layout component.",
+      "priority": 16,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/layout/PageLayout.tsx",
+        "Props: withGradientBg, maxWidth, padding options",
+        "Gradient mesh background option (violet/cyan blobs)",
+        "Max-width container (1280px default) with auto margins",
+        "Consistent vertical padding (py-16 or py-24)",
+        "Scroll-to-top button that appears after scrolling",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FD-017",
+      "title": "Scroll Reveal Animations",
+      "description": "As a user, I want content to animate in as I scroll.",
+      "priority": 17,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/animation/ScrollReveal.tsx",
+        "Uses Framer Motion + Intersection Observer",
+        "Props: variant (fadeUp, fadeIn, slideLeft, slideRight), delay, threshold",
+        "Animation triggers once when element enters viewport",
+        "Support staggerChildren prop for container with multiple items",
+        "Respects prefers-reduced-motion (skip animation)",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-018",
+      "title": "Parallax Effect Component",
+      "description": "As a user, I want parallax scrolling effects on hero sections.",
+      "priority": 18,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/animation/Parallax.tsx",
+        "Props: speed (0.5 = slower, 1.5 = faster than scroll)",
+        "Uses transform: translateY for GPU acceleration",
+        "Smooth performance (requestAnimationFrame or Framer Motion useScroll)",
+        "Disabled when prefers-reduced-motion is set",
+        "Works on images and content blocks",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-019",
+      "title": "Particle Background Effect",
+      "description": "As a user, I want subtle animated particles in hero sections.",
+      "priority": 19,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/animation/ParticleBackground.tsx",
+        "Use @tsparticles/react or custom canvas implementation",
+        "Props: particleCount, color, speed, connectLines (boolean)",
+        "Constellation effect: particles connect with lines when close",
+        "Colors: violet/cyan matching accent palette",
+        "Low CPU impact (limit particles, use canvas)",
+        "Disabled when prefers-reduced-motion",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-020",
+      "title": "Gradient Mesh Background",
+      "description": "As a user, I want animated gradient mesh backgrounds like Leonardo.ai.",
+      "priority": 20,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/animation/GradientMesh.tsx",
+        "Multiple gradient blobs that slowly drift/morph",
+        "Colors: violet (#8b5cf6), cyan (#06b6d4), subtle amber",
+        "CSS animation or Framer Motion for blob movement",
+        "Blur filter on blobs for soft effect",
+        "Low performance impact (CSS preferred over JS)",
+        "Covers full section behind content",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-021",
+      "title": "Page Transition Animations",
+      "description": "As a user, I want smooth transitions between pages.",
+      "priority": 21,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create page transition wrapper using Framer Motion AnimatePresence",
+        "Fade transition between route changes (opacity 0 to 1)",
+        "Duration: 200-300ms",
+        "Optional slide direction prop",
+        "Works with Next.js App Router",
+        "Loading indicator during navigation if needed",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-022",
+      "title": "Hover Micro-interactions",
+      "description": "As a user, I want delightful micro-interactions on interactive elements.",
+      "priority": 22,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Buttons: scale(1.02) on hover, scale(0.98) on press",
+        "Cards: translateY(-4px) + shadow increase on hover",
+        "Links: underline slides in from left on hover",
+        "Icon buttons: subtle rotation or scale on hover",
+        "All transitions: 200-300ms with ease-out",
+        "Add these as utility classes or component defaults",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-023",
+      "title": "Landing Page Redesign",
+      "description": "As a user, I want a stunning landing page with rich animations.",
+      "priority": 23,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Hero section with GradientMesh background",
+        "Headline with gradient text (cyan to violet)",
+        "ParticleBackground in hero (subtle)",
+        "CTA buttons using new Button component with glow",
+        "Feature section with Cards + ScrollReveal stagger",
+        "Stats or social proof section",
+        "Testimonials with card carousel or grid",
+        "Final CTA section before footer",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-024",
+      "title": "About Page Redesign",
+      "description": "As a user, I want the about page to match the new design system.",
+      "priority": 24,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Apply dark theme and new typography",
+        "Team section with Cards and hover effects",
+        "ScrollReveal on content sections",
+        "Parallax effect on hero/header image if present",
+        "Mission/values section with icons",
+        "Consistent spacing using design tokens",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-025",
+      "title": "Contact Page Redesign",
+      "description": "As a user, I want a polished contact page.",
+      "priority": 25,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Form using new Input, Select, Button components",
+        "Submit button with loading state",
+        "Success/error feedback using Toast component",
+        "ScrollReveal on form container",
+        "Contact info section with icons",
+        "Map or location section (if applicable)",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-026",
+      "title": "FAQ Page Redesign",
+      "description": "As a user, I want an accordion FAQ with smooth animations.",
+      "priority": 26,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create Accordion component with dark styling",
+        "Smooth height animation on expand/collapse",
+        "Chevron icon rotates on open (180deg)",
+        "Only one item open at a time (optional prop)",
+        "Staggered ScrollReveal on FAQ items",
+        "Category groupings if applicable",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-027",
+      "title": "404 Page Redesign",
+      "description": "As a user, I want a creative 404 page.",
+      "priority": 27,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Large 404 text with gradient or glitch animation",
+        "Dark theme consistent with site",
+        "Friendly message: Page not found",
+        "CTA button to return home",
+        "Subtle ParticleBackground or GradientMesh",
+        "Centered layout with proper spacing",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-028",
+      "title": "Auth Pages Redesign",
+      "description": "As a user, I want polished authentication pages.",
+      "priority": 28,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Login and Register pages with centered Card layout",
+        "Card has glassmorphism effect",
+        "Form inputs using new Input component",
+        "Submit buttons using new Button with loading state",
+        "Social login buttons (if present) styled consistently",
+        "Links (forgot password, switch to register) styled",
+        "Gradient accent on card or background",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-029",
+      "title": "Dashboard/Profile Pages Redesign",
+      "description": "As a user, I want dashboard pages with sidebar and cards.",
+      "priority": 29,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Layout with Sidebar component",
+        "Content area with Cards for sections",
+        "Stat cards with subtle number animations",
+        "Tables styled with dark theme (dark rows, subtle borders)",
+        "Action buttons using new Button variants",
+        "Consistent spacing and typography",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-030",
+      "title": "Skeleton Loading Component",
+      "description": "As a user, I want smooth loading states throughout.",
+      "priority": 30,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Skeleton.tsx",
+        "Shimmer animation: gradient moving left to right",
+        "Dark colors: bg #1a1a1a with lighter shimmer",
+        "Variants: text (single line), card, avatar (circle), button",
+        "Width and height customizable via props",
+        "Smooth animation loop (1.5s)",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-031",
+      "title": "Toast Notification System",
+      "description": "As a user, I want styled toast notifications.",
+      "priority": 31,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create src/components/ui/Toast.tsx and useToast hook",
+        "Dark background with colored left border",
+        "Variants: success (green), error (red), warning (amber), info (blue)",
+        "Slide in from right animation",
+        "Auto-dismiss after 5s with progress bar",
+        "Dismiss X button",
+        "Stack multiple toasts with spacing",
+        "npm run typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ]
+    },
+    {
+      "id": "FD-032",
+      "title": "Icon System Setup",
+      "description": "As a developer, I need a consistent icon system.",
+      "priority": 32,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Install lucide-react if not present",
+        "Create src/components/ui/Icon.tsx wrapper",
+        "Sizes: sm (16px), md (20px), lg (24px), xl (32px)",
+        "Color inherits from text color by default",
+        "Export commonly used icons from single file",
+        "Document icon usage in README or docs",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FD-033",
+      "title": "Reduced Motion Support",
+      "description": "As a user with motion sensitivity, I want animations to respect my preferences.",
+      "priority": 33,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create useReducedMotion hook (check prefers-reduced-motion)",
+        "Update all animation components to check this hook",
+        "ParticleBackground: disable or show static",
+        "Parallax: disable",
+        "ScrollReveal: show immediately without animation",
+        "Page transitions: instant instead of animated",
+        "Micro-interactions: reduce or disable",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FD-034",
+      "title": "Component Documentation",
+      "description": "As a developer, I need documentation for the component library.",
+      "priority": 34,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Create docs/design-system.md",
+        "Document all components with props table",
+        "Include usage examples for each component",
+        "Document design tokens (colors, spacing, etc)",
+        "Document animation utilities and hooks",
+        "Include guidelines for when to use each component",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FD-035",
+      "title": "Performance Optimization",
+      "description": "As a user, I want animations to be smooth without jank.",
+      "priority": 35,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Audit animations: use transform/opacity only where possible",
+        "Add will-change hints where beneficial",
+        "Lazy load ParticleBackground and heavy animation components",
+        "Reduce particle count on mobile devices",
+        "Test scroll performance with DevTools",
+        "Lighthouse performance score > 90",
+        "npm run typecheck passes"
+      ]
+    },
+    {
+      "id": "FD-036",
+      "title": "Final Visual QA Pass",
+      "description": "As a user, I want all pages to be pixel-perfect and consistent.",
+      "priority": 36,
+      "passes": false,
+      "acceptanceCriteria": [
+        "Review all pages for visual consistency",
+        "Check spacing matches design tokens throughout",
+        "Verify color usage is consistent (no off-brand colors)",
+        "Test all animations work smoothly",
+        "Test responsive: mobile (375px), tablet (768px), desktop (1280px+)",
+        "Fix any inconsistencies found",
+        "Cross-browser test: Chrome, Firefox, Safari",
+        "npm run typecheck passes",
+        "Verify all pages in browser using dev-browser skill"
+      ]
+    }
+  ],
+  "nonGoals": [
+    "Light mode support (dark-only)",
+    "Internationalization/i18n",
+    "Component library npm publishing",
+    "Storybook setup",
+    "Full WCAG AAA accessibility compliance",
+    "Server-side rendering optimization",
+    "E2E test updates for new components"
+  ],
+  "dependencies": [
+    "framer-motion",
+    "@tsparticles/react",
+    "tsparticles",
+    "lucide-react",
+    "@fontsource/inter (or next/font)"
+  ]
+}
