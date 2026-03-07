@@ -23,7 +23,7 @@ export default async function NewsletterDetailPage({
   const content = newsletter.content as unknown as Newsletter;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-dark">
       <NewsletterRenderer newsletter={content} />
     </div>
   );
