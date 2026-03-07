@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import { useState, useId, ReactNode } from "react";
 
 interface AccordionItemProps {
   title: string;
@@ -14,13 +14,18 @@ export function AccordionItem({
   defaultOpen = false,
 }: AccordionItemProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const id = useId();
+  const buttonId = id + "-button";
+  const panelId = id + "-panel";
 
   return (
     <div className="border-b border-border">
       <button
+        id={buttonId}
         onClick={() => setIsOpen(!isOpen)}
         className="w-full py-4 flex items-center justify-between text-left text-foreground hover:text-violet-400 transition-colors"
         aria-expanded={isOpen}
+        aria-controls={panelId}
       >
         <span className="font-medium">{title}</span>
         <svg
@@ -41,6 +46,9 @@ export function AccordionItem({
         </svg>
       </button>
       <div
+        id={panelId}
+        role="region"
+        aria-labelledby={buttonId}
         className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${
           isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
         }`}

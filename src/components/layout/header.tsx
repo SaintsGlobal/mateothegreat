@@ -10,6 +10,7 @@ export async function Header() {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/exclusive", label: "Exclusive" },
+    { href: "/faq", label: "FAQ" },
     { href: "/contact", label: "Contact" },
   ];
 
