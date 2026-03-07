@@ -215,7 +215,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     # Note: Watcher monitors ~/.claude/projects/ JSONL files for live updates
     OUTPUT=$(cat "$PROMPT_FILE" | claude -p \
       --dangerously-skip-permissions \
-      --model claude-opus-4-5-20251101 \
+      --model claude-opus-4-6 \
       2>&1 | tee "$RALPH_LOG" | tee /dev/stderr) || true
   fi
 
