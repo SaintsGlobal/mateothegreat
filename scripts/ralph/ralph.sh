@@ -1,6 +1,6 @@
 #!/bin/bash
 # Ralph Wiggum - Long-running AI agent loop
-# Usage: ./ralph.sh --prd <name> [max_iterations]
+# Usage: ./ralph.sh --prd <name> [--mode plan|build] [max_iterations]
 # Usage: ./ralph.sh [--tool claude|amp] [max_iterations]  (legacy)
 
 set -e
@@ -11,6 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TOOL="claude"  # Default to claude CLI
 MAX_ITERATIONS=10
 PRD_NAME=""
+MODE="build"  # Default mode: plan or build
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -20,6 +21,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --prd=*)
       PRD_NAME="${1#*=}"
+      shift
+      ;;
+    --mode)
+      MODE="$2"
+      shift 2
+      ;;
+    --mode=*)
+      MODE="${1#*=}"
       shift
       ;;
     --tool)
@@ -39,6 +48,12 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Validate mode
+if [[ "$MODE" != "plan" && "$MODE" != "build" ]]; then
+  echo "Error: Invalid mode '$MODE'. Must be 'plan' or 'build'."
+  exit 1
+fi
 
 # Validate tool choice
 if [[ "$TOOL" != "amp" && "$TOOL" != "claude" ]]; then
@@ -108,19 +123,38 @@ if [ ! -f "$PROGRESS_FILE" ]; then
   echo "---" >> "$PROGRESS_FILE"
 fi
 
-echo "Starting Ralph - PRD: ${PRD_NAME:-default} - Tool: $TOOL - Max iterations: $MAX_ITERATIONS"
+# Create AGENTS.md from template if it doesn't exist (for PRD directories)
+if [ -n "$PRD_NAME" ]; then
+  AGENTS_FILE="$PRD_DIR/AGENTS.md"
+  if [ ! -f "$AGENTS_FILE" ] && [ -f "$SCRIPT_DIR/AGENTS_TEMPLATE.md" ]; then
+    cp "$SCRIPT_DIR/AGENTS_TEMPLATE.md" "$AGENTS_FILE"
+    echo "Created AGENTS.md from template"
+  fi
+fi
+
+# Select prompt based on mode
+if [[ "$MODE" == "plan" ]]; then
+  PROMPT_FILE="$SCRIPT_DIR/PROMPT_plan.md"
+  echo "Starting Ralph in PLANNING mode..."
+else
+  PROMPT_FILE="$SCRIPT_DIR/PROMPT_build.md"
+  echo "Starting Ralph in BUILDING mode..."
+fi
+
+echo "PRD: ${PRD_NAME:-default} | Tool: $TOOL | Max iterations: $MAX_ITERATIONS"
 echo "Working directory: $WORKING_DIR"
 
 # Initialize ralph log
 echo "# Ralph Run Log - $(date)" > "$RALPH_LOG"
 echo "PRD: ${PRD_NAME:-default}" >> "$RALPH_LOG"
+echo "Mode: $MODE" >> "$RALPH_LOG"
 echo "Tool: $TOOL" >> "$RALPH_LOG"
 echo "---" >> "$RALPH_LOG"
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
   echo "==============================================================="
-  echo "  Ralph Iteration $i of $MAX_ITERATIONS ($TOOL)"
+  echo "  Ralph Iteration $i of $MAX_ITERATIONS ($MODE mode, $TOOL)"
   echo "==============================================================="
   echo "Iteration $i started at $(date)" >> "$RALPH_LOG"
 
@@ -132,7 +166,8 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   else
     # Claude Code: use --dangerously-skip-permissions for autonomous operation
     # Run from PRD directory so it finds the local prd.json and progress.txt
-    OUTPUT=$(claude --dangerously-skip-permissions --print < "$SCRIPT_DIR/CLAUDE.md" 2>&1 | tee /dev/stderr) || true
+    # Use mode-specific prompt file
+    OUTPUT=$(claude --dangerously-skip-permissions --print < "$PROMPT_FILE" 2>&1 | tee /dev/stderr) || true
   fi
 
   # Check for completion signal
@@ -141,6 +176,19 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     echo "Ralph completed all tasks!"
     echo "Completed at iteration $i of $MAX_ITERATIONS"
     echo "COMPLETE - Iteration $i - $(date)" >> "$RALPH_LOG"
+
+    # Create version tag on completion (build mode only)
+    if [[ "$MODE" == "build" ]]; then
+      cd "$SCRIPT_DIR/../.."  # Go to repo root
+      TAG="ralph-$(date +%Y%m%d.%H%M%S)"
+      if [ -n "$PRD_NAME" ]; then
+        TAG="ralph-${PRD_NAME}-$(date +%Y%m%d.%H%M%S)"
+      fi
+      git tag -a "$TAG" -m "Ralph completed ${PRD_NAME:-session}" 2>/dev/null || true
+      git push --tags 2>/dev/null || true
+      echo "Created tag: $TAG"
+    fi
+
     exit 0
   fi
 
