@@ -160,6 +160,15 @@ CACHE_HIT_RATE=0
 SESSION_COUNT=0
 declare -a KNOWN_JSONL_FILES
 
+# Subagent tracking (for nested tree display)
+declare -A ACTIVE_AGENTS           # task_id -> description
+declare -A AGENT_PARENT            # task_id -> parent_tool_use_id
+declare -A AGENT_TOOL_COUNT        # task_id -> tool count
+declare -A AGENT_STATUS            # task_id -> running|complete
+declare -A TOOL_TO_AGENT           # tool_use_id -> task_id (reverse lookup)
+ACTIVE_AGENT_COUNT=0               # Currently running agents
+TOTAL_AGENT_SPAWNS=0               # Total agents spawned this session
+
 # State persistence (for subshell variable sharing)
 STATE_FILE="/tmp/ralph-watch-$$.state"
 COMPLETE_FLAG="/tmp/ralph-watch-complete-$$"
@@ -183,6 +192,8 @@ COST_ESTIMATE=$COST_ESTIMATE
 COST_WITHOUT_CACHE=$COST_WITHOUT_CACHE
 CACHE_SAVINGS=$CACHE_SAVINGS
 CACHE_HIT_RATE=$CACHE_HIT_RATE
+ACTIVE_AGENT_COUNT=$ACTIVE_AGENT_COUNT
+TOTAL_AGENT_SPAWNS=$TOTAL_AGENT_SPAWNS
 EOF
 }
 
@@ -427,6 +438,59 @@ add_status() {
   add_activity "" "$detail" "status"
 }
 
+# Add agent activity with nested tree display
+add_agent_activity() {
+  local task_id="$1"
+  local tool="$2"
+  local detail="$3"
+
+  local agent_name="${ACTIVE_AGENTS[$task_id]:-Agent}"
+  local short_id="${task_id:0:8}"
+
+  local entry
+  case "$tool" in
+    SPAWN)
+      # Root-level agent spawn
+      entry="${C_HIGHLIGHT}◆${C_RESET} ${C_ACCENT}[$short_id]${C_RESET} ${C_TEXT}${detail}${C_RESET}"
+      ;;
+    DONE)
+      # Agent completion with checkmark
+      entry="${C_SUCCESS}${SYM_CHECK}${C_RESET} ${C_MUTED}[$short_id]${C_RESET} ${C_DIM}${detail}${C_RESET}"
+      ;;
+    *)
+      # Nested tool call (indented with tree connector)
+      local icon="◇"
+      local color="$C_SUBTLE"
+      case "$tool" in
+        Read|Glob|Grep) icon="◇"; color="$C_MUTED" ;;
+        Write|Edit)     icon="◆"; color="$C_ACCENT" ;;
+        Bash)           icon="▸"; color="$C_SUBTLE" ;;
+        Agent)          icon="◆"; color="$C_HIGHLIGHT" ;;
+        *)              icon="○"; color="$C_SUBTLE" ;;
+      esac
+      entry="  ${C_DIM_FG}├─${C_RESET} ${color}${icon} ${tool}${C_RESET} ${C_SUBTLE}${detail}${C_RESET}"
+      ;;
+  esac
+
+  ACTIVITY_LINES+=("$entry")
+  # Keep last N lines
+  [ ${#ACTIVITY_LINES[@]} -gt $MAX_ACTIVITY_LINES ] && ACTIVITY_LINES=("${ACTIVITY_LINES[@]:1}")
+
+  # Write to log file (plain text)
+  local timestamp=$(date '+%H:%M:%S')
+  case "$tool" in
+    SPAWN)
+      echo "[$timestamp] [AGENT:$short_id] SPAWN: $detail" >> "$ACTIVITY_LOG"
+      ;;
+    DONE)
+      echo "[$timestamp] [AGENT:$short_id] DONE: $detail" >> "$ACTIVITY_LOG"
+      ;;
+    *)
+      echo "[$timestamp]   └─ $tool: $detail" >> "$ACTIVITY_LOG"
+      ;;
+  esac
+}
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Real Token Tracking from JSONL
 # ═══════════════════════════════════════════════════════════════════════════
@@ -663,6 +727,7 @@ render_header() {
   local formatted_out=$(format_tokens $TOTAL_OUTPUT_TOKENS)
 
   local stats_content=" ${C_MUTED}Sessions:${C_RESET} ${C_TEXT}${SESSION_COUNT}${C_RESET}"
+  stats_content+="  ${C_DIM_FG}│${C_RESET}  ${C_MUTED}Agents:${C_RESET} ${C_HIGHLIGHT}${ACTIVE_AGENT_COUNT}${C_MUTED}/${C_TEXT}${TOTAL_AGENT_SPAWNS}${C_RESET}"
   stats_content+="  ${C_DIM_FG}│${C_RESET}  ${C_MUTED}In:${C_RESET} ${C_TEXT}${formatted_in}${C_RESET}"
   stats_content+="  ${C_MUTED}Out:${C_RESET} ${C_TEXT}${formatted_out}${C_RESET}"
   stats_content+="  ${C_DIM_FG}│${C_RESET}  ${C_MUTED}Cache:${C_RESET} ${C_SUCCESS}${CACHE_HIT_RATE}%${C_RESET}"
@@ -892,8 +957,76 @@ process_jsonl_line() {
   local msg_type=$(echo "$line" | jq -r '.type // empty' 2>/dev/null)
   [ -z "$msg_type" ] && return
 
+  # Handle system events (subagent lifecycle)
+  if [ "$msg_type" = "system" ]; then
+    local subtype=$(echo "$line" | jq -r '.subtype // empty' 2>/dev/null)
+
+    case "$subtype" in
+      task_started)
+        local task_id=$(echo "$line" | jq -r '.task_id // empty' 2>/dev/null)
+        local tool_use_id=$(echo "$line" | jq -r '.tool_use_id // empty' 2>/dev/null)
+        local description=$(echo "$line" | jq -r '.description // "Sub-agent"' 2>/dev/null | head -c 45)
+        local task_type=$(echo "$line" | jq -r '.task_type // "agent"' 2>/dev/null)
+
+        if [ -n "$task_id" ]; then
+          ACTIVE_AGENTS["$task_id"]="$description"
+          [ -n "$tool_use_id" ] && TOOL_TO_AGENT["$tool_use_id"]="$task_id"
+          AGENT_STATUS["$task_id"]="running"
+          AGENT_TOOL_COUNT["$task_id"]=0
+          ACTIVE_AGENT_COUNT=$((ACTIVE_AGENT_COUNT + 1))
+          TOTAL_AGENT_SPAWNS=$((TOTAL_AGENT_SPAWNS + 1))
+          AGENT_COUNT=$((AGENT_COUNT + 1))
+
+          add_agent_activity "$task_id" "SPAWN" "$description"
+        fi
+        ;;
+
+      task_progress)
+        local task_id=$(echo "$line" | jq -r '.task_id // empty' 2>/dev/null)
+        local description=$(echo "$line" | jq -r '.description // ""' 2>/dev/null | head -c 50)
+        local tool_name=$(echo "$line" | jq -r '.last_tool_name // empty' 2>/dev/null)
+
+        if [ -n "$task_id" ] && [ -n "$tool_name" ]; then
+          AGENT_TOOL_COUNT["$task_id"]=$((${AGENT_TOOL_COUNT["$task_id"]:-0} + 1))
+          # Shorten description for display
+          local short_desc=$(echo "$description" | sed -E 's|.*/dev/[^/]+/||' | head -c 40)
+          add_agent_activity "$task_id" "$tool_name" "$short_desc"
+        fi
+        ;;
+
+      task_complete|task_stopped)
+        local task_id=$(echo "$line" | jq -r '.task_id // empty' 2>/dev/null)
+        if [ -n "$task_id" ]; then
+          AGENT_STATUS["$task_id"]="complete"
+          ACTIVE_AGENT_COUNT=$((ACTIVE_AGENT_COUNT > 0 ? ACTIVE_AGENT_COUNT - 1 : 0))
+          local tool_count="${AGENT_TOOL_COUNT[$task_id]:-0}"
+          add_agent_activity "$task_id" "DONE" "Complete ($tool_count tools)"
+        fi
+        ;;
+    esac
+    return
+  fi
+
   # Handle assistant messages with tool_use content
   if [ "$msg_type" = "assistant" ]; then
+    # Check if this is a subagent's tool call via parent_tool_use_id
+    local parent_id=$(echo "$line" | jq -r '.parent_tool_use_id // empty' 2>/dev/null)
+
+    if [ -n "$parent_id" ]; then
+      # This is a subagent's tool call - find which agent owns it
+      local task_id="${TOOL_TO_AGENT[$parent_id]:-}"
+      if [ -n "$task_id" ]; then
+        # Process as nested tool call - extract tool info
+        local nested_tools=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use") | "\(.name)|\(.input.file_path // .input.command // .input.pattern // "")"' 2>/dev/null)
+        while IFS='|' read -r tool_name tool_input; do
+          [ -z "$tool_name" ] && continue
+          AGENT_TOOL_COUNT["$task_id"]=$((${AGENT_TOOL_COUNT["$task_id"]:-0} + 1))
+          local display_input=$(echo "$tool_input" | sed -E 's|.*/dev/[^/]+/||' | head -c 40)
+          add_agent_activity "$task_id" "$tool_name" "$display_input"
+        done <<< "$nested_tools"
+        return
+      fi
+    fi
     # Extract tool calls from content array
     local tools=$(echo "$line" | jq -r '.message.content[]? | select(.type == "tool_use") | "\(.name)|\(.input.file_path // .input.command // .input.pattern // .input.query // "")"' 2>/dev/null)
 
@@ -1116,7 +1249,7 @@ cleanup() {
   printf "${C_DIM_FG}│${C_RESET}   ${C_MUTED}Reads:${C_RESET}       ${C_TEXT}%-10s${C_RESET}%*s${C_DIM_FG}│${C_RESET}\n" "$READ_COUNT" $((width - 25)) ""
   printf "${C_DIM_FG}│${C_RESET}   ${C_MUTED}Writes:${C_RESET}      ${C_TEXT}%-10s${C_RESET}%*s${C_DIM_FG}│${C_RESET}\n" "$WRITE_COUNT" $((width - 25)) ""
   printf "${C_DIM_FG}│${C_RESET}   ${C_MUTED}Commands:${C_RESET}    ${C_TEXT}%-10s${C_RESET}%*s${C_DIM_FG}│${C_RESET}\n" "$BASH_COUNT" $((width - 25)) ""
-  printf "${C_DIM_FG}│${C_RESET}   ${C_MUTED}Agents:${C_RESET}      ${C_TEXT}%-10s${C_RESET}%*s${C_DIM_FG}│${C_RESET}\n" "$AGENT_COUNT" $((width - 25)) ""
+  printf "${C_DIM_FG}│${C_RESET}   ${C_MUTED}Subagents:${C_RESET}   ${C_TEXT}%-10s${C_RESET}%*s${C_DIM_FG}│${C_RESET}\n" "$TOTAL_AGENT_SPAWNS spawned" $((width - 25)) ""
   printf "${C_DIM_FG}│${C_RESET}   ${C_MUTED}Errors:${C_RESET}      ${C_ERROR}%-10s${C_RESET}%*s${C_DIM_FG}│${C_RESET}\n" "$ERROR_COUNT" $((width - 25)) ""
   echo -e "${C_DIM_FG}│${C_RESET}$(printf '%*s' $width '')${C_DIM_FG}│${C_RESET}"
   echo -e "${C_DIM_FG}├$(printf '%*s' $width '' | tr ' ' '─')┤${C_RESET}"
