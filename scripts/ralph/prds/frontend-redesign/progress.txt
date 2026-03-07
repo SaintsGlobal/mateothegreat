@@ -50,3 +50,18 @@ PRD: Frontend Redesign - Leonardo.ai Inspired
   - All typecheck, lint (our files), and tests pass
 ---
 
+## 2026-03-07 - Phase 2-7 Complete (ALL 36 STORIES DONE)
+- Phase 2 (FD-004, 005, 007, 008, 009): Button violet gradient, Input violet focus, Card glassmorphism, Badge, Toggle
+- Phase 3 (FD-006, 010, 011, 012, 031): Select, Modal, Tabs, Tooltip, Toast
+- Phase 4+5 (FD-013-021): Header redesign, Footer, Sidebar, PageLayout, ScrollReveal, Parallax, GradientMesh, PageTransition
+- Phase 6 (FD-023-029): All page redesigns with violet/cyan palette, GradientMesh backgrounds
+- Phase 7 (FD-019, 033-036): ParticleBackground, reduced motion CSS, docs, performance, newsletter fix
+- **Total: 36/36 stories complete**
+- **Tags: 0.0.1 through 0.0.6**
+- **Learnings for future iterations:**
+  - useRef in React 19 requires explicit initial value (null or undefined)
+  - Tailwind v4 @theme inline doesn't support custom animation names - use @keyframes directly
+  - sed is effective for bulk color token replacements across large files (profile-layout.tsx)
+  - Keep GradientMesh as server component (CSS-only) for better SSR
+  - ParticleBackground must be client component with useSyncExternalStore for reduced motion
+---
