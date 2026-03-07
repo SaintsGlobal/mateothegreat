@@ -48,7 +48,7 @@ export function Toggle({
       }}
       className={`
         relative inline-flex flex-shrink-0 cursor-pointer rounded-full
-        transition-colors duration-200 ease-out
+        transition-colors duration-100 ease-out
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-dark
         disabled:opacity-50 disabled:cursor-not-allowed
         ${trackSizes[size]}
@@ -58,7 +58,7 @@ export function Toggle({
       <span
         className={`
           pointer-events-none inline-block rounded-full bg-white shadow-sm
-          transform transition-transform duration-200 ease-out
+          transform transition-transform duration-150 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]
           ${knobSizes[size]}
           ${checked ? knobTranslate[size] : "translate-x-0.5"}
         `}

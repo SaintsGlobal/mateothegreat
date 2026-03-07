@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertCircle, Check, Info, X } from "lucide-react";
 
 type ToastVariant = "success" | "error" | "warning" | "info";
@@ -28,7 +28,7 @@ const variantConfig = {
 function ToastMessage({ id, variant, message, duration = 5000, onDismiss }: ToastProps) {
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(100);
-  const startTimeRef = useRef(Date.now());
+  const startTimeRef = useRef(0);
   const remainingRef = useRef(duration);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ function ToastMessage({ id, variant, message, duration = 5000, onDismiss }: Toas
         bg-[#1a1a1a] border border-white/10 border-l-[3px] ${borderColor}
         rounded-lg shadow-xl
         flex items-start gap-3 p-4 min-w-[300px] max-w-[400px]
-        animate-in slide-in-from-right duration-200
+        animate-in slide-in-from-right duration-150
       `}
     >
       <Icon size={18} className="flex-shrink-0 mt-0.5 text-white/60" />

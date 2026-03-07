@@ -30,7 +30,7 @@ export function Sidebar({
       className={`
         bg-[#111111] border-r border-white/[0.06]
         h-[calc(100vh-4rem)] sticky top-16
-        transition-all duration-300
+        transition-all duration-200 ease-out
         flex flex-col
         ${collapsed ? "w-16" : "w-60"}
       `}
@@ -42,7 +42,7 @@ export function Sidebar({
             <div
               className={`
                 flex items-center gap-3 px-4 py-3
-                transition-colors duration-200 cursor-pointer
+                transition-colors duration-100 cursor-pointer
                 ${
                   isActive
                     ? "bg-violet-500/10 text-violet-400 border-l-2 border-violet-500"
@@ -52,7 +52,7 @@ export function Sidebar({
             >
               <span className="flex-shrink-0">{item.icon}</span>
               {!collapsed && (
-                <span className="text-sm font-medium truncate transition-opacity duration-200">
+                <span className="text-sm font-medium truncate transition-opacity duration-100">
                   {item.label}
                 </span>
               )}
@@ -87,7 +87,7 @@ export function Sidebar({
         >
           <ChevronLeft
             size={20}
-            className={`transition-transform duration-300 mx-auto ${collapsed ? "rotate-180" : ""}`}
+            className={`transition-transform duration-200 mx-auto ${collapsed ? "rotate-180" : ""}`}
           />
         </button>
       )}

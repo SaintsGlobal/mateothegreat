@@ -120,7 +120,7 @@ export function Select({
           className={`
             w-full flex items-center justify-between
             px-4 py-2.5 bg-[#1a1a1a] rounded-lg
-            text-left transition-all duration-200
+            text-left transition-all duration-100
             focus:outline-none focus:ring-2
             disabled:opacity-50 disabled:cursor-not-allowed
             ${
@@ -135,7 +135,7 @@ export function Select({
           </span>
           <ChevronDown
             size={16}
-            className={`text-white/40 transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}
+            className={`text-white/40 transition-transform duration-100 ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
 
@@ -143,7 +143,7 @@ export function Select({
           <ul
             ref={listRef}
             role="listbox"
-            className="absolute z-50 mt-1 w-full bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-in fade-in duration-150 origin-top scale-in-95"
+            className="absolute z-50 mt-1 w-full bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-in fade-in duration-100 origin-top scale-in-95"
           >
             {options.map((option, index) => (
               <li
@@ -159,7 +159,7 @@ export function Select({
                   }
                 }}
                 className={`
-                  px-4 py-2.5 text-sm cursor-pointer transition-colors
+                  px-4 py-2.5 text-sm cursor-pointer transition-colors duration-50
                   ${option.disabled ? "opacity-40 cursor-not-allowed" : ""}
                   ${option.value === value ? "bg-violet-500/10 text-violet-400" : "text-white"}
                   ${focusedIndex === index && !option.disabled ? "bg-[#222222]" : ""}

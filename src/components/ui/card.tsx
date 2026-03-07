@@ -14,12 +14,12 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           rounded-xl
           border border-white/10
           p-6
-          transition-all duration-300
+          transition-all duration-100
           hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20
           ${
             glow
               ? "hover:border-violet-500/50 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)]"
-              : ""
+              : "hover:border-white/20"
           }
           ${className}
         `}

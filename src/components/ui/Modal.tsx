@@ -83,7 +83,7 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-100"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -98,7 +98,7 @@ export function Modal({ isOpen, onClose, title, children, size = "md" }: ModalPr
           relative w-full ${sizeStyles[size]}
           bg-[rgba(17,17,17,0.9)] backdrop-blur-md
           border border-white/10 rounded-xl shadow-2xl
-          animate-in fade-in zoom-in-95 duration-200
+          animate-in fade-in zoom-in-95 duration-150
         `}
       >
         {/* Header */}
