@@ -4,6 +4,25 @@ PRD: Frontend Redesign - Leonardo.ai Inspired
 ---
 
 ## Codebase Patterns
-- (To be filled as Ralph discovers patterns)
+- Tailwind v4.2.1 uses inline @theme in globals.css, NOT tailwind.config.ts
+- Colors defined as CSS variables in :root, then declared in @theme inline block
+- Header already has glassmorphism: `bg-dark/80 backdrop-blur-sm`
+- Accordion has rotate animation pattern: `transition-transform duration-300`
+- Pages use inline container patterns: `mx-auto max-w-6xl px-4 py-12`
+- Gradient accents positioned absolutely with `pointer-events-none`
+- Session handling mixed server/client - check auth on server, pass to client
+- No animation libraries installed - clean slate for framer-motion
+---
+
+## 2026-03-06 - Planning Phase Complete
+- Analyzed codebase structure with 4 parallel subagents
+- Created IMPLEMENTATION_PLAN.md with 36 prioritized tasks
+- Created AGENTS.md with operational reference
+- **Key findings:**
+  - Foundation exists: dark colors, Inter font, basic components
+  - Missing: violet/cyan colors, framer-motion, animation components
+  - Components need: glow effects, glassmorphism, micro-interactions
+  - Pages need: ScrollReveal, gradient mesh, particles
+- **Dependencies to install first:** framer-motion, lucide-react, @tsparticles/react
 ---
 
