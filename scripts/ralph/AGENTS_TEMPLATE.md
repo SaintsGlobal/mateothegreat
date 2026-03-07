@@ -1,43 +1,28 @@
-# AGENTS.md - Operational Reference
-
-This file is auto-updated by Ralph as it learns operational details about the codebase.
+# AGENTS.md
 
 ## Build & Run
 
+Succinct rules for how to BUILD the project:
+
 ```bash
-npm run dev          # Start dev server on port 7000
+npm run dev          # Start dev server
 npm run build        # Production build
 ```
 
 ## Validation
 
-```bash
-npm run typecheck    # TypeScript check
-npm run lint         # ESLint
-npm run test         # Vitest unit tests
-npm run test:e2e     # Playwright E2E tests
-```
+Run these after implementing to get immediate feedback:
 
-## Database
+- Tests: `npm run test`
+- Typecheck: `npm run typecheck`
+- Lint: `npm run lint`
 
-```bash
-npx prisma db push   # Apply schema changes
-npx prisma generate  # Regenerate client
-npx prisma studio    # Database GUI
-```
+## Operational Notes
 
-## Key Paths
+Succinct learnings about how to RUN the project:
 
-- Prisma client: `src/lib/db.ts`
-- Server Actions: `src/app/*/actions.ts`
-- Components: `src/components/`
+<!-- Ralph appends operational learnings here -->
 
-## Conventions
+### Codebase Patterns
 
-- Server Actions preferred over API routes
-- Dark theme with brand colors (cyan, coral, gold)
-- Use existing utilities before creating new ones
-
-## Learned Notes
-
-<!-- Ralph updates this section as it learns -->
+<!-- Ralph appends notable conventions and patterns here -->
