@@ -2,7 +2,7 @@
 
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
-type ButtonVariant = "primary" | "secondary";
+type ButtonVariant = "primary" | "secondary" | "outline" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -13,9 +13,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand-coral hover:bg-brand-coral/90 text-white focus:ring-brand-coral/50",
+    "bg-gradient-to-r from-[#8b5cf6] to-[#6366f1] text-white hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] focus:ring-violet-500/50",
   secondary:
-    "bg-brand-cyan hover:bg-brand-cyan/90 text-white focus:ring-brand-cyan/50",
+    "bg-transparent text-white/70 hover:text-white hover:bg-white/[0.06] focus:ring-white/20",
+  outline:
+    "bg-transparent border border-white/10 text-white hover:bg-white/[0.06] hover:border-white/20 focus:ring-violet-500/50",
+  danger:
+    "bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 focus:ring-red-500/50",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -46,9 +50,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={`
           inline-flex items-center justify-center gap-2
           font-medium rounded-lg
-          transition-colors duration-200
+          transition-all duration-200 ease-out
           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark
           disabled:opacity-50 disabled:cursor-not-allowed
+          active:scale-[0.98]
           ${variantStyles[variant]}
           ${sizeStyles[size]}
           ${className}

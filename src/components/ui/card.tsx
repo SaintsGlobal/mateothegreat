@@ -10,13 +10,15 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={`
-          bg-dark-alt rounded-xl
-          border border-brand-gray/20
+          bg-[rgba(17,17,17,0.8)] backdrop-blur-md
+          rounded-xl
+          border border-white/10
           p-6
           transition-all duration-300
+          hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/20
           ${
             glow
-              ? "hover:border-brand-cyan/50 hover:shadow-[0_0_20px_rgba(76,194,213,0.15)]"
+              ? "hover:border-violet-500/50 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)]"
               : ""
           }
           ${className}
