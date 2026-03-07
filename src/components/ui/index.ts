@@ -6,3 +6,8 @@ export { Icon } from "./Icon";
 export { Skeleton } from "./Skeleton";
 export { Badge } from "./Badge";
 export { Toggle } from "./Toggle";
+export { Select } from "./Select";
+export { Modal } from "./Modal";
+export { Tabs } from "./Tabs";
+export { Tooltip } from "./Tooltip";
+export { ToastContainer } from "./Toast";
