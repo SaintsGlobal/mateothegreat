@@ -1,4 +1,7 @@
+// US-008: Updated to support immersive full-width images
+
 import type { ImageBlock } from "@/lib/newsletter-schema";
+import { ImmersiveImage } from "./immersive-image";
 
 interface ImageBlockProps {
   block: ImageBlock;
@@ -6,8 +9,14 @@ interface ImageBlockProps {
 
 export function ImageBlockComponent({ block }: ImageBlockProps) {
   const { src, alt, caption } = block.content;
-  const align = block.style?.align ?? "center";
+  const className = block.style?.className ?? "";
 
+  // Full-width images get immersive sticky scroll treatment
+  if (className.includes("full-width")) {
+    return <ImmersiveImage src={src} alt={alt} caption={caption} />;
+  }
+
+  const align = block.style?.align ?? "center";
   const alignClass = {
     left: "mr-auto",
     center: "mx-auto",
@@ -15,7 +24,7 @@ export function ImageBlockComponent({ block }: ImageBlockProps) {
   }[align];
 
   return (
-    <figure className={`mb-6 ${alignClass} ${block.style?.className ?? ""}`}>
+    <figure className={`mb-6 ${alignClass} ${className}`}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
