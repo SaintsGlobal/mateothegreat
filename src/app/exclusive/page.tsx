@@ -1,7 +1,9 @@
+// US-009: Redesigned exclusive listing with scroll animations
+
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { requirePremium } from "@/lib/auth/tier-guard";
+import { ExclusiveContent } from "./exclusive-content";
 
 export const dynamic = "force-dynamic";
 
@@ -57,24 +59,26 @@ export default async function ExclusivePage() {
     );
   }
 
-  const typeBadgeColors: Record<string, string> = {
-    ARTICLE: "bg-brand-cyan/20 text-brand-cyan",
-    VIDEO: "bg-brand-coral/20 text-brand-coral",
-    ANNOUNCEMENT: "bg-brand-gold/20 text-brand-gold",
-  };
+  // Serialize dates for client component
+  const serializedContent = content.map((item) => ({
+    id: item.id,
+    slug: item.slug,
+    title: item.title,
+    type: item.type,
+    publishedAt: item.publishedAt,
+  }));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-4xl font-bold">Exclusive Content</h1>
-        {!isPremium && (
+      {!isPremium && (
+        <div className="mb-6 flex items-center justify-end">
           <Link href="/profile?section=billing">
             <Button variant="primary" size="sm">
               Upgrade to Premium
             </Button>
           </Link>
-        )}
-      </div>
+        </div>
+      )}
 
       {!isPremium && (
         <div className="mb-6 rounded-lg border border-brand-gold/30 bg-brand-gold/10 p-4">
@@ -99,36 +103,7 @@ export default async function ExclusivePage() {
         </div>
       )}
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {content.map((item) => (
-          <Link key={item.id} href={`/exclusive/${item.slug}`}>
-            <Card glow className="h-full transition-transform hover:scale-[1.02]">
-              <div className="mb-3 flex items-center gap-2">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${typeBadgeColors[item.type]}`}
-                >
-                  {item.type}
-                </span>
-                {!isPremium && (
-                  <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-xs font-medium text-brand-gold">
-                    Premium
-                  </span>
-                )}
-              </div>
-              <h2 className="mb-2 text-xl font-semibold">{item.title}</h2>
-              {item.publishedAt && (
-                <p className="text-sm text-brand-gray">
-                  {new Date(item.publishedAt).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-              )}
-            </Card>
-          </Link>
-        ))}
-      </div>
+      <ExclusiveContent content={serializedContent} isPremium={isPremium} />
     </div>
   );
 }
